@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P3 실행 계획 수립</title>
+  <style>
+    :root{
+      --bg:#edf0f3;
+      --card:#f3f5f7;
+      --line:#bbbbbb;
+      --text:#1f2937;
+      --muted:#66768a;
+      --primary:#0067b1;
+      --primary-soft:#e8f2fb;
+      --ok:#1f9d55;
+      --warn:#b45309;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg);
+      border:1px solid #d4dae2;
+      border-radius:12px;
+      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      background:#eceff3;
+      border-bottom:2px solid var(--primary);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .title-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+    }
+    .meta{
+      font-size:16px;
+      color:#4b5563;
+      font-weight:700;
+      border:1px solid #d6dde6;
+      background:#f4f6f8;
+      border-radius:999px;
+      padding:5px 10px;
+    }
+    .run-badge{
+      display:flex;
+      align-items:center;
+      color:#374151;
+      background:#ffffff;
+      border:2px solid #0067b1;
+      border-radius:0;
+      padding:6px 12px;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .content{
+      height:656px;
+      padding:10px;
+      display:grid;
+      grid-template-rows:62px 1fr;
+      gap:6px;
+      background:#bbbbbb;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+    }
+    .flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      height:100%;
+      padding:6px 8px;
+      background:#e7ebf0;
+    }
+    .step{
+      min-width:142px;
+      border:1px solid #b8c2cf;
+      border-radius:8px;
+      padding:7px 9px;
+      background:#f8fafc;
+      text-align:center;
+      font-size:14px;
+      color:#475569;
+      font-weight:800;
+    }
+    .step.active{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .step.done{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .step.active.prep{
+      color:#17663c;
+      border-color:#86efac;
+      background:#f0fdf4;
+      animation:activePrepBlink 1s ease-in-out infinite;
+    }
+    @keyframes activePrepBlink{
+      0%,100%{box-shadow:0 0 0 0 rgba(31,157,85,0)}
+      50%{box-shadow:0 0 0 6px rgba(31,157,85,.16)}
+    }
+    .arrow{color:#7f8ea3;font-size:16px;line-height:1}
+    .main{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:8px;
+      min-height:0;
+    }
+    .main>.card{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .box-h{
+      padding:10px 12px;
+      border-bottom:1px solid #c9d2dd;
+      font-size:15px;
+      font-weight:800;
+      color:#1f2937;
+      background:#dfe5ec;
+    }
+    .box-b{
+      padding:8px;
+      flex:1;
+      min-height:0;
+      background:#f4f6f9;
+    }
+    .doc-list .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:6px 0;
+      border-bottom:1px dashed #bcc7d5;
+      font-size:14px;
+    }
+    .doc-list{
+      background:#ffffff;
+    }
+    .doc-list .row:last-child{border-bottom:0}
+    .badge{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:800;
+      color:#475569;
+    }
+    .badge.run{
+      color:var(--primary);
+      border-color:#93c5fd;
+      background:#eff6ff;
+    }
+    .badge.ok{
+      border-color:#99f6e4;
+      color:#17663c;
+      background:#ecfeff;
+    }
+    .blink{animation:blinkPulse .8s ease-in-out 2}
+    @keyframes blinkPulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(0,103,177,0)}
+      50%{box-shadow:0 0 0 6px rgba(0,103,177,.12)}
+    }
+    .plan-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .plan-card{
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      background:#f3f5f8;
+    }
+    .plan-card .h{
+      padding:9px 10px;
+      border-bottom:1px solid #c9d2dd;
+      font-size:14px;
+      font-weight:800;
+      color:#1f2937;
+      background:#dce3eb;
+    }
+    .plan-card .b{
+      padding:8px 10px;
+      background:#ffffff;
+      font-size:14px;
+      color:#1f2937;
+      min-height:70px;
+      line-height:1.5;
+    }
+    .plan-card .b.pending{
+      color:#64748b;
+      font-weight:700;
+    }
+    .order{
+      margin-top:6px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      background:#f3f5f8;
+    }
+    .order .h{
+      padding:9px 10px;
+      border-bottom:1px solid #c9d2dd;
+      font-size:14px;
+      font-weight:800;
+      color:#1f2937;
+      background:#dce3eb;
+    }
+    .timeline{
+      padding:6px 10px;
+      background:#ffffff;
+    }
+    .timeline .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:4px 0;
+      border-bottom:1px dashed #e2e8f0;
+      font-size:14px;
+    }
+    .timeline .row:last-child{border-bottom:0}
+    .state{
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      color:#475569;
+      background:#eceff3;
+    }
+    .state.run{
+      color:var(--primary);
+      border-color:#93c5fd;
+      background:#eff6ff;
+    }
+    .state.done{
+      color:#17663c;
+      border-color:#86efac;
+      background:#f0fdf4;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title-group">
+        <div class="title">실행 계획 수립</div>
+        <div class="meta">Agent</div>
+      </div>
+      <div class="run-badge">백그라운드 실행</div>
+    </div>
+
+    <div class="content">
+      <section class="card">
+        <div class="flow">
+          <div class="step active prep" id="activeFlowStep">실행 계획 수립</div>
+          <div class="arrow">→</div>
+          <div class="step">문서 전처리</div>
+          <div class="arrow">→</div>
+          <div class="step">진위검증</div>
+          <div class="arrow">→</div>
+          <div class="step">AI-OCR 및 필드 추출</div>
+          <div class="arrow">→</div>
+          <div class="step">대사/검증</div>
+        </div>
+      </section>
+
+      <section class="main">
+        <article class="card">
+          <div class="box-h">문서 분석</div>
+          <div class="box-b doc-list">
+            <div class="row"><span>사업자등록증명원.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>법인등기부등본.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>표준재무제표증명.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>부가가치세 과세표준증명원.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>법인인감증명서.pdf</span><span class="badge run doc-badge">진행중</span></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="box-h">실행 계획 수립</div>
+          <div class="box-b">
+            <div class="plan-grid">
+              <div class="plan-card">
+                <div class="h">문서 전처리 대상</div>
+                <div class="b pending target-docs">분류 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">AI-OCR 수행 대상</div>
+                <div class="b pending target-docs">분류 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">진위검증 대상</div>
+                <div class="b pending target-docs">분류 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">대사/검증 대상</div>
+                <div class="b pending target-docs">분류 대기</div>
+              </div>
+            </div>
+
+            <div class="order">
+              <div class="h">실행 순서 및 상태</div>
+              <div class="timeline">
+                <div class="row"><span>1) 문서 분류/품질 점검</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>2) 우선순위 큐 생성</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>3) Task Graph 구성</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>4) Worker 할당 및 실행 준비</span><span class="state plan-state">대기</span></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const TOTAL_RUN_MS = 10000;
+    const DEMO_SCALE = TOTAL_RUN_MS / 10000;
+    const docBadges = Array.from(document.querySelectorAll(".doc-badge"));
+    const targetDocs = Array.from(document.querySelectorAll(".target-docs"));
+    const planStates = Array.from(document.querySelectorAll(".plan-state"));
+    const activeFlowStep = document.getElementById("activeFlowStep");
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms * DEMO_SCALE));
+    }
+
+    function setDocDone(idx){
+      const badge = docBadges[idx];
+      if(!badge) return;
+      badge.textContent = "구조 인식 완료";
+      badge.classList.remove("run");
+      badge.classList.add("ok", "blink");
+      setTimeout(() => badge.classList.remove("blink"), 1300);
+    }
+
+    function fillTargetDocs(){
+      const contents = [
+        "사업자등록증명원, 법인등기부등본, 표준재무제표증명",
+        "사업자등록증명원, 법인등기부등본, 표준재무제표증명, 부가가치세 과세표준증명원, 법인인감증명서",
+        "사업자등록증명원, 법인등기부등본, 법인인감증명서",
+        "사업자등록증명원, 법인등기부등본"
+      ];
+      targetDocs.forEach((el, idx) => {
+        el.textContent = contents[idx] || "-";
+        el.classList.remove("pending");
+        el.classList.add("blink");
+        setTimeout(() => el.classList.remove("blink"), 1300);
+      });
+    }
+
+    function setPlanState(idx, state){
+      const item = planStates[idx];
+      if(!item) return;
+      item.classList.remove("run", "done", "blink");
+      if(state === "run"){
+        item.classList.add("run");
+        item.textContent = "진행중";
+      } else if(state === "done"){
+        item.classList.add("done");
+        item.textContent = "완료";
+      } else {
+        item.textContent = "대기";
+      }
+      item.classList.add("blink");
+      setTimeout(() => item.classList.remove("blink"), 1300);
+    }
+
+    async function runP3Animation(){
+      await sleep(1000);
+      setDocDone(0);
+      await sleep(200);
+      setDocDone(2);
+      await sleep(500);
+      setDocDone(1);
+      setDocDone(4);
+      await sleep(300);
+      setDocDone(3);
+
+      await sleep(700);
+      fillTargetDocs();
+
+      await sleep(900);
+      setPlanState(0, "run");
+      await sleep(900);
+      setPlanState(0, "done");
+      setPlanState(1, "run");
+      await sleep(900);
+      setPlanState(1, "done");
+      setPlanState(2, "run");
+      await sleep(900);
+      setPlanState(2, "done");
+      setPlanState(3, "run");
+      await sleep(900);
+      setPlanState(3, "done");
+      activeFlowStep.classList.remove("prep");
+    }
+
+    window.addEventListener("load", () => {
+      runP3Animation().then(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(700);
+      });
+    });
+  </script>
+</body>
+</html>

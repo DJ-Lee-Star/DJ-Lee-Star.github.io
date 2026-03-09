@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent 템플릿</title>
+  <link rel="stylesheet" href="./styles/tokens.css" />
+  <link rel="stylesheet" href="./styles/templates.css" />
+</head>
+<body>
+  <div class="shell shell-agent">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">WOORI AGENT TEMPLATE</p>
+        <h1 class="page-title">Agent 공통 템플릿</h1>
+      </div>
+      <div class="channel-badge channel-badge-agent">AI Agent</div>
+    </header>
+    <main class="agent-layout agent-layout-rich">
+      <section class="step-flow">
+        <div class="step-item step-done">분류</div>
+        <div class="step-arrow">→</div>
+        <div class="step-item step-active">검증</div>
+        <div class="step-arrow">→</div>
+        <div class="step-item">제언</div>
+      </section>
+      <section class="agent-main-grid">
+        <article class="panel">
+          <div class="panel-head"><h2>처리 큐</h2><span class="head-meta">좌측 고정 영역</span></div>
+          <div class="panel-body process-stack">
+            <div class="process-card is-live"><strong>현재 처리 대상</strong><p class="doc-upload-desc">문서별 상태를 단순하게 표시</p></div>
+            <div class="process-card"><strong>완료 대상</strong><p class="doc-upload-desc">완료/대기 상태 구분</p></div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><h2>중앙 상세 결과</h2><span class="head-meta">표, 통계, 추출 필드</span></div>
+          <div class="panel-body split-stack">
+            <div class="stat-grid">
+              <div class="state-tile"><span>지표 A</span><strong>12</strong></div>
+              <div class="state-tile"><span>지표 B</span><strong>4</strong></div>
+              <div class="state-tile"><span>이슈</span><strong class="text-danger">1</strong></div>
+              <div class="state-tile"><span>대기</span><strong>2</strong></div>
+            </div>
+            <div class="info-note"><strong>설계 원칙</strong><p>Agent 화면은 중앙에 검증 결과를 두고, 발표 시 봐야 할 포인트를 최소한의 항목으로 축약합니다.</p></div>
+          </div>
+        </article>
+        <aside class="panel">
+          <div class="panel-head"><h2>AI 제언</h2><span class="status-chip status-chip-warn">검토 필요</span></div>
+          <div class="panel-body insight-stack">
+            <div class="insight-card is-risk"><strong>제언 카드</strong><p>사람이 검토해야 할 항목만 선별해 보여줍니다.</p></div>
+            <div class="metric-card"><strong>다음 단계</strong><p class="doc-upload-desc">브릿지 전달 또는 자동 반영</p></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

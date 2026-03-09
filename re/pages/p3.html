@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P3 실행 계획 수립</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .p3-status { padding: var(--space-4) var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
+    .p3-status .spinner { border-color: rgba(255,255,255,0.15); border-top-color: var(--woori-light-blue); }
+    .p3-status__msg { font-size: var(--text-md); color: var(--agent-text-body); }
+    .p3-body { display: flex; gap: var(--space-4); flex: 1; min-height: 0; }
+    .p3-left { width: 480px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+    .p3-right { flex: 1; display: flex; flex-direction: column; gap: var(--space-4); }
+    .exec-order { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; overflow-y: auto; }
+    .exec-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: rgba(255,255,255,0.04); font-size: var(--text-sm); color: var(--agent-text-body); opacity: 0; transform: translateX(-10px); transition: all 0.3s var(--ease-out); border: 1px solid transparent; }
+    .exec-item.show { opacity: 1; transform: translateX(0); }
+    .exec-item.active { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); box-shadow: 0 0 12px var(--agent-glow-blue); }
+    .exec-item.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.20); }
+    .exec-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--font-bold); background: rgba(255,255,255,0.12); color: var(--agent-text-muted); flex-shrink: 0; }
+    .exec-item.active .exec-num { background: var(--woori-blue); color: #fff; box-shadow: 0 0 8px var(--agent-glow-blue); }
+    .exec-item.done .exec-num { background: #0D7C3F; color: #fff; }
+    .doc-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+    .doc-card { padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.04); text-align: center; opacity: 0; transform: scale(0.9); transition: all 0.3s var(--ease-out); }
+    .doc-card.show { opacity: 1; transform: scale(1); border-color: rgba(0,131,202,0.20); }
+    .doc-card__icon { font-size: 30px; margin-bottom: var(--space-1); }
+    .doc-card__name { font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--agent-text-body); }
+    .doc-card__status { font-size: var(--text-xs); color: var(--agent-text-muted); margin-top: 2px; }
+    .doc-card.show .doc-card__status { color: #60A5FA; }
+    .target-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+    .target-card { padding: var(--space-4); border-radius: var(--radius-md); background: rgba(255,255,255,0.04); border: 1px solid var(--agent-card-border); text-align: center; }
+    .target-card__label { color: var(--agent-text-body); font-size: var(--text-sm); }
+    .target-card__count { color: var(--woori-light-blue); font-size: var(--text-lg); font-weight: var(--font-bold); }
+    .target-card__icon { font-size: 34px; margin-bottom: var(--space-1); }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-agent">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/agent-logo.png" alt="AI" style="height:36px" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">실행 계획 수립</span>
+    </div>
+    <div class="app-header__right agent-sysinfo">
+      <span class="agent-sysinfo__item"><span class="agent-sysinfo__dot"></span>AGENT-CORE</span>
+      <span class="agent-sysinfo__item">PID 8412</span>
+      <span class="agent-sysinfo__item" id="sysUptime">00:00</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="p3-status" id="statusBar">
+      <span class="spinner" style="width:22px;height:22px;border-width:2px"></span>
+      <span class="p3-status__msg" id="statusMsg">서류를 분석하고 있습니다...</span>
+    </div>
+    <div class="p3-body">
+      <div class="p3-left">
+        <div class="agent-card">
+          <div class="card__title">접수 서류</div>
+          <div class="doc-cards" id="docCards"></div>
+        </div>
+        <div class="agent-card" style="flex:1">
+          <div class="card__title">분석 대상</div>
+          <div class="target-cards" id="targetCards">
+            <div class="target-card" id="tc-preprocess"><div class="target-card__icon">📄</div><div class="target-card__label">전처리</div><div class="target-card__count">-</div></div>
+            <div class="target-card" id="tc-verify"><div class="target-card__icon">🔍</div><div class="target-card__label">진위검증</div><div class="target-card__count">-</div></div>
+            <div class="target-card" id="tc-ocr"><div class="target-card__icon">📝</div><div class="target-card__label">AI-OCR</div><div class="target-card__count">-</div></div>
+            <div class="target-card" id="tc-reconcile"><div class="target-card__icon">⚖️</div><div class="target-card__label">대사/검증</div><div class="target-card__count">-</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="p3-right">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">실행 순서</div>
+          <div class="exec-order" id="execOrder"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="agent-data-flow"></div>
+  <div class="agent-process-log">
+    <span class="agent-process-log__prefix">[PLAN]</span>
+    <span class="agent-process-log__text" id="logText">Initializing execution plan...</span>
+    <span class="agent-process-log__cursor"></span>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+
+StateManager.save({ currentPage: 'p3' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const docCards = document.getElementById('docCards');
+const docIcons = ['📋','📑','📊','📈','🔏','🏠','🏗️','📐','📎'];
+
+documents.list.forEach((doc, i) => {
+  const d = document.createElement('div');
+  d.className = 'doc-card';
+  d.innerHTML = `<div class="doc-card__icon">${docIcons[i]||'📄'}</div><div class="doc-card__name">${doc.name}</div><div class="doc-card__status">대기</div>`;
+  docCards.appendChild(d);
+});
+
+const execSteps = [
+  '사업자등록증명원 — 전처리',
+  '법인등기부등본 — 전처리',
+  '부동산 등기부등본 — 전처리',
+  '건축물대장 — 전처리',
+  '사업자등록증명원 — 진위검증',
+  '법인등기부등본 — 진위검증',
+  '부동산 등기부등본 — 진위검증',
+  '8건 — AI-OCR 필드추출',
+  '사업자등록증명원 — 대사/검증',
+  '법인등기부등본 — 대사/검증',
+  '부동산 등기부등본 — 대사/검증',
+  '건축물대장 — 대사/검증',
+  '사정의견서 — 담보가치 검증',
+];
+
+const execOrder = document.getElementById('execOrder');
+execSteps.forEach((text, i) => {
+  const item = document.createElement('div');
+  item.className = 'exec-item';
+  item.innerHTML = `<span class="exec-num">${i + 1}</span><span>${text}</span>`;
+  execOrder.appendChild(item);
+});
+
+function countTargets(key) { return documents.list.filter(d => d.targets[key]).length; }
+
+const logEl = document.getElementById('logText');
+const upEl = document.getElementById('sysUptime');
+let _sec = 0;
+const _upTimer = setInterval(() => { _sec++; const m = String(Math.floor(_sec/60)).padStart(2,'0'); const s = String(_sec%60).padStart(2,'0'); if(upEl) upEl.textContent = m+':'+s; }, 1000);
+function setLog(msg) { if(logEl) logEl.textContent = msg; }
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  setLog('Agent core v2.1 starting...');
+  await DemoEngine.wait(300);
+
+  const cards = docCards.querySelectorAll('.doc-card');
+  for (let i = 0; i < cards.length; i++) {
+    cards[i].classList.add('show');
+    cards[i].querySelector('.doc-card__status').textContent = '인식됨';
+    setLog(`doc.scan: ${documents.list[i]?.name}`);
+    await DemoEngine.wait(120);
+  }
+
+  await DemoEngine.wait(200);
+  const targets = [['tc-preprocess','preprocess'],['tc-verify','verify'],['tc-ocr','ocr'],['tc-reconcile','reconcile']];
+  for (const [elId, key] of targets) {
+    document.querySelector(`#${elId} .target-card__count`).textContent = `${countTargets(key)}건`;
+    setLog(`pipeline.assign: ${key} → ${countTargets(key)} docs`);
+    await DemoEngine.wait(120);
+  }
+
+  await DemoEngine.wait(200);
+  const items = execOrder.querySelectorAll('.exec-item');
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('show', 'active');
+    if (i > 0) { items[i-1].classList.remove('active'); items[i-1].classList.add('done'); }
+    setLog(`exec[${i+1}/${items.length}]: ${execSteps[i]}`);
+    await DemoEngine.wait(150);
+  }
+  items[items.length-1].classList.remove('active');
+  items[items.length-1].classList.add('done');
+
+  setLog('✓ Execution plan complete');
+  document.getElementById('statusMsg').textContent = '실행 계획 수립 완료';
+  document.querySelector('.p3-status .spinner')?.remove();
+
+  await DemoEngine.wait(500);
+  clearInterval(_upTimer);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

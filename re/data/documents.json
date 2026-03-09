@@ -1,0 +1,74 @@
+{
+  "list": [
+    {
+      "id": "C-01", "name": "사업자등록증명원", "fileName": "사업자등록증명원.pdf",
+      "category": "기본", "issuer": "국세청(홈택스)",
+      "targets": { "preprocess": true, "ocr": true, "verify": true, "reconcile": true }
+    },
+    {
+      "id": "C-02", "name": "법인등기부등본", "fileName": "법인등기부등본.pdf",
+      "category": "기본", "issuer": "대법원 인터넷등기소",
+      "targets": { "preprocess": true, "ocr": true, "verify": true, "reconcile": true }
+    },
+    {
+      "id": "C-03", "name": "표준재무제표증명", "fileName": "표준재무제표증명.pdf",
+      "category": "기본", "issuer": "국세청(홈택스)",
+      "targets": { "preprocess": true, "ocr": true, "verify": false, "reconcile": false }
+    },
+    {
+      "id": "C-04", "name": "부가가치세 과세표준증명원", "fileName": "부가세과세표준증명원.pdf",
+      "category": "기본", "issuer": "국세청(홈택스)",
+      "targets": { "preprocess": false, "ocr": true, "verify": false, "reconcile": false }
+    },
+    {
+      "id": "C-05", "name": "법인인감증명서", "fileName": "법인인감증명서.pdf",
+      "category": "기본", "issuer": "대법원 인터넷등기소",
+      "targets": { "preprocess": false, "ocr": true, "verify": true, "reconcile": false }
+    },
+    {
+      "id": "C-06", "name": "부동산 등기부등본", "fileName": "부동산등기부등본.pdf",
+      "category": "담보", "issuer": "대법원 인터넷등기소",
+      "targets": { "preprocess": true, "ocr": true, "verify": true, "reconcile": true }
+    },
+    {
+      "id": "C-07", "name": "건축물대장", "fileName": "건축물대장.pdf",
+      "category": "담보", "issuer": "정부24",
+      "targets": { "preprocess": true, "ocr": true, "verify": false, "reconcile": true }
+    },
+    {
+      "id": "C-08", "name": "사정의견서(추정가액조사표)", "fileName": "사정의견서.pdf",
+      "category": "담보", "issuer": "감정평가법인",
+      "targets": { "preprocess": true, "ocr": true, "verify": false, "reconcile": true }
+    },
+    {
+      "id": "C-09", "name": "주주명부", "fileName": null,
+      "category": "조건부", "issuer": null,
+      "targets": { "preprocess": false, "ocr": false, "verify": false, "reconcile": false }
+    }
+  ],
+  "requiredDocs": {
+    "basic": ["C-01","C-02","C-03","C-04"],
+    "collateral": ["C-06","C-07","C-08"],
+    "conditional": ["C-09"]
+  },
+  "preprocessTasks": [
+    { "key": "tilt", "label": "기울기 보정" },
+    { "key": "noise", "label": "노이즈 제거" },
+    { "key": "contrast", "label": "명암/대비 보정" },
+    { "key": "align", "label": "페이지 정렬" }
+  ],
+  "verifyStages": [
+    { "key": "apiCall", "label": "기관 API 호출" },
+    { "key": "parsing", "label": "응답전문 파싱" },
+    { "key": "comparing", "label": "진위 확인" }
+  ],
+  "reconcileStages": [
+    { "key": "input", "label": "입력값 대사", "result": "일치" },
+    { "key": "crossdoc", "label": "문서간 대사", "result": "일치" },
+    { "key": "collateral", "label": "담보정보 교차검증", "result": "정상" },
+    { "key": "required", "label": "필수값 누락 검증", "result": "정상" },
+    { "key": "type", "label": "타입/유효값 검증", "result": "정상" },
+    { "key": "kyc", "label": "KYC 교차검증", "result": "정상" },
+    { "key": "final", "label": "최종 판정", "result": "정상" }
+  ]
+}

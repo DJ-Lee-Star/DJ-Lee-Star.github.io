@@ -1,0 +1,100 @@
+/* ── Bridge Mini Theme (브릿지 미니: P7, P10) ── */
+.theme-bridge-mini {
+  --bg: #F5F8FB;
+}
+
+.theme-bridge-mini .app-header {
+  background: var(--woori-white);
+  border-left: 3px solid var(--woori-blue);
+}
+
+.theme-bridge-mini .terminal-bg {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: var(--space-10);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.theme-bridge-mini .overlay-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay);
+  backdrop-filter: var(--overlay-blur);
+  z-index: 5;
+}
+
+.theme-bridge-mini .mini-card {
+  position: absolute;
+  bottom: var(--space-10);
+  right: var(--space-10);
+  width: 560px;
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  z-index: 10;
+  overflow: hidden;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.6s var(--ease-out), opacity 0.4s var(--ease-out);
+}
+
+.theme-bridge-mini .mini-card.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.theme-bridge-mini .mini-card__header {
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--border-light);
+}
+
+.theme-bridge-mini .mini-card__header.error {
+  background: var(--color-danger-bg);
+  animation: mini-blink 1.5s ease-in-out infinite;
+}
+
+.theme-bridge-mini .mini-card__header.success {
+  background: var(--color-info-bg);
+  animation: mini-blink-blue 1.5s ease-in-out infinite;
+}
+
+.theme-bridge-mini .mini-card__body {
+  padding: var(--space-6);
+}
+
+.theme-bridge-mini .mini-card__body p {
+  font-size: var(--text-lg);
+  line-height: var(--leading-xl);
+  color: var(--gray-700);
+}
+
+.theme-bridge-mini .mini-card__action {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  text-align: right;
+}
+
+.theme-bridge-mini .mini-card__action a {
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  font-size: var(--text-md);
+}
+
+@keyframes mini-blink {
+  0%, 100% { background: var(--color-danger-bg); }
+  50% { background: #fff; }
+}
+
+@keyframes mini-blink-blue {
+  0%, 100% { background: var(--color-info-bg); }
+  50% { background: #fff; }
+}

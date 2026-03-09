@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P1 신청정보 입력</title>
+  <style>
+    :root{
+      --bg:#eef3f8;
+      --card:#ffffff;
+      --line:#d6e0eb;
+      --text:#1f2937;
+      --muted:#607184;
+      --primary:#0067b1;
+      --primary-soft:#e8f2fb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg);
+      border:1px solid #d6e0eb;
+      border-radius:12px;
+      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      background:#fff;
+      border-bottom:2px solid var(--primary);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+    }
+    .title{font-size:24px; font-weight:800; line-height:1}
+    .content{
+      height:656px;
+      padding:14px;
+      display:block;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .panel-b{
+      padding:12px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+    .badge{
+      font-size:11px;
+      color:var(--primary);
+      background:var(--primary-soft);
+      border:1px solid #b8d5ec;
+      border-radius:999px;
+      padding:3px 8px;
+    }
+    .form{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .field label{
+      display:block;
+      margin-bottom:4px;
+      font-size:16px;
+      font-weight:700;
+      color:#334155;
+    }
+    .field input,.field select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:11px;
+      font-size:16px;
+      background:#fff;
+    }
+    .input-group{
+      display:grid;
+      grid-template-columns:1fr 54px;
+      gap:6px;
+      align-items:center;
+    }
+    .icon-btn{
+      width:54px;
+      height:40px;
+      border:1px solid #b7c2cf;
+      border-radius:8px;
+      background:linear-gradient(180deg, #f8fafc, #edf2f7);
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:0 1px 2px rgba(15,23,42,.08);
+      cursor:pointer;
+    }
+    .icon-btn:active{transform:translateY(1px)}
+    .field.full{grid-column:1/3}
+    .actions{
+      margin-top:auto;
+      padding-top:10px;
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:10px 14px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn.primary{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:620px;
+      max-height:520px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 20px 40px rgba(2,8,23,.25);
+      overflow:hidden;
+    }
+    .modal-h{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .modal-title{font-size:16px; font-weight:800}
+    .close-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      width:32px;height:32px;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .modal-b{padding:12px}
+    .search{
+      display:grid;
+      grid-template-columns:1fr 84px;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .search input{
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      font-size:14px;
+    }
+    .search button{
+      border:1px solid #b7c2cf;
+      border-radius:8px;
+      background:#f8fafc;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .list{
+      border:1px solid var(--line);
+      border-radius:10px;
+      max-height:300px;
+      overflow:auto;
+    }
+    .list-head{
+      display:grid;
+      gap:0;
+      border-bottom:1px solid var(--line);
+      background:#f8fafc;
+      font-size:12px;
+      font-weight:700;
+      color:#475569;
+    }
+    .list-head div{
+      padding:9px 12px;
+      border-right:1px solid #e5eaf0;
+    }
+    .list-head div:last-child{border-right:0}
+    .list-head.branch{grid-template-columns:120px 1fr}
+    .list-head.manager{grid-template-columns:120px 140px 1fr}
+    .row{
+      width:100%;
+      border:0;
+      border-bottom:1px solid #eef2f7;
+      background:#fff;
+      text-align:left;
+      padding:10px 12px;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-size:14px;
+    }
+    .row.branch{display:grid;grid-template-columns:120px 1fr;gap:0}
+    .row.manager{display:grid;grid-template-columns:120px 140px 1fr;gap:0}
+    .row span{padding:0 12px;border-right:1px solid #f1f5f9}
+    .row span:last-child{border-right:0}
+    .row:hover{background:#f8fafc}
+    .row:last-child{border-bottom:0}
+    .modal-f{
+      padding:10px 12px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .fbtn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:8px 12px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title">신청정보 입력</div>
+    </div>
+
+    <div class="content">
+      <section class="panel">
+        <div class="panel-b">
+          <div class="form">
+            <div class="field">
+              <label>차주명(법인)</label>
+              <input value="(주)000바이오" />
+            </div>
+            <div class="field">
+              <label>신청번호</label>
+              <input value="CC411-2026-000123" />
+            </div>
+            <div class="field">
+              <label>영업점 코드</label>
+              <div class="input-group">
+                <input id="branchCode" value="411" />
+                <button class="icon-btn" type="button" aria-label="영업점 코드 조회" data-popup="branch">조회</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>담당자</label>
+              <div class="input-group">
+                <input id="managerName" value="김담당" />
+                <button class="icon-btn" type="button" aria-label="담당자 조회" data-popup="manager">조회</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>신청일자</label>
+              <input value="2026-03-05" />
+            </div>
+            <div class="field">
+              <label>대출상품</label>
+              <input value="기업운전일반자금대출" />
+            </div>
+            <div class="field">
+              <label>신청금액</label>
+              <input value="1,500,000,000" />
+            </div>
+            <div class="field">
+              <label>만기일</label>
+              <input value="2027-12-31" />
+            </div>
+            <div class="field">
+              <label>상환방식</label>
+              <select>
+                <option value="" style="color:#94a3b8">-선택-</option>
+                <option selected>원리금균등</option>
+                <option>만기일시상환</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>취급구분</label>
+              <select>
+                <option value="" style="color:#94a3b8">-선택-</option>
+                <option selected>신규</option>
+                <option>연장</option>
+                <option>재약정</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label>자금용도</label>
+              <input value="운전자금" />
+            </div>
+            <div class="field">
+              <label>담보유형</label>
+              <select>
+                <option value="" style="color:#94a3b8">-선택-</option>
+                <option selected>부동산담보</option>
+                <option>신용</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>신청채널</label>
+              <select>
+                <option value="" style="color:#94a3b8">-선택-</option>
+                <option selected>영업점</option>
+                <option>비대면</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary">첨부문서 등록</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="overlay" id="lookupOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lookupTitle">
+      <div class="modal-h">
+        <div class="modal-title" id="lookupTitle">조회</div>
+        <button class="close-btn" id="closeLookup" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-b">
+        <div class="search">
+          <input id="lookupQuery" placeholder="검색어 입력" />
+          <button id="searchBtn" type="button">검색</button>
+        </div>
+        <div class="list" id="lookupList"></div>
+      </div>
+      <div class="modal-f">
+        <button class="fbtn" id="cancelLookup" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const branchData = [
+      { code: "411", name: "강남기업금융센터" },
+      { code: "238", name: "서초금융센터" },
+      { code: "105", name: "종로금융센터" },
+      { code: "522", name: "여의도금융센터" }
+    ];
+
+    const managerData = [
+      { id: "E1042", name: "김담당", branch: "강남기업금융센터" },
+      { id: "E0915", name: "이심사", branch: "서초금융센터" },
+      { id: "E1130", name: "박영업", branch: "여의도금융센터" },
+      { id: "E0873", name: "최담당", branch: "종로금융센터" }
+    ];
+
+    const overlay = document.getElementById("lookupOverlay");
+    const lookupTitle = document.getElementById("lookupTitle");
+    const lookupQuery = document.getElementById("lookupQuery");
+    const lookupList = document.getElementById("lookupList");
+    const closeLookup = document.getElementById("closeLookup");
+    const cancelLookup = document.getElementById("cancelLookup");
+    const searchBtn = document.getElementById("searchBtn");
+    const branchCode = document.getElementById("branchCode");
+    const managerName = document.getElementById("managerName");
+
+    let currentType = null;
+
+    function renderList(items, type){
+      lookupList.innerHTML = "";
+      const head = document.createElement("div");
+      head.className = `list-head ${type}`;
+      if(type === "branch"){
+        head.innerHTML = "<div>영업점 코드</div><div>영업점명</div>";
+      } else {
+        head.innerHTML = "<div>사번</div><div>담당자</div><div>영업점명</div>";
+      }
+      lookupList.appendChild(head);
+
+      items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `row ${type}`;
+        if(type === "branch"){
+          btn.innerHTML = `<span>${item.code}</span><span>${item.name}</span>`;
+          btn.addEventListener("click", () => {
+            branchCode.value = item.code;
+            closeModal();
+          });
+        } else {
+          btn.innerHTML = `<span>${item.id}</span><span>${item.name}</span><span>${item.branch}</span>`;
+          btn.addEventListener("click", () => {
+            managerName.value = item.name;
+            closeModal();
+          });
+        }
+        lookupList.appendChild(btn);
+      });
+    }
+
+    function filterAndRender(){
+      const q = lookupQuery.value.trim().toLowerCase();
+      if(currentType === "branch"){
+        const filtered = branchData.filter(x => (`${x.code} ${x.name}`).toLowerCase().includes(q));
+        renderList(filtered, "branch");
+      } else if(currentType === "manager"){
+        const filtered = managerData.filter(x => (`${x.id} ${x.name} ${x.branch}`).toLowerCase().includes(q));
+        renderList(filtered, "manager");
+      }
+    }
+
+    function openModal(type){
+      currentType = type;
+      lookupTitle.textContent = type === "branch" ? "영업점 코드 조회" : "담당자 조회";
+      lookupQuery.value = "";
+      renderList(type === "branch" ? branchData : managerData, type);
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+      lookupQuery.focus();
+    }
+
+    function closeModal(){
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      currentType = null;
+    }
+
+    document.querySelectorAll(".icon-btn[data-popup]").forEach(btn => {
+      btn.addEventListener("click", () => openModal(btn.dataset.popup));
+    });
+
+    closeLookup.addEventListener("click", closeModal);
+    cancelLookup.addEventListener("click", closeModal);
+    searchBtn.addEventListener("click", filterAndRender);
+    lookupQuery.addEventListener("keydown", e => {
+      if(e.key === "Enter") filterAndRender();
+      if(e.key === "Escape") closeModal();
+    });
+    overlay.addEventListener("click", e => {
+      if(e.target === overlay) closeModal();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+/* ── Badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Channel badges */
+.badge--terminal {
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  background: var(--woori-white);
+}
+
+.badge--agent {
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  background: var(--woori-white);
+}
+
+.badge--bridge {
+  color: var(--woori-white);
+  background: var(--woori-deep-blue);
+}
+
+.badge--overview {
+  color: var(--woori-white);
+  background: var(--woori-deep-blue);
+}
+
+.badge--qa {
+  color: var(--woori-white);
+  background: #7C3AED;
+}
+
+/* Status badges */
+.badge--done {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.badge--warn {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.badge--error {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.badge--info {
+  color: var(--color-info);
+  background: var(--color-info-bg);
+}
+
+.badge--run {
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.badge--na {
+  color: var(--gray-500);
+  background: var(--gray-100);
+}
+
+.badge--input {
+  color: #7C3AED;
+  background: #F3E8FF;
+}
+
+/* Agent pill */
+.badge--agent-pill {
+  color: var(--woori-white);
+  background: var(--gray-700);
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* Pulsing dot for active agent */
+.badge--agent-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ADE80;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ── Agent Dark Theme Badge Overrides ── */
+.theme-agent .badge--agent-pill {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(74, 222, 128, 0.30);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.15);
+}
+
+.theme-agent .badge--run {
+  color: #60A5FA;
+  background: rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  box-shadow: 0 0 6px var(--agent-glow-blue);
+}
+
+.theme-agent .badge--done {
+  color: #4ADE80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  box-shadow: 0 0 6px var(--agent-glow-green);
+}
+
+.theme-agent .badge--warn {
+  color: #FBBF24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  box-shadow: 0 0 6px var(--agent-glow-warn);
+}
+
+.theme-agent .badge--error {
+  color: #F87171;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.theme-agent .badge--na {
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}

@@ -1,0 +1,135 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>G1 신청정보 입력</title>
+  <link rel="icon" href="./assets/favicon.ico" />
+  <link rel="stylesheet" href="./styles/tokens.css" />
+  <link rel="stylesheet" href="./styles/templates.css" />
+</head>
+<body>
+  <div class="shell shell-terminal terminal-shell-flat g1-screen">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">기업여신 신규접수 등록</h1>
+      </div>
+      <div class="channel-badge channel-badge-terminal">영업점 단말</div>
+    </header>
+
+    <main class="terminal-layout terminal-workbench">
+      <section class="terminal-brandbar">
+        <div class="terminal-brand-left">
+          <img class="terminal-logo" src="./assets/img/h1_01.png" alt="우리은행" />
+          <div class="terminal-system-name terminal-system-name-woori">WINI</div>
+        </div>
+        <div class="terminal-brand-right">
+          <span class="terminal-brand-meta">영업점 411</span>
+          <span class="terminal-brand-meta">사용자 김담당</span>
+          <span class="terminal-brand-meta">#2101</span>
+        </div>
+      </section>
+
+      <section class="terminal-tabbar">
+        <span class="terminal-tab is-active">신청정보입력</span>
+        <span class="terminal-tab">제출서류기준조회</span>
+        <span class="terminal-tab">첨부서류등록</span>
+        <span class="terminal-tab">심사진행현황</span>
+      </section>
+
+      <section class="terminal-status-strip">
+        <article class="terminal-status-box">
+          <span>차주명</span>
+          <strong>(주)000바이오</strong>
+          <p>기업일반자금대출 신규</p>
+        </article>
+        <article class="terminal-status-box">
+          <span>신청금액</span>
+          <strong>15억원</strong>
+          <p>운전자금</p>
+        </article>
+        <article class="terminal-status-box">
+          <span>담보유형</span>
+          <strong>부동산담보</strong>
+          <p>서울 중구 공장부지</p>
+        </article>
+        <article class="terminal-status-box">
+          <span>등록기준</span>
+          <strong>기본 4 / 담보 3</strong>
+          <p>조건부 1건</p>
+        </article>
+        <article class="terminal-status-box is-critical">
+          <span>업무유의</span>
+          <strong class="text-danger">권리관계 확인</strong>
+          <p>담보 서류 등록 필요</p>
+        </article>
+      </section>
+
+      <section class="terminal-workspace">
+        <article class="terminal-panel">
+          <div class="terminal-panel-head">
+            <h2>신청정보 입력</h2>
+            <span>영업점 접수 필수 입력 항목</span>
+          </div>
+          <div class="terminal-panel-body">
+            <div class="terminal-form-grid">
+              <label class="terminal-field"><span>차주명</span><input type="text" value="(주)000바이오" /></label>
+              <label class="terminal-field"><span>사업자번호</span><input type="text" value="110-81-00000" /></label>
+              <label class="terminal-field"><span>신청번호</span><input type="text" value="CC411-2026-000123" readonly /></label>
+              <label class="terminal-field"><span>영업점 코드</span><input type="text" value="411" readonly /></label>
+              <label class="terminal-field"><span>담당자</span><input type="text" value="김담당" readonly /></label>
+              <label class="terminal-field"><span>대출상품</span><select><option>기업일반자금대출</option></select></label>
+              <label class="terminal-field"><span>신청유형</span><select><option>신규</option></select></label>
+              <label class="terminal-field"><span>신청금액</span><input type="text" value="1,500,000,000원" /></label>
+              <label class="terminal-field"><span>자금목적</span><select><option>운전자금</option></select></label>
+              <label class="terminal-field"><span>상환방식</span><select><option>만기일시상환</option></select></label>
+              <label class="terminal-field"><span>만기일</span><input type="text" value="2027-12-31" /></label>
+              <label class="terminal-field"><span>신청채널</span><select><option>영업점</option></select></label>
+              <label class="terminal-field"><span>담보유형</span><select><option>부동산담보</option></select></label>
+              <label class="terminal-field"><span>담보물 소재지</span><input type="text" value="서울특별시 중구 세종대로 00" /></label>
+              <label class="terminal-field"><span>담보예정가액</span><input type="text" value="2,400,000,000원" /></label>
+              <label class="terminal-field"><span>비고</span><input type="text" value="공장부지 및 건물 일괄담보 예정" /></label>
+            </div>
+          </div>
+        </article>
+
+        <article class="terminal-panel">
+          <div class="terminal-panel-head">
+            <h2>상품 제출서류 기준 조회</h2>
+            <span>상품코드 CR-301 / 담보유형 부동산담보</span>
+          </div>
+          <div class="terminal-panel-body">
+            <table class="terminal-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 32%;">서류명</th>
+                  <th style="width: 14%;">구분</th>
+                  <th style="width: 16%;">필수여부</th>
+                  <th>비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>사업자등록증명원</strong></td><td>기본</td><td>필수</td><td>법인 식별 정보 확인</td></tr>
+                <tr><td><strong>법인등기부등본</strong></td><td>기본</td><td>필수</td><td>대표자, 본점, 자본금 확인</td></tr>
+                <tr><td><strong>재무제표증명</strong></td><td>기본</td><td>필수</td><td>재무 상태 확인</td></tr>
+                <tr><td><strong>부가가치세 과세표준증명</strong></td><td>기본</td><td>필수</td><td>매출 검증</td></tr>
+                <tr><td><strong>부동산 등기부등본</strong></td><td>담보</td><td>필수</td><td>담보 권리관계 확인</td></tr>
+                <tr><td><strong>건축물대장/토지대장</strong></td><td>담보</td><td>필수</td><td>담보물 현황 확인</td></tr>
+                <tr><td><strong>사정의견서(추정가액조사표)</strong></td><td>담보</td><td>필수</td><td>담보가치 검토 참고</td></tr>
+                <tr><td><strong>주주명부</strong></td><td>조건부</td><td>조건부</td><td>후속 검증 시 추가 요청 가능</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <footer class="action-bar">
+        <button class="btn btn-secondary" type="button">이전</button>
+        <button class="btn btn-secondary" type="button">기준 재조회</button>
+        <button class="btn btn-primary" type="button">첨부서류 등록</button>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
+

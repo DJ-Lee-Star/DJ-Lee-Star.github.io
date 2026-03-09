@@ -1,0 +1,706 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S6] 전결권 상향 대상 검증(A3) — Full Light</title>
+  <style>
+    :root{
+      /* Full light theme */
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface2:#f7f8fb;
+      --surface3:#f2f4f8;
+
+      --text:#0f172a;
+      --muted:#475569;
+
+      --border:rgba(15,23,42,.12);
+      --border2:rgba(15,23,42,.08);
+      --shadow: 0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;   /* blue */
+      --success:#16a34a;   /* green */
+      --warning:#f59e0b;   /* amber */
+      --danger:#ef4444;    /* red */
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: var(--bg);
+      color:var(--text);
+    }
+
+    /* Top header */
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(37,99,235,.07), rgba(255,255,255,0));
+      padding:14px 18px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kicker{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(37,99,235,.95);
+    }
+    .title{
+      margin:6px 0 0;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.2px;
+    }
+    .subtitle{
+      margin:6px 0 0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+      max-width:980px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(15,23,42,.02);
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Layout */
+    .layout{
+      min-height:calc(100vh - 70px);
+      display:grid;
+      grid-template-columns: 320px 1fr 420px;
+      gap:14px;
+      padding:16px 18px 30px;
+    }
+
+    /* Cards */
+    .card{
+      background: var(--surface);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      background: var(--surface2);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .card .head h2{
+      margin:0;
+      font-size:14px;
+      font-weight:900;
+    }
+    .card .head p{
+      margin:6px 0 0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .card .content{ padding:12px 14px; }
+
+    /* Buttons */
+    .controls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top:2px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      transition: transform .08s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .btn:hover{background: var(--surface2)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.08);
+      color: rgba(37,99,235,.95);
+    }
+    .btn.primary:hover{background: rgba(37,99,235,.12)}
+
+    /* Left: doc list */
+    .doclist{display:flex; flex-direction:column; gap:8px;}
+    .doc{
+      border:1px solid var(--border);
+      background: var(--surface2);
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      transition: background .12s ease, border-color .12s ease, transform .08s ease;
+    }
+    .doc:hover{background: var(--surface3)}
+    .doc:active{transform: translateY(1px)}
+    .doc.active{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.08);
+    }
+    .doc .row{display:flex; justify-content:space-between; gap:10px; align-items:flex-start}
+    .doc .name{font-weight:900; font-size:12.5px; margin:0}
+    .doc .meta{margin:6px 0 0; font-size:11px; color:var(--muted); line-height:1.35}
+    .tag{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:4px 7px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .tag.type{
+      border-color: rgba(37,99,235,.25);
+      color: rgba(37,99,235,.95);
+      background: rgba(37,99,235,.08);
+    }
+
+    /* Middle: viewer */
+    .viewer{
+      height:560px;
+      overflow:auto;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: #fbfcfe;
+      font-size:13px;
+      line-height:1.8;
+      color: var(--text);
+    }
+    .paper{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px 14px 16px;
+    }
+    .paper h3{margin:0 0 10px; font-size:14px; font-weight:900}
+
+    /* Highlight styles */
+    .hl{
+      background: rgba(245,158,11,.16);
+      border-bottom: 2px solid rgba(245,158,11,.55);
+      border-radius:6px;
+      padding:1px 3px;
+      transition: background .2s ease, border-bottom-color .2s ease;
+    }
+    .hl.hit{
+      background: rgba(239,68,68,.14);
+      border-bottom-color: rgba(239,68,68,.60);
+    }
+    .hl.on{
+      background: rgba(22,163,74,.14);
+      border-bottom-color: rgba(22,163,74,.65);
+    }
+
+    /* Progress */
+    .progress{
+      margin-top:10px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.04);
+      border-radius:999px;
+      height:10px;
+      overflow:hidden;
+    }
+    .progress > span{
+      display:block;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(37,99,235,.75), rgba(22,163,74,.60));
+      border-radius:999px;
+      transition: width .45s ease;
+    }
+
+    /* Right: decision panel */
+    .panelbox{
+      background: var(--surface2);
+      border:1px solid var(--border2);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .panelbox h3{margin:0 0 6px; font-size:13px}
+    .panelbox p{margin:0; font-size:12px; color:var(--muted); line-height:1.45}
+
+    .resultRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      opacity:.8;
+    }
+    .badge .dot{width:10px; height:10px; border-radius:999px; background: rgba(15,23,42,.20)}
+    .badge.need{
+      border-color: rgba(239,68,68,.35);
+      background: rgba(239,68,68,.08);
+      color:#991b1b;
+      opacity:1;
+    }
+    .badge.need .dot{background: var(--danger)}
+    .badge.ok{
+      border-color: rgba(22,163,74,.35);
+      background: rgba(22,163,74,.10);
+      color:#166534;
+      opacity:1;
+    }
+    .badge.ok .dot{background: var(--success)}
+
+    .list{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .li{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      transition: background .12s ease;
+    }
+    .li:hover{background: var(--surface3)}
+    .li .t{margin:0; font-size:12px; font-weight:900}
+    .li .d{margin:4px 0 0; font-size:11px; color:var(--muted); line-height:1.35}
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .kbd{
+      font-family:var(--mono);
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      border-radius:8px;
+      padding:2px 6px;
+      font-size:11px;
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      right:16px; bottom:16px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(37,99,235,.25);
+      background: rgba(37,99,235,.10);
+      color: rgba(37,99,235,.95);
+      font-size:12px;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .2s ease, transform .2s ease;
+      pointer-events:none;
+      z-index:50;
+      box-shadow: var(--shadow);
+    }
+    .toast.show{opacity:1; transform: translateY(0)}
+
+    @media (max-width: 1200px){
+      .layout{grid-template-columns: 300px 1fr}
+      .layout > .card:nth-child(3){grid-column: 1 / -1}
+      .viewer{height:420px}
+    }
+    @media (max-width: 820px){
+      .layout{grid-template-columns: 1fr}
+      .viewer{height:360px}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S6] 전결권 상향 대상 검증(A3) · Full Light</div>
+      <div class="title">특약/조건 자동 식별 → 전결권 상향 필요(Y/N) 판정 + 근거 하이라이트</div>
+      <div class="subtitle">
+        계약서 내 특약 문구 등으로 전결권 상향 대상 여부를 자동 판단하고, 근거 문구를 문서에서 바로 확인할 수 있도록 지원합니다. 
+      </div>
+    </div>
+    <div class="pill"><b>Animation</b> 검증 실행 → 문구 스캔 → 하이라이트 → 상향 필요 배지</div>
+  </div>
+
+  <div class="layout">
+    <!-- Left: documents -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h2>서류 목록</h2>
+          <p>전결권 상향 검증 대상 서류(예: 분양/매매 계약서, 보증서 등).</p>
+        </div>
+      </div>
+      <div class="content">
+        <div class="doclist" id="doclist"></div>
+        <div class="hint">
+          <span class="kbd">Tip</span> 서류 선택 후 <b>전결권 검증 실행(A3)</b>을 클릭하세요.
+        </div>
+      </div>
+    </section>
+
+    <!-- Middle: viewer -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h2>원문 뷰어(특약 하이라이트)</h2>
+          <p>검증 실행 시, 전결권 상향 관련 문구를 자동 하이라이트합니다.</p>
+        </div>
+        <div class="controls">
+          <button class="btn" id="resetBtn" type="button">초기화</button>
+          <button class="btn primary" id="runBtn" type="button">전결권 검증 실행(A3)</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="progress"><span id="bar"></span></div>
+        <div class="viewer">
+          <div class="paper" id="paper"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: decision -->
+    <aside class="card">
+      <div class="head">
+        <div>
+          <h2>판정 결과 & 근거</h2>
+          <p>상향 필요 여부와 근거 문구/기준 요약을 함께 표출합니다.</p>
+        </div>
+        <div class="pill"><b>HITL</b> 최종 전결/상향 결정은 담당자가 수행</div>
+      </div>
+
+      <div class="content">
+        <div class="panelbox">
+          <h3>전결권 상향 필요 여부</h3>
+          <div class="resultRow">
+            <div class="badge" id="needBadge"><span class="dot"></span><b id="needText">대기</b></div>
+            <div class="pill"><b>근거</b> 문서 하이라이트</div>
+          </div>
+          <div class="hint" id="needHint">
+            검증 실행 후 “상향 필요/적정” 결과가 표시됩니다.
+          </div>
+        </div>
+
+        <div class="panelbox">
+          <h3>검출된 특약/조건(클릭 시 해당 문구로 이동)</h3>
+          <div class="list" id="evidenceList">
+            <div class="muted" style="font-size:12px">검증 실행 후 근거 목록이 생성됩니다.</div>
+          </div>
+        </div>
+
+        <div class="panelbox">
+          <h3>기준 요약(예시)</h3>
+          <p>
+            • 특정 특약(예: 잔금유예/할인분양/원금초과 청구 가능 조건 등) 존재 시 상향 검토<br/>
+            • 상향 필요 판정 시 본부심사 경로로 안내(프로세스 제어) 
+          </p>
+        </div>
+
+        <div class="panelbox">
+          <h3>조치(예시)</h3>
+          <div class="controls" style="justify-content:flex-start">
+            <button class="btn secondary" id="actionBtn" type="button">본부심사 상향 안내(데모)</button>
+            <button class="btn" id="copyBtn" type="button">근거 문구 복사(데모)</button>
+          </div>
+          <div class="hint">
+            실제 구현에서는 전결권 선택/등록 화면과 연계되어, 상향 필요 시 프로세스 제어가 가능합니다. 
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast">🔎 전결권 상향 검증이 완료되었습니다.</div>
+
+<script>
+  // Demo documents
+  const docs = [
+    {
+      id:"c1",
+      name:"분양/매매 계약서_스캔본.pdf",
+      type:"분양/매매 계약서",
+      // Evidence keys map to highlight spans
+      html: `
+        <h3>분양/매매 계약서(특약사항 발췌)</h3>
+        <div>
+          제1조(계약의 목적) … (중략)<br/><br/>
+          <b>특약사항</b><br/>
+          1) <span class="hl hit" data-key="잔금유예">잔금 유예</span> 조건: 총 매매금액의 15%를 유예할 수 있다.<br/>
+          2) <span class="hl hit" data-key="할인분양">할인 분양</span> 또는 취급대금 환급 조건이 존재하는 경우 본부 전결로 상향한다.<br/>
+          3) (중략) <span class="hl" data-key="일반특약">기타 일반 특약</span> …<br/><br/>
+          ※ 본 문서의 특약 존재 여부에 따라 전결권 상향 검증이 수행됩니다.
+        </div>
+      `,
+      evidences: [
+        {
+          key:"잔금유예",
+          title:"특약: 잔금 유예 문구 검출",
+          desc:"‘총 매매금액의 15% 유예’ 문구 존재 → 상향 검토 필요"
+        },
+        {
+          key:"할인분양",
+          title:"특약: 할인분양/환급 조건 문구 검출",
+          desc:"‘할인 분양/취급대금 환급’ 관련 문구 존재 → 상향 검토 필요"
+        }
+      ],
+      decision: { need:true, reason:"특약(잔금유예/할인분양) 존재" }
+    },
+    {
+      id:"c2",
+      name:"외화지급보증서_스캔본.pdf",
+      type:"외화지급보증서",
+      html: `
+        <h3>외화지급보증서(발췌)</h3>
+        <div>
+          보증금액: USD 100,000<br/>
+          보증기일: <span class="hl hit" data-key="보증기일불명확">보증기일 불명확</span> (서식상 공란)<br/>
+          청구조건: <span class="hl hit" data-key="원금초과청구">원금 초과 청구 가능</span> 조건이 포함될 수 있음.<br/>
+        </div>
+      `,
+      evidences: [
+        {
+          key:"보증기일불명확",
+          title:"조건: 보증기일 불명확 검출",
+          desc:"보증기일 공란/불명확 → 상향 검토 필요"
+        },
+        {
+          key:"원금초과청구",
+          title:"조건: 원금초과 청구 가능성 검출",
+          desc:"청구조건에 원금초과 가능 문구 포함 → 상향 검토 필요"
+        }
+      ],
+      decision: { need:true, reason:"보증 조건 리스크(기일/청구조건) 존재" }
+    },
+    {
+      id:"c3",
+      name:"일반 계약서(특약 없음)_스캔본.pdf",
+      type:"일반 계약서",
+      html: `
+        <h3>일반 계약서(발췌)</h3>
+        <div>
+          본 계약은 일반 조항으로 구성되며 특약(잔금유예/할인분양/환급 등) 문구가 확인되지 않습니다.<br/>
+          <span class="hl" data-key="일반조항">일반 조항</span> …<br/>
+        </div>
+      `,
+      evidences: [],
+      decision: { need:false, reason:"상향 대상 특약 미검출" }
+    }
+  ];
+
+  // DOM
+  const doclist = document.getElementById("doclist");
+  const paper = document.getElementById("paper");
+  const runBtn = document.getElementById("runBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const bar = document.getElementById("bar");
+
+  const needBadge = document.getElementById("needBadge");
+  const needText = document.getElementById("needText");
+  const needHint = document.getElementById("needHint");
+  const evidenceList = document.getElementById("evidenceList");
+
+  const actionBtn = document.getElementById("actionBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const toast = document.getElementById("toast");
+
+  let current = docs[0];
+  let running = false;
+  let timers = [];
+
+  function clearTimers(){
+    timers.forEach(t => clearTimeout(t));
+    timers = [];
+  }
+
+  function renderDocList(){
+    doclist.innerHTML = "";
+    docs.forEach(d=>{
+      const el = document.createElement("div");
+      el.className = "doc" + (d.id===current.id ? " active" : "");
+      el.innerHTML = `
+        <div class="row">
+          <div style="min-width:0">
+            <div class="name">${d.name}</div>
+            <div class="meta">유형: ${d.type}</div>
+          </div>
+          <div class="tag type">A3</div>
+        </div>
+      `;
+      el.onclick = ()=>{
+        if(running) return;
+        current = d;
+        renderDocList();
+        renderViewer();
+        resetUI();
+      };
+      doclist.appendChild(el);
+    });
+  }
+
+  function renderViewer(){
+    paper.innerHTML = current.html;
+  }
+
+  function resetUI(){
+    bar.style.width = "0%";
+    needBadge.className = "badge";
+    needText.textContent = "대기";
+    needHint.textContent = "검증 실행 후 “상향 필요/적정” 결과가 표시됩니다.";
+    evidenceList.innerHTML = `<div class="muted" style="font-size:12px">검증 실행 후 근거 목록이 생성됩니다.</div>`;
+    paper.querySelectorAll(".hl").forEach(h => h.classList.remove("on"));
+  }
+
+  function toastShow(msg){
+    toast.textContent = msg || "🔎 전결권 상향 검증이 완료되었습니다.";
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 1200);
+  }
+
+  function highlight(key){
+    const el = paper.querySelector(`.hl[data-key="${CSS.escape(key)}"]`);
+    if(el){
+      el.classList.add("on");
+      el.scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  }
+
+  function buildEvidenceList(){
+    if(!current.evidences.length){
+      evidenceList.innerHTML = `<div class="muted" style="font-size:12px">검출된 특약/조건이 없습니다.</div>`;
+      return;
+    }
+    evidenceList.innerHTML = "";
+    current.evidences.forEach(ev=>{
+      const item = document.createElement("div");
+      item.className = "li";
+      item.innerHTML = `
+        <div class="t">${ev.title}</div>
+        <div class="d">${ev.desc}</div>
+      `;
+      item.onclick = ()=>{
+        paper.querySelectorAll(".hl").forEach(h=>h.classList.remove("on"));
+        highlight(ev.key);
+      };
+      evidenceList.appendChild(item);
+    });
+  }
+
+  function setDecision(){
+    const need = current.decision.need;
+    if(need){
+      needBadge.className = "badge need";
+      needText.textContent = "상향 필요 (Y)";
+      needHint.textContent = `판정 사유: ${current.decision.reason}`;
+    } else {
+      needBadge.className = "badge ok";
+      needText.textContent = "적정 (N)";
+      needHint.textContent = `판정 사유: ${current.decision.reason}`;
+    }
+  }
+
+  function runAnimation(){
+    if(running) return;
+    running = true;
+    runBtn.disabled = true;
+    resetUI();
+    clearTimers();
+
+    // Phase 1: scanning
+    bar.style.width = "25%";
+    toastShow("🔍 문서 스캔 중… 특약/조건 패턴을 탐색합니다.");
+
+    timers.push(setTimeout(()=>{
+      // Phase 2: detect
+      bar.style.width = "55%";
+      toastShow("✅ 특약/조건 문구 후보를 검출했습니다.");
+      // turn hits into on (preview)
+      current.evidences.forEach((ev, i)=>{
+        timers.push(setTimeout(()=>highlight(ev.key), 350*i));
+      });
+    }, 750));
+
+    timers.push(setTimeout(()=>{
+      // Phase 3: decision
+      bar.style.width = "85%";
+      setDecision();
+      buildEvidenceList();
+      toastShow("📌 전결권 상향 필요 여부를 판정했습니다.");
+    }, 1700));
+
+    timers.push(setTimeout(()=>{
+      // done
+      bar.style.width = "100%";
+      running = false;
+      runBtn.disabled = false;
+      toastShow("🔎 전결권 상향 검증 완료");
+    }, 2300));
+  }
+
+  resetBtn.onclick = ()=>{
+    if(running) return;
+    resetUI();
+  };
+
+  runBtn.onclick = runAnimation;
+
+  actionBtn.onclick = ()=>{
+    alert("데모: 본부심사 상향 안내/프로세스 제어 연계 지점입니다.");
+  };
+
+  copyBtn.onclick = ()=>{
+    const text = current.evidences.map(e=>`- ${e.title}: ${e.desc}`).join("\n") || "(근거 없음)";
+    navigator.clipboard?.writeText(text);
+    toastShow("📋 근거 문구(요약) 복사 완료");
+  };
+
+  // init
+  renderDocList();
+  renderViewer();
+  resetUI();
+</script>
+
+</body>
+</html>

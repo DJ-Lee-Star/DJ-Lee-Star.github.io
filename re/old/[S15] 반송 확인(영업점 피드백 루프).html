@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S15] 반송 확인(영업점 피드백 루프) — Full Light</title>
+  <style>
+    :root{
+      --page:#f6f8fb;
+      --card:#ffffff;
+      --card2:#f7f8fb;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.14);
+      --border2:rgba(15,23,42,.08);
+      --shadow:0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+    html,body{height:100%}
+    body{margin:0; font-family:var(--sans); background:var(--page); color:var(--text)}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:30;
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,0));
+      border-bottom:1px solid var(--border);
+      padding:14px 18px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color:rgba(37,99,235,.95)}
+    .title{margin:6px 0 0; font-size:16px; font-weight:900; letter-spacing:-.2px}
+    .subtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; max-width:1050px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Layout */
+    .wrap{padding:16px 18px 30px;}
+    .layout{
+      max-width:1550px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 380px 1fr 430px;
+      gap:14px;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      background:var(--card2);
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .card .head h2{margin:0; font-size:14px; font-weight:900}
+    .card .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .card .content{padding:12px 14px;}
+
+    /* Buttons */
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+    }
+    .btn:hover{background:#f3f5f9}
+    .btn.primary{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .btn.secondary{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .btn.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+
+    /* Badge */
+    .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px; height:10px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .badge.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .badge.ok .dot{background:var(--success)}
+    .badge.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .badge.warn .dot{background:var(--warning)}
+    .badge.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:#991b1b}
+    .badge.bad .dot{background:var(--danger)}
+    .badge.run{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .badge.run .dot{background:var(--primary)}
+
+    /* Left list */
+    .list{display:flex; flex-direction:column; gap:8px;}
+    .item{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+      transition: background .12s ease, transform .08s ease;
+    }
+    .item:hover{background:#f3f6ff}
+    .item:active{transform:translateY(1px)}
+    .item.active{background:rgba(37,99,235,.10);}
+    .item .t{margin:0; font-weight:900; font-size:12.5px;}
+    .item .d{margin:6px 0 0; color:var(--muted); font-size:11.5px; line-height:1.35;}
+    .rowline{display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;}
+    .mono{font-family:var(--mono)}
+
+    /* Center detail blocks */
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    .box{border:1px solid var(--border); border-radius:12px; background:#fff; padding:10px;}
+    .box .k{font-size:11px; color:var(--muted)}
+    .box .v{margin-top:6px; font-weight:900; font-size:13px;}
+    .box .s{margin-top:4px; font-size:12px; color:var(--muted); line-height:1.35;}
+
+    .panel{
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .panel .ptop{padding:10px 12px; border-bottom:1px solid var(--border); background:#f8fafc; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:flex-start;}
+    .panel .ptop .h{font-weight:900; font-size:13px;}
+    .panel .ptop .s{font-size:12px; color:var(--muted); line-height:1.35;}
+    .panel .pbody{padding:12px;}
+
+    .bul{margin:0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.6;}
+
+    /* Checklist */
+    .check{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+    .ck{
+      display:flex; gap:10px; align-items:flex-start;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+    }
+    .cb{
+      width:18px; height:18px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      background:rgba(15,23,42,.02);
+      display:inline-flex; align-items:center; justify-content:center;
+      flex:0 0 auto;
+      margin-top:2px;
+    }
+    .cb.checked{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.12)}
+    .cb svg{width:13px; height:13px; display:none}
+    .cb.checked svg{display:block}
+    .ck .ct{margin:0; font-size:12px; font-weight:900}
+    .ck .cd{margin:4px 0 0; font-size:11.5px; color:var(--muted); line-height:1.35}
+
+    /* Upload */
+    .upload{
+      border:1px dashed rgba(37,99,235,.35);
+      background:rgba(37,99,235,.06);
+      border-radius:14px;
+      padding:12px;
+    }
+    .upload .h{font-weight:900; font-size:13px;}
+    .upload .s{margin-top:4px; color:var(--muted); font-size:12px; line-height:1.35;}
+    .filelist{margin-top:10px; display:flex; flex-direction:column; gap:8px;}
+    .file{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .file .name{font-weight:900; font-size:12px; margin:0}
+    .file .meta{margin:4px 0 0; color:var(--muted); font-size:11.5px;}
+
+    /* Progress */
+    .progress{margin-top:10px; border:1px solid var(--border); background:rgba(15,23,42,.04); border-radius:999px; height:10px; overflow:hidden;}
+    .progress > span{display:block; height:100%; width:0%; background:linear-gradient(90deg, rgba(37,99,235,.75), rgba(22,163,74,.60)); border-radius:999px; transition:width .45s ease;}
+
+    /* Toast */
+    .toast{position:fixed; right:16px; bottom:16px; padding:10px 12px; border-radius:12px; border:1px solid rgba(37,99,235,.25); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95); font-size:12px; opacity:0; transform:translateY(8px); transition:opacity .2s ease, transform .2s ease; pointer-events:none; z-index:90; box-shadow:var(--shadow);}    
+    .toast.show{opacity:1; transform:translateY(0);}    
+
+    .hint{margin-top:10px; font-size:12px; color:var(--muted); line-height:1.45;}
+
+    @media (max-width: 1200px){
+      .layout{grid-template-columns: 1fr}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S15] 반송 확인(영업점 피드백 루프) · Full Light</div>
+      <div class="title">반송 사유 확인 → 보완/재업로드 → 재검증/재제출(루프)</div>
+      <div class="subtitle">
+        심사 과정에서 반송된 건의 사유를 영업점이 확인하고, 보완 서류/정보를 재제출하여 재검증 및 재심사로 연결되는 피드백 루프를 시연합니다.
+      </div>
+    </div>
+    <div class="pill"><b>Loop</b> 반송 → 보완 → 재제출</div>
+  </div>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <!-- LEFT: Return list -->
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>반송 목록(예시)</h2>
+            <p>반송 건을 선택해 사유/보완 요구사항을 확인합니다.</p>
+          </div>
+          <span class="badge bad" id="lBadge"><span class="dot"></span><b>반송</b></span>
+        </div>
+        <div class="content">
+          <div class="list" id="retList"></div>
+          <div class="hint">* 반송 사유를 줄이기 위해 (대사/진위/전결권 검증) 사전 차단이 중요합니다.</div>
+        </div>
+      </section>
+
+      <!-- CENTER: Return reason / checklist -->
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>반송 사유 확인</h2>
+            <p>반송 사유 및 요구 보완 항목을 확인하고 조치 계획을 수립합니다.</p>
+          </div>
+          <span class="badge run" id="cBadge"><span class="dot"></span><b>대기</b></span>
+        </div>
+        <div class="content">
+          <div class="grid2">
+            <div class="box">
+              <div class="k">승인신청번호</div>
+              <div class="v mono" id="d_appno">-</div>
+              <div class="s" id="d_cust">-</div>
+            </div>
+            <div class="box">
+              <div class="k">반송 일시</div>
+              <div class="v" id="d_time">-</div>
+              <div class="s" id="d_owner">-</div>
+            </div>
+            <div class="box">
+              <div class="k">반송 유형</div>
+              <div class="v" id="d_type">-</div>
+              <div class="s">서류/값/진위/전결권 등</div>
+            </div>
+            <div class="box">
+              <div class="k">조치 우선순위</div>
+              <div class="v" id="d_pri">-</div>
+              <div class="s">핵심 사유부터 보완</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="ptop">
+              <div>
+                <div class="h">반송 사유(상세)</div>
+                <div class="s" id="reasonSub">선택한 건의 반송 사유가 표시됩니다.</div>
+              </div>
+              <span class="badge" id="reasonBadge"><span class="dot"></span><b>미선택</b></span>
+            </div>
+            <div class="pbody">
+              <ul class="bul" id="reasonList">
+                <li class="muted">좌측에서 반송 건을 선택하세요.</li>
+              </ul>
+
+              <div class="check" id="checkList"></div>
+            </div>
+          </div>
+
+          <div class="controls" style="margin-top:12px;">
+            <button class="btn" id="markRead" type="button">사유 확인(데모)</button>
+            <button class="btn primary" id="planBtn" type="button">보완 계획 수립(데모)</button>
+          </div>
+
+          <div class="hint">발표 멘트: “반송 사유를 근거로 보완 후 재제출하면 반복 커뮤니케이션이 줄어듭니다.”</div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Re-submit / upload -->
+      <aside class="card">
+        <div class="head">
+          <div>
+            <h2>보완/재제출</h2>
+            <p>보완 서류 업로드 후 재검증/재제출로 루프를 닫습니다.</p>
+          </div>
+          <span class="badge" id="rBadge"><span class="dot"></span><b>대기</b></span>
+        </div>
+        <div class="content">
+          <div class="upload">
+            <div class="h">📎 보완 서류 업로드(데모)</div>
+            <div class="s">실환경에서는 첨부문서 등록 후 OCR/검증이 재수행됩니다.</div>
+            <div class="controls" style="margin-top:10px; justify-content:flex-start;">
+              <button class="btn" id="addFiles" type="button">데모 파일 추가</button>
+              <button class="btn warn" id="recheckBtn" type="button">재검증 실행</button>
+              <button class="btn secondary" id="resubmitBtn" type="button">재제출</button>
+            </div>
+
+            <div class="filelist" id="fileList">
+              <div class="muted" style="font-size:12px">업로드된 보완 서류가 없습니다.</div>
+            </div>
+
+            <div class="progress"><span id="bar"></span></div>
+            <div class="hint" id="rHint">보완 → 재검증 → 재제출 순서로 진행하세요.</div>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <div class="ptop">
+              <div>
+                <div class="h">재제출 결과(데모)</div>
+                <div class="s">재검증 결과 및 다음 단계 안내</div>
+              </div>
+              <span class="badge" id="resultBadge"><span class="dot"></span><b>대기</b></span>
+            </div>
+            <div class="pbody">
+              <ul class="bul" id="nextList">
+                <li class="muted">재제출 후 다음 단계 안내가 표시됩니다.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast">완료</div>
+
+<script>
+  // Demo return cases
+  const CASES = [
+    {
+      id:'c1',
+      appno:'CC411-2026-000077',
+      cust:'(주)00운수',
+      time:'2026-02-05 15:20',
+      owner:'심사역C',
+      type:'진위 미확인',
+      pri:'높음',
+      reasons:[
+        '소득금액증명원 진위확인 결과 미확인(조회 실패/정보 불일치)',
+        '발급번호/주민번호 형식 불일치로 자동 대사 실패'
+      ],
+      todo:[
+        {t:'발급번호 재확인', d:'제출본의 발급번호를 원본과 대조하여 수정', done:false},
+        {t:'주민번호 형식 정정', d:'하이픈 포함 규격에 맞게 입력값 정정', done:false},
+        {t:'진위확인 재시도', d:'진위확인 정보(발급번호 등) 재입력 후 재검증', done:false}
+      ]
+    },
+    {
+      id:'c2',
+      appno:'CC411-2026-000241',
+      cust:'(주)00건설',
+      time:'2026-02-08 10:05',
+      owner:'심사역B',
+      type:'서류 불일치',
+      pri:'중간',
+      reasons:[
+        '담보 유효가액 산출 근거(사정의견서)와 입력값 불일치',
+        '계약서 특약 문구로 전결권 상향 검토 필요'
+      ],
+      todo:[
+        {t:'사정의견서 재제출', d:'최신 사정의견서(평가금액/사정율 포함) 제출', done:false},
+        {t:'담보가액 입력값 정정', d:'근거와 일치하도록 담보 유효가액 수정', done:false},
+        {t:'특약 관련 보완', d:'특약 문구 근거/해석 자료 첨부', done:false}
+      ]
+    }
+  ];
+
+  // DOM refs
+  const retList = document.getElementById('retList');
+  const d_appno = document.getElementById('d_appno');
+  const d_cust = document.getElementById('d_cust');
+  const d_time = document.getElementById('d_time');
+  const d_owner = document.getElementById('d_owner');
+  const d_type = document.getElementById('d_type');
+  const d_pri = document.getElementById('d_pri');
+
+  const reasonSub = document.getElementById('reasonSub');
+  const reasonBadge = document.getElementById('reasonBadge');
+  const reasonList = document.getElementById('reasonList');
+  const checkList = document.getElementById('checkList');
+
+  const lBadge = document.getElementById('lBadge');
+  const cBadge = document.getElementById('cBadge');
+  const rBadge = document.getElementById('rBadge');
+
+  const addFiles = document.getElementById('addFiles');
+  const recheckBtn = document.getElementById('recheckBtn');
+  const resubmitBtn = document.getElementById('resubmitBtn');
+  const fileList = document.getElementById('fileList');
+  const bar = document.getElementById('bar');
+  const rHint = document.getElementById('rHint');
+
+  const resultBadge = document.getElementById('resultBadge');
+  const nextList = document.getElementById('nextList');
+
+  const markRead = document.getElementById('markRead');
+  const planBtn = document.getElementById('planBtn');
+
+  const toast = document.getElementById('toast');
+
+  let selected = null;
+  let files = [];
+  let rechecked = false;
+
+  function toastShow(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1200);
+  }
+
+  function setBadge(el, cls, text){
+    el.className = 'badge' + (cls ? ' ' + cls : '');
+    el.innerHTML = '<span class="dot"></span><b>' + text + '</b>';
+  }
+
+  function renderLeft(){
+    retList.innerHTML = '';
+    CASES.forEach(c=>{
+      const div = document.createElement('div');
+      div.className = 'item' + (selected && selected.id===c.id ? ' active' : '');
+      div.innerHTML = `
+        <p class="t">${c.cust}</p>
+        <p class="d"><span class="mono">${c.appno}</span> · ${c.type} · ${c.time}</p>
+        <div class="rowline">
+          <span class="badge bad"><span class="dot"></span><b>반송</b></span>
+          <span class="badge warn"><span class="dot"></span><b>우선순위 ${c.pri}</b></span>
+        </div>
+      `;
+      div.onclick = ()=>{
+        selected = JSON.parse(JSON.stringify(c));
+        files = [];
+        rechecked = false;
+        renderLeft();
+        renderCenter();
+        renderRight();
+        toastShow('반송 건 선택');
+      };
+      retList.appendChild(div);
+    });
+  }
+
+  function renderCenter(){
+    if(!selected){
+      d_appno.textContent = '-';
+      d_cust.textContent = '-';
+      d_time.textContent = '-';
+      d_owner.textContent = '-';
+      d_type.textContent = '-';
+      d_pri.textContent = '-';
+      reasonList.innerHTML = '<li class="muted">좌측에서 반송 건을 선택하세요.</li>';
+      checkList.innerHTML = '';
+      setBadge(cBadge, 'run', '대기');
+      setBadge(reasonBadge, '', '미선택');
+      reasonSub.textContent = '선택한 건의 반송 사유가 표시됩니다.';
+      return;
+    }
+
+    d_appno.textContent = selected.appno;
+    d_cust.textContent = '차주: ' + selected.cust;
+    d_time.textContent = selected.time;
+    d_owner.textContent = '반송자: ' + selected.owner;
+    d_type.textContent = selected.type;
+    d_pri.textContent = selected.pri;
+
+    setBadge(cBadge, 'warn', '조치 필요');
+    setBadge(reasonBadge, 'bad', '반송 사유');
+    reasonSub.textContent = '사유 확인 후 체크리스트 기반 보완 진행';
+
+    reasonList.innerHTML = '';
+    selected.reasons.forEach(r=>{
+      const li = document.createElement('li');
+      li.textContent = r;
+      reasonList.appendChild(li);
+    });
+
+    checkList.innerHTML = '';
+    selected.todo.forEach((t, idx)=>{
+      const row = document.createElement('div');
+      row.className = 'ck';
+      const cb = document.createElement('div');
+      cb.className = 'cb' + (t.done ? ' checked' : '');
+      cb.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M20 6L9 17l-5-5" stroke="#166534" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+      const text = document.createElement('div');
+      text.innerHTML = `<div class="ct">${t.t}</div><div class="cd">${t.d}</div>`;
+
+      row.onclick = ()=>{
+        t.done = !t.done;
+        selected.todo[idx].done = t.done;
+        renderCenter();
+      };
+
+      row.appendChild(cb);
+      row.appendChild(text);
+      checkList.appendChild(row);
+    });
+  }
+
+  function renderRight(){
+    if(!selected){
+      setBadge(rBadge, '', '대기');
+      fileList.innerHTML = '<div class="muted" style="font-size:12px">업로드된 보완 서류가 없습니다.</div>';
+      bar.style.width = '0%';
+      rHint.textContent = '보완 → 재검증 → 재제출 순서로 진행하세요.';
+      setBadge(resultBadge, '', '대기');
+      nextList.innerHTML = '<li class="muted">재제출 후 다음 단계 안내가 표시됩니다.</li>';
+      return;
+    }
+
+    setBadge(rBadge, 'warn', '보완 필요');
+
+    if(files.length===0){
+      fileList.innerHTML = '<div class="muted" style="font-size:12px">업로드된 보완 서류가 없습니다.</div>';
+    } else {
+      fileList.innerHTML = '';
+      files.forEach(f=>{
+        const div = document.createElement('div');
+        div.className = 'file';
+        div.innerHTML = `
+          <div>
+            <p class="name">${f.name}</p>
+            <p class="meta">유형: ${f.type} · 상태: ${f.state}</p>
+          </div>
+          <span class="badge ${f.state==='완료' ? 'ok' : 'run'}"><span class="dot"></span><b>${f.state}</b></span>
+        `;
+        fileList.appendChild(div);
+      });
+    }
+
+    if(!rechecked){
+      bar.style.width = files.length ? '35%' : '0%';
+      rHint.textContent = files.length ? '보완 서류 업로드 완료 → 재검증 실행하세요.' : '보완 서류를 먼저 추가하세요.';
+      setBadge(resultBadge, '', '대기');
+      nextList.innerHTML = '<li class="muted">재제출 후 다음 단계 안내가 표시됩니다.</li>';
+    } else {
+      bar.style.width = '75%';
+      rHint.textContent = '재검증 완료 → 재제출로 심사부에 재전송하세요.';
+      setBadge(resultBadge, 'ok', '재검증 완료');
+    }
+  }
+
+  addFiles.onclick = ()=>{
+    if(!selected){ toastShow('반송 건을 먼저 선택하세요'); return; }
+    const demo = [
+      {name:'소득금액증명원_재제출.pdf', type:'진위/값 보완', state:'업로드'},
+      {name:'사정의견서_최신본.pdf', type:'담보 근거', state:'업로드'},
+      {name:'특약_해석자료.txt', type:'전결권 근거', state:'업로드'}
+    ];
+    // Add only relevant by case type (simple demo rule)
+    files = demo.filter(x=>{
+      if(selected.type.includes('진위')) return x.type!=='담보 근거';
+      if(selected.type.includes('서류')) return true;
+      return true;
+    });
+    toastShow('데모 보완 서류 추가');
+    renderRight();
+  };
+
+  recheckBtn.onclick = ()=>{
+    if(!selected){ toastShow('반송 건을 먼저 선택하세요'); return; }
+    if(files.length===0){ toastShow('보완 서류를 먼저 추가하세요'); return; }
+
+    setBadge(rBadge, 'run', '재검증 중');
+    bar.style.width = '55%';
+    rHint.textContent = '재검증 실행 중…';
+
+    setTimeout(()=>{
+      files = files.map(f=>({...f, state:'완료'}));
+      rechecked = true;
+      setBadge(rBadge, 'ok', '재검증 완료');
+      bar.style.width = '75%';
+      toastShow('재검증 완료');
+      renderRight();
+    }, 800);
+  };
+
+  resubmitBtn.onclick = ()=>{
+    if(!selected){ toastShow('반송 건을 먼저 선택하세요'); return; }
+    if(!rechecked){ toastShow('재검증 후 재제출하세요'); return; }
+
+    bar.style.width = '100%';
+    setBadge(resultBadge, 'ok', '재제출 완료');
+    setBadge(rBadge, 'ok', '재제출 완료');
+
+    nextList.innerHTML = '';
+    ['심사부 TO-DO에 재등록(대기)', '자동입력값/검증 결과 재확인', '승인신청서 접수/전결권 재검토'].forEach(x=>{
+      const li = document.createElement('li');
+      li.textContent = x;
+      nextList.appendChild(li);
+    });
+
+    toastShow('재제출 완료');
+  };
+
+  markRead.onclick = ()=>{
+    if(!selected){ toastShow('반송 건을 먼저 선택하세요'); return; }
+    setBadge(cBadge, 'run', '사유 확인됨');
+    toastShow('반송 사유 확인 완료');
+  };
+
+  planBtn.onclick = ()=>{
+    if(!selected){ toastShow('반송 건을 먼저 선택하세요'); return; }
+    setBadge(cBadge, 'warn', '보완 계획 수립');
+    toastShow('보완 계획 수립(데모)');
+  };
+
+  // init
+  renderLeft();
+  renderCenter();
+  renderRight();
+</script>
+</body>
+</html>

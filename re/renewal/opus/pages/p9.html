@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P9 데이터 대사/검증</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .p9-body { display: flex; gap: var(--space-4); flex: 1; min-height: 0; }
+    .p9-left { width: 480px; flex-shrink: 0; }
+    .p9-right { flex: 1; }
+    .rc-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .rc-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+    .rc-item.active { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); }
+    .rc-item.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.20); }
+    .rc-label { font-size: var(--text-md); font-weight: var(--font-bold); color: var(--agent-text-body); flex: 1; }
+    .rc-status { font-size: var(--text-sm); color: var(--agent-text-muted); }
+    .rc-item.done .rc-status { color: #4ADE80; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-4); }
+    .summary-cell { padding: var(--space-5); border-radius: var(--radius-md); background: rgba(255,255,255,0.04); border: 1px solid var(--agent-card-border); text-align: center; }
+    .summary-cell__label { font-size: var(--text-sm); color: var(--agent-text-muted); margin-bottom: var(--space-2); }
+    .summary-cell__value { font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--woori-light-blue); }
+    .final-status { padding: var(--space-5); margin-top: var(--space-4); border-radius: var(--radius-md); text-align: center; font-size: var(--text-lg); font-weight: var(--font-bold); opacity: 0; transition: opacity 0.4s; }
+    .final-status.show { opacity: 1; }
+    .final-status.pass { background: rgba(13,124,63,0.12); border: 1px solid rgba(13,124,63,0.25); color: #4ADE80; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-agent">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/agent-logo.png" alt="AI" style="height:36px" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">데이터 대사 / 검증</span>
+    </div>
+    <div class="app-header__right agent-sysinfo">
+      <span class="agent-sysinfo__item"><span class="agent-sysinfo__dot"></span>RECONCILE</span>
+      <span class="agent-sysinfo__item" id="sysUptime">00:00</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="p9-body">
+      <div class="p9-left">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">대사 / 검증 단계</div>
+          <div class="rc-list" id="rcList"></div>
+        </div>
+      </div>
+      <div class="p9-right">
+        <div class="agent-card agent-card--full" style="display:flex;flex-direction:column">
+          <div class="card__title">검증 결과 요약</div>
+          <div class="summary-grid" id="summaryGrid">
+            <div class="summary-cell"><div class="summary-cell__label">검증 단계</div><div class="summary-cell__value" id="sm-steps">0/7</div></div>
+            <div class="summary-cell"><div class="summary-cell__label">이상 항목</div><div class="summary-cell__value" id="sm-issues">—</div></div>
+            <div class="summary-cell"><div class="summary-cell__label">전결 레벨</div><div class="summary-cell__value" id="sm-approval">—</div></div>
+          </div>
+          <div class="final-status" id="finalStatus">✓ 모든 검증 통과 — 심사 전달 가능</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="agent-data-flow"></div>
+  <div class="agent-process-log">
+    <span class="agent-process-log__prefix">[RECON]</span>
+    <span class="agent-process-log__text" id="logText">Data reconciliation engine ready...</span>
+    <span class="agent-process-log__cursor"></span>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+import { scenario } from '../data/scenario.js';
+
+StateManager.save({ currentPage: 'p9' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const logEl = document.getElementById('logText');
+const upEl = document.getElementById('sysUptime');
+let _sec = 0;
+const _upTimer = setInterval(() => { _sec++; if(upEl) upEl.textContent = String(Math.floor(_sec/60)).padStart(2,'0')+':'+String(_sec%60).padStart(2,'0'); }, 1000);
+function setLog(m) { if(logEl) logEl.textContent = m; }
+
+const stages = documents.reconcileStages;
+const rcList = document.getElementById('rcList');
+stages.forEach(s => {
+  const item = document.createElement('div');
+  item.className = 'rc-item';
+  item.innerHTML = `<span class="rc-label">${s.label}</span><span class="rc-status">대기</span>`;
+  rcList.appendChild(item);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  setLog('Reconciliation engine starting...');
+  await DemoEngine.wait(300);
+
+  const items = rcList.querySelectorAll('.rc-item');
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('active');
+    items[i].querySelector('.rc-status').textContent = '검증 중...';
+    setLog(`recon.step[${i+1}]: ${stages[i].label}`);
+    await DemoEngine.wait(250);
+
+    items[i].classList.remove('active');
+    items[i].classList.add('done');
+    items[i].querySelector('.rc-status').textContent = stages[i].result;
+    document.getElementById('sm-steps').textContent = `${i+1}/${stages.length}`;
+    setLog(`✓ ${stages[i].label}: ${stages[i].result}`);
+    await DemoEngine.wait(100);
+  }
+
+  document.getElementById('sm-issues').textContent = '0건';
+  document.getElementById('sm-approval').textContent = scenario.approval.level;
+  document.getElementById('finalStatus').classList.add('show', 'pass');
+  setLog('✓ All reconciliation passed');
+
+  await DemoEngine.wait(500);
+  clearInterval(_upTimer);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

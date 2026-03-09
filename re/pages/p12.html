@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P12 심사정보 자동입력</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .auto-field { display: flex; align-items: center; gap: var(--space-3); padding: 10px 14px; border-radius: 8px; opacity: 0; transform: translateX(-8px); transition: all 0.25s var(--ease-out); }
+    .auto-field.show { opacity: 1; transform: translateX(0); }
+    .auto-field.done { background: #f0faf7; }
+    .auto-field__label { width: 180px; flex-shrink: 0; color: #607283; font-size: var(--text-sm); font-weight: var(--font-bold); }
+    .auto-field__value { flex: 1; font-size: var(--text-md); font-weight: var(--font-bold); color: #163249; }
+    .auto-field__badge { font-size: var(--text-sm); padding: 4px 12px; border-radius: 999px; }
+    .auto-field__badge.ok { background: #e8f8ef; color: #0D7C3F; }
+    .auto-field__badge.input { background: #fff3cd; color: #92600a; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-terminal">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">심사정보 자동입력</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge">영업점 단말</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <section class="terminal-appbar">
+      <div class="terminal-appbar-group">
+        <img src="../assets/img/h1_01.png" alt="우리은행" style="height:28px;width:auto" />
+        <span style="font-size:28px;font-weight:var(--font-bold);color:#0067B3;letter-spacing:0.02em">WINI</span>
+      </div>
+      <div class="terminal-appbar-group">
+        <span class="terminal-app-tag">영업점 411</span>
+        <span class="terminal-app-tag">김담당</span>
+        <span class="terminal-app-tag" id="countTag">0 / 0 필드</span>
+      </div>
+    </section>
+
+    <section class="terminal-tabbar">
+      <span class="terminal-tab">신청정보입력</span>
+      <span class="terminal-tab">첨부서류등록</span>
+      <span class="terminal-tab is-active">심사정보자동입력</span>
+      <span class="terminal-tab">심사진행현황</span>
+    </section>
+
+    <section class="terminal-status-strip">
+      <article class="terminal-status-box is-featured">
+        <span class="terminal-status-box__label">상태</span>
+        <span class="terminal-status-box__value" style="font-size:var(--text-md)" id="statusMsg">브릿지(WINI) 수신 데이터 입력 중...</span>
+      </article>
+      <article class="terminal-status-box">
+        <span class="terminal-status-box__label">전결레벨</span>
+        <span class="terminal-status-box__value" id="sv-approval">—</span>
+      </article>
+      <article class="terminal-status-box">
+        <span class="terminal-status-box__label">LTV</span>
+        <span class="terminal-status-box__value">62.5%</span>
+      </article>
+    </section>
+
+    <section class="terminal-workspace">
+      <article class="terminal-panel">
+        <div class="terminal-panel-head">
+          <h2 class="terminal-panel-head__title">기업·재무 정보</h2>
+        </div>
+        <div class="terminal-panel-body" id="panelCorp" style="gap:4px"></div>
+      </article>
+      <article class="terminal-panel">
+        <div class="terminal-panel-head">
+          <h2 class="terminal-panel-head__title">담보·심사 정보</h2>
+        </div>
+        <div class="terminal-panel-body" id="panelCollateral" style="gap:4px"></div>
+      </article>
+    </section>
+
+    <footer class="terminal-action-bar">
+      <span class="terminal-action-bar__note" id="footerNote">자동입력 진행 중...</span>
+      <button class="btn btn--primary" type="button" id="btnSubmit" style="opacity:0.5">심사 요청 전송</button>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { scenario } from '../data/scenario.js';
+
+StateManager.save({ currentPage: 'p12' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const corpFields = [
+  ['법인명', scenario.borrower.name, 'ok'],
+  ['사업자등록번호', scenario.borrower.bizRegNo, 'ok'],
+  ['법인등록번호', scenario.borrower.corpRegNo, 'ok'],
+  ['대표이사', scenario.borrower.representative, 'ok'],
+  ['본점주소', scenario.borrower.address, 'ok'],
+  ['자본금', '1,600,000,000원', 'input'],
+  ['설립일', scenario.borrower.establishDate, 'ok'],
+  ['총자산', '6,820,000,000원', 'ok'],
+  ['총부채', '2,100,000,000원', 'ok'],
+  ['영업이익', '540,000,000원', 'ok'],
+];
+
+const collateralFields = [
+  ['대출상품', scenario.application.product, 'ok'],
+  ['신청금액', scenario.application.amount + '원', 'ok'],
+  ['담보유형', scenario.collateral.type, 'ok'],
+  ['담보 소재지', scenario.collateral.location, 'ok'],
+  ['토지면적', scenario.collateral.landArea, 'ok'],
+  ['건물면적', scenario.collateral.buildingArea, 'ok'],
+  ['추정가액', scenario.collateral.appraisedValue + '원', 'ok'],
+  ['LTV', scenario.collateral.ltv, 'ok'],
+  ['선순위 권리', scenario.collateral.priorLien, 'ok'],
+  ['전결레벨', scenario.approval.level, 'ok'],
+  ['결재경로', scenario.approval.route, 'ok'],
+];
+
+const allFields = [...corpFields, ...collateralFields];
+const total = allFields.length;
+
+function makeRow(label, value, type) {
+  const div = document.createElement('div');
+  div.className = 'auto-field';
+  const badgeCls = type === 'input' ? 'input' : 'ok';
+  const badgeText = type === 'input' ? '수정' : 'OCR';
+  div.innerHTML = `<span class="auto-field__label">${label}</span><span class="auto-field__value">${value}</span><span class="auto-field__badge ${badgeCls}">${badgeText}</span>`;
+  return div;
+}
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(300);
+
+  const panelCorp = document.getElementById('panelCorp');
+  const panelColl = document.getElementById('panelCollateral');
+  let count = 0;
+
+  for (const [label, value, type] of corpFields) {
+    const row = makeRow(label, value, type);
+    panelCorp.appendChild(row);
+    await DemoEngine.wait(80);
+    row.classList.add('show');
+    count++;
+    document.getElementById('countTag').textContent = `${count} / ${total} 필드`;
+    await DemoEngine.wait(40);
+    row.classList.add('done');
+  }
+
+  for (const [label, value, type] of collateralFields) {
+    const row = makeRow(label, value, type);
+    panelColl.appendChild(row);
+    await DemoEngine.wait(80);
+    row.classList.add('show');
+    count++;
+    document.getElementById('countTag').textContent = `${count} / ${total} 필드`;
+    await DemoEngine.wait(40);
+    row.classList.add('done');
+  }
+
+  document.getElementById('sv-approval').textContent = scenario.approval.level;
+  document.getElementById('statusMsg').textContent = '자동입력 완료 — 심사 요청 대기';
+  document.getElementById('footerNote').textContent = '모든 필드 입력 완료';
+  document.getElementById('btnSubmit').style.opacity = '1';
+
+  await DemoEngine.wait(500);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

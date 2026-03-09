@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P0 프로세스 개요</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .overview-content { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: var(--space-8); }
+    .overview-title { font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--gray-900); margin-bottom: var(--space-2); text-align: center; }
+    .overview-sub { font-size: var(--text-lg); color: var(--gray-600); margin-bottom: var(--space-8); text-align: center; }
+    .process-flow { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-8); }
+    .pf-stage { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-5); border-radius: var(--radius-lg); border: 2px solid var(--gray-200); background: #fff; min-width: 160px; opacity: 0; transform: translateY(16px); transition: all 0.4s var(--ease-out); }
+    .pf-stage.show { opacity: 1; transform: translateY(0); }
+    .pf-stage.active { border-color: var(--color-primary); background: var(--color-primary-bg); box-shadow: 0 0 20px rgba(0, 103, 177, 0.12); }
+    .pf-icon { font-size: 42px; }
+    .pf-label { font-size: var(--text-lg); font-weight: var(--font-bold); color: var(--gray-800); }
+    .pf-actor { font-size: var(--text-sm); color: var(--gray-500); }
+    .pf-arrow { font-size: 32px; color: var(--gray-400); opacity: 0; transition: opacity 0.3s; }
+    .pf-arrow.show { opacity: 1; }
+    .key-messages { display: flex; flex-direction: column; gap: var(--space-3); max-width: 800px; }
+    .km-item { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-lg); color: var(--gray-700); opacity: 0; transform: translateX(-12px); transition: all 0.3s var(--ease-out); }
+    .km-item.show { opacity: 1; transform: translateX(0); }
+    .km-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+<div class="app-shell" style="background:#fff">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">기업부동산담보대출 AI Agent 시연</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="overview-content">
+      <h1 class="overview-title" id="titleEl" style="opacity:0;transition:opacity 0.5s">기업부동산담보대출 AI Agent</h1>
+      <p class="overview-sub" id="subEl" style="opacity:0;transition:opacity 0.5s">서류 접수부터 심사 전달까지 — AI가 자동으로 처리합니다</p>
+
+      <div class="process-flow" id="processFlow"></div>
+      <div class="key-messages" id="keyMessages"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { scenario } from '../data/scenario.js';
+
+StateManager.save({ currentPage: 'p0' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const stages = scenario.processMap.stages;
+const msgs = scenario.processMap.keyMessages;
+const processFlow = document.getElementById('processFlow');
+const keyMessages = document.getElementById('keyMessages');
+
+stages.forEach((s, i) => {
+  if (i > 0) {
+    const arrow = document.createElement('span');
+    arrow.className = 'pf-arrow';
+    arrow.textContent = '→';
+    processFlow.appendChild(arrow);
+  }
+  const stage = document.createElement('div');
+  stage.className = 'pf-stage';
+  stage.innerHTML = `<span class="pf-icon">${s.icon}</span><span class="pf-label">${s.label}</span><span class="pf-actor">${s.actor}</span>`;
+  processFlow.appendChild(stage);
+});
+
+msgs.forEach(m => {
+  const item = document.createElement('div');
+  item.className = 'km-item';
+  item.innerHTML = `<span class="km-dot"></span><span>${m}</span>`;
+  keyMessages.appendChild(item);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(200);
+
+  document.getElementById('titleEl').style.opacity = '1';
+  await DemoEngine.wait(300);
+  document.getElementById('subEl').style.opacity = '1';
+  await DemoEngine.wait(300);
+
+  const stageEls = processFlow.querySelectorAll('.pf-stage');
+  const arrows = processFlow.querySelectorAll('.pf-arrow');
+  for (let i = 0; i < stageEls.length; i++) {
+    stageEls[i].classList.add('show');
+    if (i > 0 && arrows[i - 1]) arrows[i - 1].classList.add('show');
+    await DemoEngine.wait(200);
+  }
+
+  await DemoEngine.wait(300);
+  const kmItems = keyMessages.querySelectorAll('.km-item');
+  for (const item of kmItems) {
+    item.classList.add('show');
+    await DemoEngine.wait(200);
+  }
+
+  await DemoEngine.wait(800);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

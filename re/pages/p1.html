@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P1 신청정보 입력 / 서류등록</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .doc-upload-list { display: flex; flex-direction: column; gap: 5px; }
+    .doc-upload-row { display: flex; align-items: center; gap: var(--space-3); padding: 10px 14px; border: 1px solid #cfd8e1; border-radius: 8px; background: #fff; opacity: 0; transform: translateY(4px); transition: all 0.25s var(--ease-out); }
+    .doc-upload-row.show { opacity: 1; transform: translateY(0); }
+    .doc-upload-row.done { border-color: #8dd3c7; background: #f0faf7; }
+    .doc-upload-row__icon { font-size: 20px; flex-shrink: 0; }
+    .doc-upload-row__name { flex: 1; font-size: var(--text-md); font-weight: var(--font-bold); color: #163249; }
+    .doc-upload-row__cat { font-size: var(--text-xs); color: #6a7b8c; min-width: 50px; text-align: center; padding: 3px 10px; border-radius: 999px; background: #f1f5f9; }
+    .doc-upload-row__status { font-size: var(--text-sm); font-weight: var(--font-bold); color: #9ca3af; min-width: 70px; text-align: right; }
+    .doc-upload-row.done .doc-upload-row__status { color: #0D7C3F; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-terminal">
+  <header class="app-header">
+    <div class="app-header__left">
+      <span class="app-header__title">기업부동산담보대출 신규접수</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge">영업점 단말</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <!-- 크롬 영역: [로고] WINI -->
+    <section class="terminal-appbar">
+      <div class="terminal-appbar-group">
+        <img src="../assets/img/h1_01.png" alt="우리은행" style="height:28px;width:auto" />
+        <span style="font-size:28px;font-weight:var(--font-bold);color:#0067B3;letter-spacing:0.02em">WINI</span>
+      </div>
+      <div class="terminal-appbar-group">
+        <span class="terminal-app-tag">영업점 411</span>
+        <span class="terminal-app-tag">김담당</span>
+      </div>
+    </section>
+
+    <!-- 탭바 -->
+    <section class="terminal-tabbar">
+      <span class="terminal-tab is-active">신청정보입력</span>
+      <span class="terminal-tab">첨부서류등록</span>
+      <span class="terminal-tab">심사진행현황</span>
+    </section>
+
+    <!-- 워크스페이스: 좌=신청정보, 우=서류등록 -->
+    <section class="terminal-workspace">
+      <article class="terminal-panel">
+        <div class="terminal-panel-head">
+          <h2 class="terminal-panel-head__title">신청정보 입력</h2>
+          <span class="terminal-panel-head__meta">CC411-2026-000123</span>
+        </div>
+        <div class="terminal-panel-body">
+          <div class="terminal-form-grid" id="formGrid"></div>
+        </div>
+      </article>
+      <article class="terminal-panel">
+        <div class="terminal-panel-head">
+          <h2 class="terminal-panel-head__title">첨부서류 등록</h2>
+          <span class="terminal-panel-head__meta" id="docMeta">기본 + 담보 + 조건부</span>
+        </div>
+        <div class="terminal-panel-body" style="gap:5px">
+          <div class="doc-upload-list" id="docList"></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 하단 액션바 -->
+    <footer class="terminal-action-bar">
+      <button class="btn btn--secondary" type="button">산출기준조회</button>
+      <button class="btn btn--primary" type="button" id="btnSubmit" style="opacity:0.5">AI Agent 분석 요청</button>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { scenario } from '../data/scenario.js';
+import { documents } from '../data/documents.js';
+
+StateManager.save({ currentPage: 'p1' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const fields = [
+  ['차주명', scenario.borrower.name],
+  ['사업자번호', scenario.borrower.bizRegNo],
+  ['신청번호', scenario.application.no, true],
+  ['영업점', scenario.branch.code + ' ' + scenario.branch.name, true],
+  ['대출상품', scenario.application.product],
+  ['신청금액', scenario.application.amount + '원'],
+  ['자금목적', scenario.application.fundPurpose],
+  ['상환방식', scenario.application.repaymentType],
+  ['만기일', scenario.application.maturityDate],
+  ['담보유형', scenario.application.collateralType],
+  ['담보 소재지', scenario.collateral.location],
+  ['추정가액', scenario.collateral.appraisedValue + '원'],
+  ['LTV', scenario.collateral.ltv],
+  ['선순위 권리', scenario.collateral.priorLien],
+];
+
+const formGrid = document.getElementById('formGrid');
+
+const uploadDocs = documents.list.filter(d => d.fileName);
+const docList = document.getElementById('docList');
+const docIcons = { '기본': '📋', '담보': '🏠' };
+
+uploadDocs.forEach(doc => {
+  const row = document.createElement('div');
+  row.className = 'doc-upload-row';
+  row.innerHTML = `<span class="doc-upload-row__icon">${docIcons[doc.category] || '📄'}</span><span class="doc-upload-row__name">${doc.name}</span><span class="doc-upload-row__cat">${doc.category}</span><span class="doc-upload-row__status">대기</span>`;
+  docList.appendChild(row);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+
+  for (let i = 0; i < fields.length; i++) {
+    const [label, value, ro] = fields[i];
+    const el = document.createElement('label');
+    el.className = 'terminal-field';
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.15s';
+    el.innerHTML = `<span class="terminal-field__label">${label}</span><input class="terminal-field__input" type="text" value="${value}" ${ro ? 'readonly' : ''} />`;
+    formGrid.appendChild(el);
+    await DemoEngine.wait(40);
+    el.style.opacity = '1';
+  }
+
+  await DemoEngine.wait(200);
+
+  const rows = docList.querySelectorAll('.doc-upload-row');
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].classList.add('show');
+    await DemoEngine.wait(60);
+  }
+  await DemoEngine.wait(150);
+
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].querySelector('.doc-upload-row__status').textContent = '등록중';
+    rows[i].querySelector('.doc-upload-row__status').style.color = '#2563eb';
+    await DemoEngine.wait(120);
+    rows[i].classList.add('done');
+    rows[i].querySelector('.doc-upload-row__status').textContent = '완료';
+    await DemoEngine.wait(60);
+  }
+
+  document.getElementById('docMeta').textContent = `${uploadDocs.length}건 등록 완료`;
+  document.getElementById('btnSubmit').style.opacity = '1';
+
+  await DemoEngine.wait(500);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

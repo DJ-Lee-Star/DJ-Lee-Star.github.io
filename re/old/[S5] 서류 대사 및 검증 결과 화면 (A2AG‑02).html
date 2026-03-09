@@ -1,0 +1,629 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S5] 서류 대사 및 검증 결과(A2/AG-02) — Full Light</title>
+  <style>
+    :root{
+      /* Full light theme */
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface2:#f7f8fb;
+      --surface3:#f2f4f8;
+
+      --text:#0f172a;
+      --muted:#475569;
+
+      --border:rgba(15,23,42,.12);
+      --border2:rgba(15,23,42,.08);
+      --shadow: 0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;   /* blue */
+      --success:#16a34a;   /* green */
+      --warning:#f59e0b;   /* amber */
+      --danger:#ef4444;    /* red */
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: var(--bg);
+      color:var(--text);
+    }
+
+    /* Page layout */
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px 16px;
+    }
+    .card{
+      width:min(1400px, 100%);
+      background: var(--surface);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    /* Top header */
+    .topbar{
+      padding:16px 18px;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(37,99,235,.07), rgba(255,255,255,0));
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color: rgba(37,99,235,.95)}
+    h1{margin:6px 0 0; font-size:18px; font-weight:900; letter-spacing:-.2px}
+    .sub{margin:8px 0 0; color:var(--muted); font-size:13px; line-height:1.45; max-width:980px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border); border-radius:999px;
+      padding:7px 11px; font-size:12px; color:var(--muted);
+      background: rgba(15,23,42,.02);
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Main grid */
+    .body{
+      padding:14px 16px 18px;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:14px;
+    }
+
+    /* Panels */
+    .panel{
+      background: var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .panel .head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      background: var(--surface2);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .panel .head h2{margin:0; font-size:14px; font-weight:900}
+    .panel .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .panel .content{padding:12px 14px}
+
+    /* Tabs */
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+    .tab{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background: #fff;
+      color:var(--muted);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+      transition: background .12s ease, border-color .12s ease;
+    }
+    .tab:hover{background: var(--surface2)}
+    .tab.active{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.08);
+      color: rgba(37,99,235,.95);
+    }
+    .count{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      margin-left:6px;
+      color:var(--muted);
+    }
+
+    /* Split: viewer + table */
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    /* Viewer */
+    .viewer{
+      height:420px;
+      overflow:auto;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: #fbfcfe;
+      padding:12px;
+    }
+    .paper{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px 14px 16px;
+      font-size:13px;
+      line-height:1.8;
+    }
+    .paper h3{margin:0 0 10px; font-size:14px; font-weight:900}
+    .hl{
+      background: rgba(239,68,68,.14);
+      border-bottom: 2px solid rgba(239,68,68,.55);
+      border-radius:6px;
+      padding:1px 3px;
+      transition: background .2s ease, border-bottom-color .2s ease;
+    }
+    .hl.on{
+      background: rgba(22,163,74,.14);
+      border-bottom-color: rgba(22,163,74,.65);
+    }
+
+    /* Table */
+    .tableWrap{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      background: #fff;
+      height:420px;
+      display:flex;
+      flex-direction:column;
+    }
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
+    thead th{
+      text-align:left;
+      padding:10px 10px;
+      color:var(--muted);
+      border-bottom:1px solid var(--border);
+      background: var(--surface2);
+      position:sticky; top:0; z-index:2;
+    }
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      vertical-align:top;
+    }
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr{
+      cursor:pointer;
+      transition: background .12s ease;
+    }
+    tbody tr:hover{background: rgba(37,99,235,.04)}
+    tbody tr.active{background: rgba(37,99,235,.08)}
+
+    /* Result tags */
+    .tag{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      color:var(--muted);
+      white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .tag .dot{width:8px; height:8px; border-radius:999px; background: rgba(15,23,42,.25)}
+    .tag.ok{border-color: rgba(22,163,74,.35); color:#166534; background: rgba(22,163,74,.10)}
+    .tag.ok .dot{background: var(--success)}
+    .tag.warn{border-color: rgba(245,158,11,.45); color:#92400e; background: rgba(245,158,11,.10)}
+    .tag.warn .dot{background: var(--warning)}
+    .tag.bad{border-color: rgba(239,68,68,.35); color:#991b1b; background: rgba(239,68,68,.08)}
+    .tag.bad .dot{background: var(--danger)}
+
+    /* Right edit panel */
+    .side .content{padding:12px 14px}
+    .box{
+      border:1px solid var(--border);
+      background: var(--surface2);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .box h3{margin:0 0 6px; font-size:13px}
+    .box p{margin:0; color:var(--muted); font-size:12px; line-height:1.45}
+
+    .kv{margin-top:10px; display:flex; flex-direction:column; gap:10px}
+    .row{display:grid; grid-template-columns: 1fr; gap:6px}
+    .row label{font-size:11px; color:var(--muted)}
+    .row input, .row textarea, .row select{
+      width:100%;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:9px 10px;
+      outline:none;
+      font-size:12.5px;
+    }
+    .row input:focus, .row textarea:focus, .row select:focus{
+      border-color: rgba(37,99,235,.35);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+    }
+    textarea{min-height:60px; resize:vertical}
+
+    .btns{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:10px}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:9px 11px;
+      font-size:12px;
+      font-weight:900;
+      transition: transform .08s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .btn:hover{background: var(--surface2)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      border-color: rgba(22,163,74,.40);
+      background: rgba(22,163,74,.10);
+      color:#166534;
+    }
+    .btn.secondary{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.08);
+      color: rgba(37,99,235,.95);
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .kbd{
+      font-family:var(--mono);
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      border-radius:8px;
+      padding:2px 6px;
+      font-size:11px;
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      right:16px; bottom:16px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(22,163,74,.35);
+      background: rgba(22,163,74,.12);
+      color:#166534;
+      font-size:12px;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .2s ease, transform .2s ease;
+      pointer-events:none;
+      z-index:50;
+      box-shadow: var(--shadow);
+    }
+    .toast.show{opacity:1; transform: translateY(0)}
+
+    @media (max-width: 1100px){
+      .body{grid-template-columns: 1fr}
+      .split{grid-template-columns: 1fr}
+      .tableWrap, .viewer{height:340px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="topbar">
+      <div style="min-width:0">
+        <div class="kicker">[S5] 서류 대사 및 검증 결과 (A2/AG‑02) · Full Light</div>
+        <h1>OCR 추출값 ↔ 전산 입력값 자동 대사 · 누락/형식/불일치 탐지 → “수정(HITL)”으로 정상화</h1>
+        <p class="sub">
+          OCR 추출 정보와 WINI 입력값을 항목 단위로 자동 비교하여 오류를 탐지하고,
+          담당자가 근거를 확인한 후 수정하면 결과가 정상으로 전환되는 흐름을 시연합니다. [1]
+        </p>
+      </div>
+      <div class="pill"><b>Animation</b> 불일치 클릭 → 원문 하이라이트 → 수정 적용</div>
+    </div>
+
+    <div class="body">
+      <!-- Main -->
+      <section class="panel">
+        <div class="head">
+          <div>
+            <h2>검증 결과(탭)</h2>
+            <p>값검증 / 불일치 / 누락·형식 / 전체 탭으로 결과를 빠르게 확인합니다.</p>
+          </div>
+          <div class="pill"><b>WINI2</b> 결과 표출(예시)</div>
+        </div>
+
+        <div class="content">
+          <div class="tabs" id="tabs"></div>
+
+          <div class="split">
+            <!-- Viewer -->
+            <div class="panel" style="margin:0; border-radius:12px;">
+              <div class="head">
+                <div>
+                  <h2>원문 뷰어(근거 하이라이트)</h2>
+                  <p>표에서 항목을 클릭하면 원문 근거 위치를 강조 표시합니다.</p>
+                </div>
+                <div class="pill"><b>Doc</b> 소득금액증명원(예시)</div>
+              </div>
+              <div class="content">
+                <div class="viewer">
+                  <div class="paper" id="paper">
+                    <h3>소득금액증명원(발췌)</h3>
+                    <div>
+                      성명: <span class="hl" data-key="성명">홍길동</span><br/>
+                      주민등록번호: <span class="hl" data-key="주민등록번호">710219-1030929</span><br/>
+                      발급번호: <span class="hl" data-key="발급번호">67647900439251</span><br/><br/>
+                      합계소득금액: <span class="hl" data-key="소득금액합계">52,886,553</span> 원<br/>
+                      사업소득: <span class="hl" data-key="사업소득">10,311,237</span> 원<br/>
+                      연금소득: <span class="hl" data-key="연금소득">42,575,316</span> 원<br/>
+                    </div>
+                    <div style="margin-top:10px; color:var(--muted); font-size:12px">
+                      ※ 예시 화면: 실제 구현 시 문서 좌표 기반 하이라이팅으로 확장 가능합니다.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:18%">구분</th>
+                    <th style="width:20%">항목</th>
+                    <th style="width:22%">WINI 입력값</th>
+                    <th style="width:22%">OCR 추출값</th>
+                    <th style="width:18%">결과</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="hint">
+            <span class="kbd">Tip</span> “불일치/누락·형식” 탭에서 항목을 클릭 → 원문 하이라이트 확인 → 우측에서 수정 적용(정상화)
+          </div>
+        </div>
+      </section>
+
+      <!-- Right edit panel -->
+      <aside class="panel side">
+        <div class="head">
+          <div>
+            <h2>항목 상세 & 수정(HITL)</h2>
+            <p>불일치/누락/형식오류 항목을 선택해 수정하거나 예외사유를 기록합니다.</p>
+          </div>
+          <div class="pill"><b>HITL</b> 담당자 확인</div>
+        </div>
+
+        <div class="content">
+          <div class="box">
+            <h3>선택 항목</h3>
+            <p id="selTitle">표에서 항목을 선택하세요.</p>
+          </div>
+
+          <div class="box">
+            <h3>값 수정</h3>
+            <div class="kv">
+              <div class="row">
+                <label>WINI 입력값(수정 가능)</label>
+                <input id="wVal" placeholder="-" />
+              </div>
+              <div class="row">
+                <label>OCR 추출값(참고)</label>
+                <input id="oVal" placeholder="-" disabled />
+              </div>
+              <div class="row">
+                <label>처리 선택</label>
+                <select id="actionSel">
+                  <option value="fix">WINI 입력값 수정(권장)</option>
+                  <option value="keep">OCR 오인식(예외사유 기록)</option>
+                </select>
+              </div>
+              <div class="row">
+                <label>예외/수정 사유(선택)</label>
+                <textarea id="reason" placeholder="예: OCR 오인식(스캔 품질 저하)"></textarea>
+              </div>
+            </div>
+
+            <div class="btns">
+              <button class="btn secondary" id="resetBtn" type="button">선택 초기화</button>
+              <button class="btn primary" id="applyBtn" type="button">수정 적용</button>
+            </div>
+
+            <div class="hint">
+              • “수정 적용” 시 결과가 <b style="color:#166534">정상</b>으로 전환됩니다.<br/>
+              • 실제 구축 시 WINI2(TBD) 화면에서 결과 확인·수정 후 저장 흐름으로 연결됩니다. [1]
+            </div>
+          </div>
+
+          <div class="box">
+            <h3>발표 멘트(1문장)</h3>
+            <p>“불일치/누락을 자동으로 잡고, 클릭하면 근거가 보이며, 수정하면 즉시 정상으로 바뀝니다.”</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ 수정 적용 완료: 상태가 ‘정상’으로 업데이트되었습니다.</div>
+
+<script>
+  // Demo dataset (설명 목적의 예시)
+  const rows = [
+    { id:"r1", kind:"값검증", key:"소득금액합계", item:"소득금액(합계)", wini:"52,886,553", ocr:"52,886,553", type:"ok" },
+    { id:"r2", kind:"값검증", key:"사업소득", item:"사업소득", wini:"10,311,237", ocr:"10,311,237", type:"ok" },
+    { id:"r3", kind:"값검증", key:"연금소득", item:"연금소득", wini:"42,575,316", ocr:"42,575,316", type:"ok" },
+    { id:"r4", kind:"불일치", key:"발급번호", item:"발급번호", wini:"67647900439250", ocr:"67647900439251", type:"bad" },
+    { id:"r5", kind:"형식오류", key:"주민등록번호", item:"주민등록번호", wini:"7102191030929", ocr:"710219-1030929", type:"warn" },
+    { id:"r6", kind:"누락", key:"성명", item:"성명", wini:"", ocr:"홍길동", type:"warn" },
+  ];
+
+  const tabsSpec = [
+    { name:"값검증", filter:(r)=> r.kind==="값검증" },
+    { name:"불일치", filter:(r)=> r.kind==="불일치" },
+    { name:"누락·형식", filter:(r)=> (r.kind==="누락" || r.kind==="형식오류") },
+    { name:"전체", filter:(r)=> true },
+  ];
+
+  const tabs = document.getElementById("tabs");
+  const tbody = document.getElementById("tbody");
+  const paper = document.getElementById("paper");
+
+  const selTitle = document.getElementById("selTitle");
+  const wVal = document.getElementById("wVal");
+  const oVal = document.getElementById("oVal");
+  const actionSel = document.getElementById("actionSel");
+  const reason = document.getElementById("reason");
+  const applyBtn = document.getElementById("applyBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const toast = document.getElementById("toast");
+
+  let activeTab = "불일치";
+  let selectedId = null;
+
+  function tagHtml(type, text){
+    return `<span class="tag ${type}"><span class="dot"></span>${text}</span>`;
+  }
+  function countsFor(tabName){
+    const spec = tabsSpec.find(t=>t.name===tabName);
+    return rows.filter(spec.filter).length;
+  }
+  function renderTabs(){
+    tabs.innerHTML = "";
+    tabsSpec.forEach(t=>{
+      const el = document.createElement("div");
+      el.className = "tab" + (t.name===activeTab ? " active" : "");
+      el.innerHTML = `${t.name} <span class="count">${countsFor(t.name)}</span>`;
+      el.onclick = ()=>{
+        activeTab = t.name;
+        selectedId = null;
+        clearSelectionUI();
+        renderTabs();
+        renderTable();
+      };
+      tabs.appendChild(el);
+    });
+  }
+  function filteredRows(){
+    const spec = tabsSpec.find(t=>t.name===activeTab);
+    return rows.filter(spec.filter);
+  }
+  function renderTable(){
+    tbody.innerHTML = "";
+    const data = filteredRows();
+    data.forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.className = (r.id===selectedId ? "active" : "");
+      tr.innerHTML = `
+        <td style="color:var(--muted)">${r.kind}</td>
+        <td><b>${r.item}</b></td>
+        <td>${r.wini ? r.wini : '<span style="color:var(--muted)">-</span>'}</td>
+        <td>${r.ocr ? r.ocr : '<span style="color:var(--muted)">-</span>'}</td>
+        <td>
+          ${r.type==="ok" ? tagHtml("ok","정상") : (r.type==="bad" ? tagHtml("bad","불일치") : tagHtml("warn","확인필요"))}
+        </td>
+      `;
+      tr.onclick = ()=>{
+        selectedId = r.id;
+        renderTable();
+        selectRow(r);
+      };
+      tbody.appendChild(tr);
+    });
+    if(data.length === 0){
+      tbody.innerHTML = `<tr><td style="color:var(--muted)" colspan="5">표시할 항목이 없습니다.</td></tr>`;
+    }
+  }
+
+  function clearHighlights(){
+    paper.querySelectorAll(".hl").forEach(h => h.classList.remove("on"));
+  }
+  function highlight(key){
+    clearHighlights();
+    const el = paper.querySelector(`.hl[data-key="${CSS.escape(key)}"]`);
+    if(el){
+      el.classList.add("on");
+      el.scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  }
+  function selectRow(r){
+    selTitle.textContent = `${r.kind} · ${r.item}`;
+    wVal.value = r.wini || "";
+    oVal.value = r.ocr || "";
+    actionSel.value = "fix";
+    reason.value = "";
+    highlight(r.key);
+  }
+  function clearSelectionUI(){
+    selTitle.textContent = "표에서 항목을 선택하세요.";
+    wVal.value = "";
+    oVal.value = "";
+    actionSel.value = "fix";
+    reason.value = "";
+    clearHighlights();
+  }
+  function showToast(){
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 1200);
+  }
+
+  applyBtn.onclick = ()=>{
+    if(!selectedId){
+      alert("먼저 표에서 항목을 선택하세요.");
+      return;
+    }
+    const r = rows.find(x=>x.id===selectedId);
+    if(!r) return;
+
+    if(actionSel.value === "fix"){
+      r.wini = (wVal.value.trim() || r.ocr);
+    } else {
+      r.wini = wVal.value.trim();
+    }
+
+    // Demo: apply => ok
+    r.type = "ok";
+    r.kind = "값검증";
+
+    showToast();
+    renderTabs();
+    renderTable();
+  };
+
+  resetBtn.onclick = ()=>{
+    selectedId = null;
+    clearSelectionUI();
+    renderTable();
+  };
+
+  renderTabs();
+  renderTable();
+</script>
+</body>
+</html>

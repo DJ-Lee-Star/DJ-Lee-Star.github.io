@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P5 진위검증</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .p5-body { display: flex; gap: var(--space-4); flex: 1; min-height: 0; }
+    .p5-left { width: 480px; flex-shrink: 0; }
+    .p5-right { flex: 1; }
+    .vd-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .vd-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+    .vd-item.active { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); box-shadow: 0 0 12px var(--agent-glow-blue); }
+    .vd-item.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.20); }
+    .vd-name { font-size: var(--text-md); font-weight: var(--font-bold); color: var(--agent-text-body); flex: 1; }
+    .rpa-progress { margin-top: var(--space-4); }
+    .rpa-bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-2); }
+    .rpa-bar__fill { height: 100%; background: var(--woori-blue); border-radius: var(--radius-full); transition: width 0.5s; width: 0%; box-shadow: 0 0 8px var(--agent-glow-blue); }
+    .rpa-title { font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--agent-text-body); }
+    .rpa-label { font-size: var(--text-sm); color: var(--agent-text-muted); }
+    .pipeline { display: flex; flex-direction: column; gap: var(--space-3); }
+    .pipe-step { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: rgba(255,255,255,0.04); font-size: var(--text-md); color: var(--agent-text-body); transition: all 0.3s; border: 1px solid transparent; }
+    .pipe-step.active { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.20); }
+    .pipe-step.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.15); }
+    .pipe-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.15); flex-shrink: 0; transition: background 0.3s; }
+    .pipe-step.active .pipe-dot { background: var(--woori-blue); animation: pulse-dot 1.5s ease-in-out infinite; box-shadow: 0 0 6px var(--agent-glow-blue); }
+    .pipe-step.done .pipe-dot { background: #0D7C3F; }
+    .pipe-result { margin-left: auto; font-weight: var(--font-bold); color: var(--agent-text-muted); font-size: var(--text-sm); }
+    .pipe-step.done .pipe-result { color: #4ADE80; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-agent">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/agent-logo.png" alt="AI" style="height:36px" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">진위검증 (RPA)</span>
+    </div>
+    <div class="app-header__right agent-sysinfo">
+      <span class="agent-sysinfo__item"><span class="agent-sysinfo__dot"></span>RPA-VERIFY</span>
+      <span class="agent-sysinfo__item" id="sysUptime">00:00</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="p5-body">
+      <div class="p5-left">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">검증 대상 문서</div>
+          <div class="vd-list" id="vdList"></div>
+          <div class="rpa-progress">
+            <div style="display:flex;justify-content:space-between">
+              <span class="rpa-title">RPA 진행률</span>
+              <span class="rpa-label" id="rpaPercent">0%</span>
+            </div>
+            <div class="rpa-bar"><div class="rpa-bar__fill" id="rpaFill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="p5-right">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">검증 파이프라인</div>
+          <div class="pipeline" id="pipeline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="agent-data-flow"></div>
+  <div class="agent-process-log">
+    <span class="agent-process-log__prefix">[RPA]</span>
+    <span class="agent-process-log__text" id="logText">Connecting to verification gateway...</span>
+    <span class="agent-process-log__cursor"></span>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+
+StateManager.save({ currentPage: 'p5' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const logEl = document.getElementById('logText');
+const upEl = document.getElementById('sysUptime');
+let _sec = 0;
+const _upTimer = setInterval(() => { _sec++; if(upEl) upEl.textContent = String(Math.floor(_sec/60)).padStart(2,'0')+':'+String(_sec%60).padStart(2,'0'); }, 1000);
+function setLog(m) { if(logEl) logEl.textContent = m; }
+
+const verifyDocs = documents.list.filter(d => d.targets.verify);
+const vdList = document.getElementById('vdList');
+verifyDocs.forEach(doc => {
+  const item = document.createElement('div');
+  item.className = 'vd-item';
+  item.innerHTML = `<span class="vd-name">${doc.name}</span><span class="badge badge--na" style="font-size:var(--text-xs)">대기</span>`;
+  vdList.appendChild(item);
+});
+
+const pipeline = document.getElementById('pipeline');
+const stages = documents.verifyStages;
+stages.forEach(s => {
+  const step = document.createElement('div');
+  step.className = 'pipe-step';
+  step.innerHTML = `<span class="pipe-dot"></span><span>${s.label}</span><span class="pipe-result">—</span>`;
+  pipeline.appendChild(step);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  setLog('RPA engine connected');
+  await DemoEngine.wait(300);
+
+  const items = vdList.querySelectorAll('.vd-item');
+  const steps = pipeline.querySelectorAll('.pipe-step');
+  const total = verifyDocs.length;
+
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('active');
+    items[i].querySelector('.badge').textContent = '검증 중';
+    setLog(`rpa.verify: ${verifyDocs[i].name}`);
+
+    for (let s = 0; s < steps.length; s++) {
+      steps[s].classList.add('active');
+      if (s > 0) { steps[s-1].classList.remove('active'); steps[s-1].classList.add('done'); steps[s-1].querySelector('.pipe-result').textContent = '✓'; }
+      await DemoEngine.wait(200);
+    }
+    steps[steps.length-1].classList.remove('active');
+    steps[steps.length-1].classList.add('done');
+    steps[steps.length-1].querySelector('.pipe-result').textContent = '✓';
+
+    items[i].classList.remove('active');
+    items[i].classList.add('done');
+    items[i].querySelector('.badge').textContent = '확인';
+    items[i].querySelector('.badge').style.color = '#0D7C3F';
+
+    const pct = Math.round(((i+1)/total)*100);
+    document.getElementById('rpaFill').style.width = pct + '%';
+    document.getElementById('rpaPercent').textContent = pct + '%';
+    setLog(`✓ ${verifyDocs[i].name} verified`);
+
+    steps.forEach(s => { s.classList.remove('active','done'); s.querySelector('.pipe-result').textContent = '—'; });
+    await DemoEngine.wait(150);
+  }
+
+  setLog('✓ All documents verified');
+  await DemoEngine.wait(400);
+  clearInterval(_upTimer);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

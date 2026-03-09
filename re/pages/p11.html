@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P11 AI 브릿지 대사결과 확인</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .rc-result-list { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); overflow-y: auto; }
+    .rc-result-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--gray-200); background: #fff; transition: all 0.2s; font-size: var(--text-md); }
+    .rc-result-item.done { border-color: #0D7C3F; background: #F0FDF4; }
+    .rc-result-item__label { flex: 1; font-weight: var(--font-bold); color: var(--gray-800); }
+    .rc-result-item__status { font-weight: var(--font-bold); color: var(--gray-500); }
+    .rc-result-item.done .rc-result-item__status { color: #0D7C3F; }
+    .summary-panel { padding: var(--space-5); }
+    .summary-card { padding: var(--space-5); border-radius: var(--radius-lg); border: 1px solid var(--gray-200); background: #fff; margin-bottom: var(--space-3); }
+    .summary-card__title { font-size: var(--text-lg); font-weight: var(--font-bold); margin-bottom: var(--space-2); color: var(--gray-800); }
+    .summary-card__row { display: flex; justify-content: space-between; padding: var(--space-2) 0; font-size: var(--text-md); }
+    .summary-card__row-label { color: var(--gray-600); }
+    .summary-card__row-value { font-weight: var(--font-bold); color: var(--gray-900); }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-bridge">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">대사 결과 확인</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge channel-badge--bridge">AI 브릿지</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="bridge-body">
+      <aside class="bridge-left">
+        <h3 style="padding:var(--space-4);font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--gray-800)">대사/검증 결과</h3>
+        <div class="rc-result-list" id="rcList"></div>
+      </aside>
+      <main class="bridge-right">
+        <div class="summary-panel">
+          <div class="summary-card">
+            <div class="summary-card__title">처리 요약</div>
+            <div class="summary-card__row"><span class="summary-card__row-label">신청번호</span><span class="summary-card__row-value" id="smNo">—</span></div>
+            <div class="summary-card__row"><span class="summary-card__row-label">차주명</span><span class="summary-card__row-value" id="smBorrower">—</span></div>
+            <div class="summary-card__row"><span class="summary-card__row-label">대출상품</span><span class="summary-card__row-value" id="smProduct">—</span></div>
+            <div class="summary-card__row"><span class="summary-card__row-label">신청금액</span><span class="summary-card__row-value" id="smAmount">—</span></div>
+            <div class="summary-card__row"><span class="summary-card__row-label">LTV</span><span class="summary-card__row-value" id="smLtv">—</span></div>
+            <div class="summary-card__row"><span class="summary-card__row-label">전결 레벨</span><span class="summary-card__row-value" id="smLevel">—</span></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card__title">특이사항 / 메모</div>
+            <p style="font-size:var(--text-md);color:var(--gray-700);line-height:var(--leading-lg)" id="smMemo">—</p>
+          </div>
+        </div>
+        <div class="bridge-actions" style="padding:var(--space-3) var(--space-5)">
+          <button class="btn btn--secondary" type="button">이전</button>
+          <button class="btn btn--primary" type="button" id="btnApply" style="opacity:0.5">WINI 단말 적용</button>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+import { scenario } from '../data/scenario.js';
+
+StateManager.save({ currentPage: 'p11' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const stages = documents.reconcileStages;
+const rcList = document.getElementById('rcList');
+stages.forEach(s => {
+  const item = document.createElement('div');
+  item.className = 'rc-result-item';
+  item.innerHTML = `<span class="rc-result-item__label">${s.label}</span><span class="rc-result-item__status">—</span>`;
+  rcList.appendChild(item);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(300);
+
+  const items = rcList.querySelectorAll('.rc-result-item');
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('done');
+    items[i].querySelector('.rc-result-item__status').textContent = stages[i].result;
+    await DemoEngine.wait(120);
+  }
+
+  await DemoEngine.wait(200);
+  document.getElementById('smNo').textContent = scenario.application.no;
+  document.getElementById('smBorrower').textContent = scenario.borrower.name;
+  document.getElementById('smProduct').textContent = scenario.application.product;
+  document.getElementById('smAmount').textContent = scenario.application.amount + '원';
+  document.getElementById('smLtv').textContent = scenario.collateral.ltv;
+  document.getElementById('smLevel').textContent = scenario.approval.level;
+  document.getElementById('smMemo').textContent = scenario.reviewMemo;
+
+  document.getElementById('btnApply').style.opacity = '1';
+
+  await DemoEngine.wait(600);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

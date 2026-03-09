@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P8 AI 브릿지 OCR 검토/수정</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .doc-sidebar { padding: var(--space-4); }
+    .doc-sidebar-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .doc-sidebar-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--gray-200); cursor: default; transition: all 0.2s; font-size: var(--text-md); }
+    .doc-sidebar-item.is-active { border-color: var(--color-primary); background: var(--color-primary-bg); }
+    .doc-sidebar-item.is-warn { border-color: #F59E0B; background: #FFFBEB; }
+    .doc-sidebar-item.is-done { border-color: #0D7C3F; background: #F0FDF4; }
+    .doc-sidebar-item__name { flex: 1; font-weight: var(--font-bold); color: var(--gray-800); }
+    .ocr-review-area { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); overflow-y: auto; flex: 1; }
+    .field-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--gray-200); font-size: var(--text-md); }
+    .field-row .f-label { width: 160px; color: var(--gray-600); font-weight: var(--font-bold); flex-shrink: 0; }
+    .field-row .f-value { flex: 1; color: var(--gray-900); }
+    .field-row .f-conf { width: 60px; text-align: right; font-weight: var(--font-bold); }
+    .field-row .f-conf.high { color: #0D7C3F; }
+    .field-row .f-conf.low { color: #DC2626; }
+    .field-row.editing { background: #FFF7ED; border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1px solid #F59E0B; }
+    .field-row.corrected { background: #F0FDF4; border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); border: 1px solid #0D7C3F; }
+    .field-row.corrected .f-value { color: #0D7C3F; }
+    .field-row.corrected .f-conf { color: #0D7C3F; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-bridge">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">OCR 결과 검토 / 수정</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge channel-badge--bridge">AI 브릿지</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="bridge-body">
+      <aside class="bridge-left">
+        <div class="doc-sidebar">
+          <h3 style="font-size:var(--text-lg);font-weight:var(--font-bold);color:var(--gray-800);margin-bottom:var(--space-3)">제출 서류</h3>
+          <div class="doc-sidebar-list" id="sideList"></div>
+        </div>
+      </aside>
+      <main class="bridge-right">
+        <div style="padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+          <h2 id="reviewTitle" style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--gray-800)">법인등기부등본</h2>
+          <span style="font-size:var(--text-sm);color:var(--gray-500)" id="reviewStatus">OCR 검토 중...</span>
+        </div>
+        <div class="ocr-review-area" id="reviewArea"></div>
+        <div class="bridge-actions" style="padding:var(--space-3) var(--space-5)">
+          <button class="btn btn--secondary" type="button">이전</button>
+          <button class="btn btn--primary" type="button" id="btnConfirm" style="opacity:0.5">검토 완료</button>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+import { ocrResults } from '../data/ocr-results.js';
+
+StateManager.save({ currentPage: 'p8' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const sideList = document.getElementById('sideList');
+const reviewArea = document.getElementById('reviewArea');
+const ocrDocs = documents.list.filter(d => d.targets.ocr);
+
+ocrDocs.forEach(doc => {
+  const item = document.createElement('div');
+  item.className = 'doc-sidebar-item';
+  item.dataset.id = doc.id;
+  item.innerHTML = `<span class="doc-sidebar-item__name">${doc.name}</span><span class="badge badge--na" style="font-size:var(--text-xs)">—</span>`;
+  sideList.appendChild(item);
+});
+
+function renderFields(docId, useCorrected) {
+  reviewArea.innerHTML = '';
+  const data = ocrResults[docId];
+  if (!data) return;
+  const fields = useCorrected && data.extractsCorrected ? data.extractsCorrected : data.extracts;
+  fields.forEach(([label, value, conf]) => {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    const isNum = typeof conf === 'number';
+    const confText = isNum ? `${(conf * 100).toFixed(0)}%` : (conf || '');
+    const confCls = isNum ? (conf >= 0.95 ? 'high' : 'low') : 'high';
+    row.innerHTML = `<span class="f-label">${label}</span><span class="f-value">${value}</span><span class="f-conf ${confCls}">${confText}</span>`;
+    reviewArea.appendChild(row);
+  });
+}
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(300);
+
+  const items = sideList.querySelectorAll('.doc-sidebar-item');
+  const targetIdx = ocrDocs.findIndex(d => d.id === 'C-02');
+
+  items[targetIdx].classList.add('is-warn');
+  items[targetIdx].querySelector('.badge').textContent = '⚠️';
+  document.getElementById('reviewTitle').textContent = ocrResults['C-02'].title;
+
+  renderFields('C-02', false);
+  await DemoEngine.wait(500);
+
+  const rows = reviewArea.querySelectorAll('.field-row');
+  const capitalRow = rows[3];
+  capitalRow.classList.add('editing');
+  document.getElementById('reviewStatus').textContent = '자본금 필드 수정 중...';
+  await DemoEngine.wait(600);
+
+  capitalRow.querySelector('.f-value').textContent = '1,600,000,000원';
+  capitalRow.querySelector('.f-conf').textContent = '수정';
+  capitalRow.classList.remove('editing');
+  capitalRow.classList.add('corrected');
+  document.getElementById('reviewStatus').textContent = '수정 완료';
+  await DemoEngine.wait(300);
+
+  items[targetIdx].classList.remove('is-warn');
+  items[targetIdx].classList.add('is-done');
+  items[targetIdx].querySelector('.badge').textContent = '✓';
+
+  for (let i = 0; i < items.length; i++) {
+    if (i === targetIdx) continue;
+    items[i].classList.add('is-done');
+    items[i].querySelector('.badge').textContent = '✓';
+    await DemoEngine.wait(60);
+  }
+
+  document.getElementById('btnConfirm').style.opacity = '1';
+  document.getElementById('reviewStatus').textContent = '전체 검토 완료';
+
+  await DemoEngine.wait(600);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

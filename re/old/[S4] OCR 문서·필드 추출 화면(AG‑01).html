@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S4] OCR 문서·필드 추출(AG-01) — Full Light v2</title>
+  <style>
+    :root{
+      --page:#f6f8fb;
+      --card:#ffffff;
+      --card2:#f7f8fb;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.14);
+      --border2:rgba(15,23,42,.08);
+      --shadow:0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+
+    html,body{height:100%}
+    body{margin:0; font-family:var(--sans); background:var(--page); color:var(--text)}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:30;
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,0));
+      border-bottom:1px solid var(--border);
+      padding:14px 18px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color:rgba(37,99,235,.95)}
+    .title{margin:6px 0 0; font-size:16px; font-weight:900; letter-spacing:-.2px}
+    .subtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; max-width:1100px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Layout */
+    .wrap{padding:16px 18px 30px;}
+    .layout{
+      max-width:1560px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 340px 1fr 430px;
+      gap:14px;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      background:var(--card2);
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .card .head h2{margin:0; font-size:14px; font-weight:900}
+    .card .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .card .content{padding:12px 14px;}
+
+    /* Buttons */
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+      transition: transform .08s ease, background .12s ease;
+    }
+    .btn:hover{background:#f3f5f9}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .btn.secondary{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+
+    /* Badges */
+    .badge{
+      font-family:var(--mono);
+      font-size:11.5px;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:9px; height:9px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .badge.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .badge.ok .dot{background:var(--success)}
+    .badge.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .badge.warn .dot{background:var(--warning)}
+    .badge.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:#991b1b}
+    .badge.bad .dot{background:var(--danger)}
+    .badge.run{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .badge.run .dot{background:var(--primary)}
+
+    /* Left: attachments list */
+    .doclist{display:flex; flex-direction:column; gap:8px;}
+    .doc{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+      cursor:pointer;
+      transition: background .12s ease, transform .08s ease, border-color .12s ease;
+    }
+    .doc:hover{background:#f3f6ff}
+    .doc:active{transform:translateY(1px)}
+    .doc.active{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10)}
+    .doc .row{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+    .doc .name{margin:0; font-size:12.5px; font-weight:900}
+    .doc .meta{margin:6px 0 0; font-size:11.5px; color:var(--muted); line-height:1.35}
+    .doc .tags{margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;}
+    .tag{font-family:var(--mono); font-size:11px; padding:4px 7px; border-radius:999px; border:1px solid var(--border); background:rgba(15,23,42,.02); color:var(--muted)}
+    .tag.blue{border-color:rgba(37,99,235,.25); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+
+    /* Middle: Document image viewer */
+    .viewerShell{border:1px solid var(--border); border-radius:14px; overflow:hidden; background:#fbfcfe;}
+    .viewerTop{padding:10px 12px; border-bottom:1px solid var(--border); background:#f8fafc; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;}
+    .viewerTop .h{font-weight:900; font-size:13px}
+    .viewerTop .s{font-size:12px; color:var(--muted); line-height:1.35}
+
+    .viewer{height:640px; overflow:auto; padding:14px; display:flex; justify-content:center;}
+    .page{
+      position:relative;
+      width:860px;
+      max-width:100%;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:0 8px 18px rgba(2,8,23,.08);
+      overflow:hidden;
+    }
+    .page .scan{
+      width:100%;
+      display:block;
+    }
+    .hlLayer{position:absolute; inset:0; pointer-events:none;}
+    .hlBox{
+      position:absolute;
+      border:2px solid rgba(245,158,11,.80);
+      background:rgba(245,158,11,.16);
+      border-radius:12px;
+      opacity:0;
+      transform:scale(.98);
+      transition: opacity .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
+      box-shadow:0 0 0 3px rgba(245,158,11,.10);
+    }
+    .hlBox.show{opacity:1; transform:scale(1)}
+    .hlBox.active{border-color:rgba(22,163,74,.85); background:rgba(22,163,74,.16); box-shadow:0 0 0 4px rgba(22,163,74,.14)}
+    .hlLabel{
+      position:absolute;
+      left:10px; top:-12px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:11px;
+      color:var(--muted);
+      font-family:var(--mono);
+      box-shadow:0 6px 14px rgba(2,8,23,.06);
+    }
+
+    /* Right: Extracted fields */
+    .stepper{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;}
+    .step{border:1px solid var(--border); background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; color:var(--muted); display:inline-flex; gap:8px; align-items:center;}
+    .step .dot{width:8px; height:8px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .step.on{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .step.on .dot{background:var(--primary)}
+    .step.done{border-color:rgba(22,163,74,.30); background:rgba(22,163,74,.10); color:#166534}
+    .step.done .dot{background:var(--success)}
+
+    .progress{margin-top:10px; border:1px solid var(--border); background:rgba(15,23,42,.04); border-radius:999px; height:10px; overflow:hidden;}
+    .progress > span{display:block; height:100%; width:0%; background:linear-gradient(90deg, rgba(37,99,235,.75), rgba(22,163,74,.60)); border-radius:999px; transition: width .45s ease;}
+
+    .tbl{margin-top:12px; border:1px solid var(--border); border-radius:12px; overflow:auto; background:#fff; max-height:420px;}
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px;}
+    thead th{ text-align:left; padding:10px 10px; color:var(--muted); border-bottom:1px solid var(--border); background:#f8fafc; position:sticky; top:0; z-index:1; }
+    tbody td{ padding:10px 10px; border-bottom:1px solid rgba(15,23,42,.06); vertical-align:top; }
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr{cursor:pointer}
+    tbody tr:hover{background:#f3f6ff}
+    tbody tr.active{background:rgba(37,99,235,.10)}
+
+    .conf{font-family:var(--mono); font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background:rgba(15,23,42,.02); color:var(--muted); display:inline-flex; align-items:center; gap:6px; white-space:nowrap;}
+    .conf.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .conf.mid{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .conf.low{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:#991b1b}
+
+    .log{margin-top:10px; border:1px solid var(--border); border-radius:12px; background:#fff; padding:10px; font-family:var(--mono); font-size:11px; color:var(--muted); max-height:160px; overflow:auto; line-height:1.5;}
+    .log .ok{color:#166534}
+    .log .warn{color:#92400e}
+    .log .blue{color:rgba(37,99,235,.95)}
+
+    .hint{margin-top:10px; font-size:12px; color:var(--muted); line-height:1.45}
+
+    @media (max-width: 1200px){
+      .layout{grid-template-columns: 1fr}
+      .viewer{height:420px}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S4] OCR 문서·필드 추출(AG-01) · Full Light v2</div>
+      <div class="title">문서 선택 → OCR 실행 → 문서유형 분류 → 필드 추출/구조화(애니메이션)</div>
+      <div class="subtitle">
+        첨부문서(스캔/PDF)를 선택한 뒤 OCR을 실행하면, 문서유형이 자동 분류되고 필수 필드가 순차적으로 채워지며 근거 영역이 하이라이트됩니다.
+      </div>
+    </div>
+    <div class="pill"><b>연출</b> “문서를 선택한 후 OCR 실행을 눌러 필드 추출 애니메이션 재생”</div>
+  </div>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <!-- LEFT: Attachments -->
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>첨부문서 목록</h2>
+            <p>문서를 선택한 후 OCR 실행 버튼을 눌러주세요.</p>
+          </div>
+          <span class="badge" id="listBadge"><span class="dot"></span><b>대기</b></span>
+        </div>
+        <div class="content">
+          <div class="doclist" id="doclist"></div>
+          <div class="hint">* 데모에서는 문서별 “스캔 이미지(모형)”와 “하이라이트 좌표”를 내장해 연출합니다.</div>
+        </div>
+      </section>
+
+      <!-- MIDDLE: Document image -->
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>문서 이미지(스캔)</h2>
+            <p>추출 필드와 연동하여 근거 영역이 하이라이트됩니다.</p>
+          </div>
+          <div class="controls">
+            <button class="btn" id="resetBtn" type="button">초기화</button>
+            <button class="btn primary" id="runBtn" type="button">OCR 실행</button>
+          </div>
+        </div>
+        <div class="content">
+          <div class="viewerShell">
+            <div class="viewerTop">
+              <div>
+                <div class="h" id="docTitle">문서를 선택하세요</div>
+                <div class="s" id="docSub">선택 후 OCR 실행 시 하이라이트가 순차 표시됩니다.</div>
+              </div>
+              <span class="badge" id="docBadge"><span class="dot"></span><b>미선택</b></span>
+            </div>
+            <div class="viewer" id="viewer">
+              <div class="page" id="page">
+                <div id="scanHolder"></div>
+                <div class="hlLayer" id="hlLayer"></div>
+              </div>
+            </div>
+          </div>
+          <div class="hint">* 항목 클릭 시 해당 근거 영역이 활성화(초록)됩니다.</div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Extracted fields -->
+      <aside class="card">
+        <div class="head">
+          <div>
+            <h2>추출 결과(구조화)</h2>
+            <p>문서유형/필드/신뢰도가 순차적으로 채워집니다.</p>
+          </div>
+          <span class="badge run" id="stateBadge"><span class="dot"></span><b>대기</b></span>
+        </div>
+        <div class="content">
+          <div class="stepper">
+            <div class="step" id="st1"><span class="dot"></span>문서 인식</div>
+            <div class="step" id="st2"><span class="dot"></span>유형 분류</div>
+            <div class="step" id="st3"><span class="dot"></span>필드 추출</div>
+            <div class="step" id="st4"><span class="dot"></span>구조화</div>
+          </div>
+          <div class="progress"><span id="bar"></span></div>
+
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <span class="badge" id="typeBadge"><span class="dot"></span><b>유형: -</b></span>
+            <span class="badge" id="pageBadge"><span class="dot"></span><b>페이지: -</b></span>
+            <span class="badge" id="timeBadge"><span class="dot"></span><b>처리시간: -</b></span>
+          </div>
+
+          <div class="tbl">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:26%">항목</th>
+                  <th style="width:48%">값</th>
+                  <th style="width:16%">신뢰도</th>
+                  <th style="width:10%">근거</th>
+                </tr>
+              </thead>
+              <tbody id="fieldBody">
+                <tr>
+                  <td class="muted">-</td>
+                  <td class="muted">문서 선택 후 OCR 실행</td>
+                  <td class="muted">-</td>
+                  <td class="muted">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="log" id="log"></div>
+
+          <div class="hint">
+            • 신뢰도 낮은 항목은 후속 단계(S9)에서 확인/수정(HITL)로 연결됩니다.
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+<script>
+  // --------- Document image generator (SVG scan mock) ---------
+  function makeScanSVG(title, lines){
+    // Create a pseudo scanned page using SVG (no external images)
+    const h = 1120, w = 860;
+    const noise = Array.from({length:40}).map((_,i)=>{
+      const x = (i*19)%w;
+      const y = (i*37)%h;
+      const o = 0.03 + (i%7)*0.01;
+      return `<rect x="${x}" y="${y}" width="${(i%9)+12}" height="${(i%6)+6}" fill="rgba(15,23,42,${o})"/>`;
+    }).join('');
+
+    const textLines = lines.map((t,i)=>{
+      const y = 180 + i*44;
+      return `<text x="92" y="${y}" font-size="20" fill="rgba(15,23,42,.78)" font-family="Segoe UI, Arial">${escapeXML(t)}</text>`;
+    }).join('');
+
+    return `
+      <svg class="scan" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="scan">
+        <defs>
+          <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset="1" stop-color="#fbfcfe"/>
+          </linearGradient>
+          <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(2,8,23,.18)"/>
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="${w}" height="${h}" fill="url(#g)"/>
+        <rect x="54" y="58" width="${w-108}" height="${h-116}" rx="18" fill="#fff" stroke="rgba(15,23,42,.10)" filter="url(#shadow)"/>
+        ${noise}
+        <text x="92" y="130" font-size="26" fill="rgba(15,23,42,.92)" font-weight="700" font-family="Segoe UI, Arial">${escapeXML(title)}</text>
+        <text x="92" y="155" font-size="14" fill="rgba(71,85,105,.85)" font-family="Segoe UI, Arial">(데모 스캔 이미지 모형)</text>
+        ${textLines}
+        <text x="92" y="1025" font-size="12" fill="rgba(71,85,105,.75)" font-family="Segoe UI, Arial">※ 실제 구현: PDF/이미지 뷰어 + 좌표 하이라이트 연계</text>
+      </svg>
+    `;
+  }
+
+  function escapeXML(s){
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+
+  // --------- Demo documents (attachments) ---------
+  const DOCS = [
+    {
+      id:'d1',
+      file:'임대차계약서_스캔본.pdf',
+      pages:3,
+      kind:'임대차/전세 계약서',
+      size:'1.2MB',
+      status:'AI-OCR 대상',
+      scanTitle:'부동산 임대차계약서(발췌)',
+      scanLines:[
+        '소재지: 서울시 중구 회현동 1가 0동 000호',
+        '보증금: 10,000,000원  계약금: 1,000,000원  잔금: 9,000,000원',
+        '임대인: 주식회사 0000  임차인: (주)000바이오',
+        '건물면적: 300.72㎡  용도: 사무실'
+      ],
+      docType:'임대차계약서',
+      fields:[
+        {k:'소재지', v:'서울시 중구 회현동 1가 0동 000호', conf:96, hid:'H1'},
+        {k:'보증금', v:'10,000,000', conf:92, hid:'H2'},
+        {k:'임대인', v:'주식회사 0000', conf:84, hid:'H3'},
+        {k:'임차인', v:'(주)000바이오', conf:82, hid:'H4'},
+        {k:'용도', v:'사무실', conf:86, hid:'H5'}
+      ],
+      highlights:[
+        {hid:'H1', label:'소재지', x:10, y:27, w:80, h:6},
+        {hid:'H2', label:'보증금', x:10, y:35, w:78, h:6},
+        {hid:'H3', label:'임대인', x:10, y:43, w:68, h:6},
+        {hid:'H4', label:'임차인', x:10, y:43, w:68, h:6},
+        {hid:'H5', label:'용도', x:10, y:51, w:55, h:6}
+      ]
+    },
+    {
+      id:'d2',
+      file:'법인등기부등본_2026-01.png',
+      pages:2,
+      kind:'법인등기부등본',
+      size:'780KB',
+      status:'AI-OCR 대상',
+      scanTitle:'법인등기부등본(발췌)',
+      scanLines:[
+        '상호: (주)000바이오',
+        '본점: 경기도 고양시 덕양구 671',
+        '대표이사: 김00',
+        '설립: 1997-05-16'
+      ],
+      docType:'법인등기부등본',
+      fields:[
+        {k:'상호', v:'(주)000바이오', conf:95, hid:'H1'},
+        {k:'본점', v:'경기도 고양시 덕양구 671', conf:90, hid:'H2'},
+        {k:'대표이사', v:'김00', conf:78, hid:'H3'},
+        {k:'설립일', v:'1997-05-16', conf:92, hid:'H4'}
+      ],
+      highlights:[
+        {hid:'H1', label:'상호', x:10, y:27, w:55, h:6},
+        {hid:'H2', label:'본점', x:10, y:35, w:70, h:6},
+        {hid:'H3', label:'대표이사', x:10, y:43, w:45, h:6},
+        {hid:'H4', label:'설립일', x:10, y:51, w:40, h:6}
+      ]
+    },
+    {
+      id:'d3',
+      file:'소득금액증명원_스캔본.pdf',
+      pages:1,
+      kind:'소득 증빙',
+      size:'640KB',
+      status:'AI-OCR 대상',
+      scanTitle:'소득금액증명원(발췌)',
+      scanLines:[
+        '성명: 홍길동  주민등록번호: 710219-1030929',
+        '발급번호: 67647900439251',
+        '합계소득금액: 52,886,553원',
+        '사업소득: 10,311,237원  연금소득: 42,575,316원'
+      ],
+      docType:'소득금액증명원',
+      fields:[
+        {k:'성명', v:'홍길동', conf:88, hid:'H1'},
+        {k:'주민등록번호', v:'710219-1030929', conf:79, hid:'H2'},
+        {k:'발급번호', v:'67647900439251', conf:94, hid:'H3'},
+        {k:'소득금액(합계)', v:'52,886,553', conf:93, hid:'H4'}
+      ],
+      highlights:[
+        {hid:'H1', label:'성명', x:10, y:27, w:55, h:6},
+        {hid:'H2', label:'주민등록번호', x:10, y:27, w:80, h:6},
+        {hid:'H3', label:'발급번호', x:10, y:35, w:62, h:6},
+        {hid:'H4', label:'합계소득금액', x:10, y:43, w:62, h:6}
+      ]
+    }
+  ];
+
+  // --------- DOM refs ---------
+  const doclist = document.getElementById('doclist');
+  const listBadge = document.getElementById('listBadge');
+
+  const docTitle = document.getElementById('docTitle');
+  const docSub = document.getElementById('docSub');
+  const docBadge = document.getElementById('docBadge');
+  const scanHolder = document.getElementById('scanHolder');
+  const hlLayer = document.getElementById('hlLayer');
+  const viewer = document.getElementById('viewer');
+
+  const resetBtn = document.getElementById('resetBtn');
+  const runBtn = document.getElementById('runBtn');
+
+  const st1 = document.getElementById('st1');
+  const st2 = document.getElementById('st2');
+  const st3 = document.getElementById('st3');
+  const st4 = document.getElementById('st4');
+  const bar = document.getElementById('bar');
+
+  const stateBadge = document.getElementById('stateBadge');
+  const typeBadge = document.getElementById('typeBadge');
+  const pageBadge = document.getElementById('pageBadge');
+  const timeBadge = document.getElementById('timeBadge');
+  const fieldBody = document.getElementById('fieldBody');
+  const logEl = document.getElementById('log');
+
+  let current = null;
+  let running = false;
+  let timers = [];
+  let activeFieldId = null;
+
+  function clearTimers(){ timers.forEach(t=>clearTimeout(t)); timers=[]; }
+
+  function setStep(el, state){
+    el.classList.remove('on','done');
+    if(state==='on') el.classList.add('on');
+    if(state==='done') el.classList.add('done');
+  }
+
+  function setProgress(p){ bar.style.width = p + '%'; }
+
+  function setBadge(el, cls, text){
+    el.className = 'badge' + (cls ? ' ' + cls : '');
+    el.innerHTML = '<span class="dot"></span><b>' + text + '</b>';
+  }
+
+  function confClass(n){
+    if(n>=90) return 'ok';
+    if(n>=75) return 'mid';
+    return 'low';
+  }
+
+  function log(msg, cls){
+    const div = document.createElement('div');
+    div.innerHTML = cls ? `<span class="${cls}">${msg}</span>` : msg;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function clearHighlightActive(){
+    hlLayer.querySelectorAll('.hlBox').forEach(b=>b.classList.remove('active'));
+  }
+
+  function focusHighlight(hid){
+    clearHighlightActive();
+    const box = hlLayer.querySelector(`.hlBox[data-hid="${hid}"]`);
+    if(box){
+      box.classList.add('active','show');
+      const rect = box.getBoundingClientRect();
+      const vrect = viewer.getBoundingClientRect();
+      const offset = (rect.top - vrect.top) + viewer.scrollTop - 140;
+      viewer.scrollTo({top: offset, behavior:'smooth'});
+    }
+  }
+
+  function renderDocList(){
+    doclist.innerHTML = '';
+    DOCS.forEach(d=>{
+      const el = document.createElement('div');
+      el.className = 'doc' + (current && current.id===d.id ? ' active' : '');
+      el.innerHTML = `
+        <div class="row">
+          <div style="min-width:0">
+            <p class="name">${d.file}</p>
+            <p class="meta">유형: ${d.kind} · ${d.pages}p · ${d.size}</p>
+          </div>
+          <span class="badge ok"><span class="dot"></span><b>${d.status}</b></span>
+        </div>
+        <div class="tags">
+          <span class="tag blue">문서유형 후보: ${d.docType}</span>
+          <span class="tag">첨부</span>
+        </div>
+      `;
+      el.onclick = ()=>{
+        if(running) return;
+        current = d;
+        renderDocList();
+        loadDocument(d);
+      };
+      doclist.appendChild(el);
+    });
+  }
+
+  function loadDocument(d){
+    // Reset UI for new doc
+    resetUI(false);
+    docTitle.textContent = d.file;
+    docSub.textContent = `유형 후보: ${d.docType} · 첨부 ${d.pages}p`;
+    setBadge(docBadge, 'run', '선택됨');
+
+    // Render scan svg
+    scanHolder.innerHTML = makeScanSVG(d.scanTitle, d.scanLines);
+
+    // Build highlight layer
+    hlLayer.innerHTML = '';
+    d.highlights.forEach(h=>{
+      const box = document.createElement('div');
+      box.className = 'hlBox';
+      box.dataset.hid = h.hid;
+      box.style.left = h.x + '%';
+      box.style.top = h.y + '%';
+      box.style.width = h.w + '%';
+      box.style.height = h.h + '%';
+      box.innerHTML = `<div class="hlLabel">${h.hid}</div>`;
+      hlLayer.appendChild(box);
+    });
+
+    setBadge(listBadge, 'ok', '문서 선택됨');
+    logEl.innerHTML = '';
+    log('READY | 문서 선택 완료. OCR 실행을 누르세요.', 'blue');
+  }
+
+  function resetUI(clearSelection=true){
+    clearTimers();
+    running = false;
+    runBtn.disabled = false;
+
+    setStep(st1,''); setStep(st2,''); setStep(st3,''); setStep(st4,'');
+    setProgress(0);
+
+    setBadge(stateBadge,'run','대기');
+    setBadge(typeBadge,'','유형: -');
+    setBadge(pageBadge,'','페이지: -');
+    setBadge(timeBadge,'','처리시간: -');
+
+    fieldBody.innerHTML = `
+      <tr>
+        <td class="muted">-</td>
+        <td class="muted">문서 선택 후 OCR 실행</td>
+        <td class="muted">-</td>
+        <td class="muted">-</td>
+      </tr>
+    `;
+
+    if(clearSelection){
+      current = null;
+      scanHolder.innerHTML = '';
+      hlLayer.innerHTML = '';
+      docTitle.textContent = '문서를 선택하세요';
+      docSub.textContent = '선택 후 OCR 실행 시 하이라이트가 순차 표시됩니다.';
+      setBadge(docBadge,'','미선택');
+      setBadge(listBadge,'','대기');
+      logEl.innerHTML = '';
+      log('READY | 좌측에서 문서를 선택하세요.', 'blue');
+      renderDocList();
+    } else {
+      // when switching docs, keep doc selection
+      clearHighlightActive();
+    }
+
+    activeFieldId = null;
+  }
+
+  function renderFieldRow(field, idx){
+    const tr = document.createElement('tr');
+    tr.dataset.hid = field.hid;
+    tr.innerHTML = `
+      <td><b>${field.k}</b></td>
+      <td class="mono">${field.v}</td>
+      <td><span class="conf ${confClass(field.conf)}">${field.conf}%</span></td>
+      <td class="mono">${field.hid}</td>
+    `;
+    tr.onclick = ()=>{
+      fieldBody.querySelectorAll('tr').forEach(x=>x.classList.remove('active'));
+      tr.classList.add('active');
+      activeFieldId = field.hid;
+      focusHighlight(field.hid);
+      log(`INFO | 근거 포커스: ${field.k} (${field.hid})`, 'blue');
+    };
+    return tr;
+  }
+
+  function showHighlightSequence(doc){
+    // show all as boxes appear
+    const boxes = Array.from(hlLayer.querySelectorAll('.hlBox'));
+    boxes.forEach(b=>b.classList.remove('show','active'));
+
+    let i=0;
+    const seq = () => {
+      if(i>=doc.highlights.length) return;
+      const hid = doc.highlights[i].hid;
+      const box = hlLayer.querySelector(`.hlBox[data-hid="${hid}"]`);
+      if(box) box.classList.add('show');
+      i++;
+      timers.push(setTimeout(seq, 220));
+    };
+    seq();
+  }
+
+  function runOCR(){
+    if(running) return;
+    if(!current){
+      alert('먼저 문서를 선택하세요.');
+      return;
+    }
+    running = true;
+    runBtn.disabled = true;
+    clearTimers();
+
+    // Reset outputs but keep selection
+    setStep(st1,''); setStep(st2,''); setStep(st3,''); setStep(st4,'');
+    setProgress(0);
+    setBadge(stateBadge,'run','OCR 진행');
+    setBadge(typeBadge,'','유형: -');
+    setBadge(pageBadge,'',`페이지: ${current.pages}p`);
+    setBadge(timeBadge,'','처리시간: -');
+    fieldBody.innerHTML = '';
+    logEl.innerHTML = '';
+
+    log(`RUN  | OCR 실행 시작 (${current.file})`, 'blue');
+
+    const start = performance.now();
+
+    // Phase 1: OCR
+    setStep(st1,'on');
+    setProgress(18);
+    showHighlightSequence(current);
+
+    timers.push(setTimeout(()=>{
+      setStep(st1,'done');
+      setStep(st2,'on');
+      setProgress(38);
+      setBadge(typeBadge,'run',`유형 분류 중...`);
+      log('OK   | 텍스트 인식 완료', 'ok');
+      log(`RUN  | 문서유형 분류 중: 후보=${current.docType}`, 'blue');
+    }, 700));
+
+    // Phase 2: classify
+    timers.push(setTimeout(()=>{
+      setStep(st2,'done');
+      setStep(st3,'on');
+      setProgress(55);
+      setBadge(typeBadge,'ok',`유형: ${current.docType}`);
+      log(`OK   | 문서유형 확정: ${current.docType}`, 'ok');
+      log('RUN  | 필드 추출 시작(순차 채움)', 'blue');
+    }, 1300));
+
+    // Phase 3: extract fields sequentially
+    timers.push(setTimeout(()=>{
+      let i=0;
+      const total = current.fields.length;
+      const fill = () => {
+        if(i>=total){
+          // structuring
+          setStep(st3,'done');
+          setStep(st4,'on');
+          setProgress(88);
+          log('RUN  | 구조화/정규화(포맷/타입) 적용', 'blue');
+
+          timers.push(setTimeout(()=>{
+            setStep(st4,'done');
+            setProgress(100);
+            const dur = Math.max(0.8, (performance.now()-start)/1000);
+            setBadge(timeBadge,'ok',`처리시간: ${dur.toFixed(1)}s`);
+            setBadge(stateBadge,'ok','완료');
+            log('OK   | 구조화 완료(필드셋 생성)', 'ok');
+            log('DONE | 다음 단계: 대사/검증(A2) 또는 자동입력(A8)로 전달', 'blue');
+            running = false;
+            runBtn.disabled = false;
+          }, 700));
+          return;
+        }
+
+        const f = current.fields[i];
+        const tr = renderFieldRow(f, i);
+        fieldBody.appendChild(tr);
+
+        // Auto-focus highlight for this field
+        fieldBody.querySelectorAll('tr').forEach(x=>x.classList.remove('active'));
+        tr.classList.add('active');
+        focusHighlight(f.hid);
+
+        // progress update
+        const p = 55 + Math.round(((i+1)/total) * 28);
+        setProgress(Math.min(83, p));
+
+        log(`OK   | ${f.k} 추출 완료 (conf=${f.conf}%, hid=${f.hid})`, f.conf>=90?'ok':(f.conf>=75?'warn':'warn'));
+        i++;
+        timers.push(setTimeout(fill, 520));
+      };
+
+      // placeholder: if no fields
+      if(total===0){
+        fieldBody.innerHTML = `<tr><td class="muted" colspan="4">추출 필드가 없습니다.</td></tr>`;
+      } else {
+        fill();
+      }
+    }, 1700));
+  }
+
+  resetBtn.onclick = ()=>{
+    if(running) return;
+    if(!current){
+      resetUI(true);
+    } else {
+      // reset outputs keep document selected
+      resetUI(false);
+      // restore doc meta
+      docTitle.textContent = current.file;
+      docSub.textContent = `유형 후보: ${current.docType} · 첨부 ${current.pages}p`;
+      setBadge(docBadge, 'run', '선택됨');
+      setBadge(listBadge, 'ok', '문서 선택됨');
+      setBadge(pageBadge,'',`페이지: ${current.pages}p`);
+      logEl.innerHTML = '';
+      log('READY | 문서 선택됨. OCR 실행을 누르세요.', 'blue');
+    }
+  };
+
+  runBtn.onclick = runOCR;
+
+  // Init
+  function init(){
+    logEl.innerHTML = '';
+    log('READY | 좌측에서 문서를 선택하세요.', 'blue');
+    renderDocList();
+  }
+
+  init();
+</script>
+</body>
+</html>

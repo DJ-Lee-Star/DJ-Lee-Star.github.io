@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P1 신청정보 입력</title>
+  <style>
+    :root{
+      --bg:#eef3f8;
+      --card:#ffffff;
+      --line:#d6e0eb;
+      --text:#1f2937;
+      --muted:#607184;
+      --primary:#0067b1;
+      --primary-soft:#e8f2fb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg);
+      border:1px solid #d6e0eb;
+      border-radius:12px;
+      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      background:#fff;
+      border-bottom:2px solid var(--primary);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .title{font-size:24px; font-weight:800; line-height:1}
+    .terminal-badge{
+      display:flex;
+      align-items:center;
+      color:#374151;
+      background:#ffffff;
+      border:2px solid #0067b1;
+      border-radius:0;
+      padding:6px 12px;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .content{
+      height:656px;
+      padding:14px;
+      display:block;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .panel-b{
+      padding:12px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+    .badge{
+      font-size:11px;
+      color:var(--primary);
+      background:var(--primary-soft);
+      border:1px solid #b8d5ec;
+      border-radius:999px;
+      padding:3px 8px;
+    }
+    .form{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .field label{
+      display:block;
+      margin-bottom:4px;
+      font-size:16px;
+      font-weight:700;
+      color:#334155;
+    }
+    .field input,.field select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:11px;
+      font-size:16px;
+      background:#fff;
+    }
+    .input-group{
+      display:grid;
+      grid-template-columns:1fr 54px;
+      gap:6px;
+      align-items:center;
+    }
+    .icon-btn{
+      width:54px;
+      height:40px;
+      border:1px solid #b7c2cf;
+      border-radius:8px;
+      background:linear-gradient(180deg, #f8fafc, #edf2f7);
+      color:#475569;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:0 1px 2px rgba(15,23,42,.08);
+      cursor:pointer;
+    }
+    .icon-btn:active{transform:translateY(1px)}
+    .field.full{grid-column:1/3}
+    .actions{
+      margin-top:auto;
+      padding-top:10px;
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:10px 14px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn.primary{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:620px;
+      max-height:520px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:0 20px 40px rgba(2,8,23,.25);
+      overflow:hidden;
+    }
+    .modal-h{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .modal-title{font-size:16px; font-weight:800}
+    .close-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      width:32px;height:32px;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .modal-b{padding:12px}
+    .search{
+      display:grid;
+      grid-template-columns:1fr 84px;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .search input{
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      font-size:14px;
+    }
+    .search button{
+      border:1px solid #b7c2cf;
+      border-radius:8px;
+      background:#f8fafc;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .list{
+      border:1px solid var(--line);
+      border-radius:10px;
+      max-height:300px;
+      overflow:auto;
+    }
+    .list-head{
+      display:grid;
+      gap:0;
+      border-bottom:1px solid var(--line);
+      background:#f8fafc;
+      font-size:12px;
+      font-weight:700;
+      color:#475569;
+    }
+    .list-head div{
+      padding:9px 12px;
+      border-right:1px solid #e5eaf0;
+    }
+    .list-head div:last-child{border-right:0}
+    .list-head.branch{grid-template-columns:120px 1fr}
+    .list-head.manager{grid-template-columns:120px 140px 1fr}
+    .row{
+      width:100%;
+      border:0;
+      border-bottom:1px solid #eef2f7;
+      background:#fff;
+      text-align:left;
+      padding:10px 12px;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-size:14px;
+    }
+    .row.branch{display:grid;grid-template-columns:120px 1fr;gap:0}
+    .row.manager{display:grid;grid-template-columns:120px 140px 1fr;gap:0}
+    .row span{padding:0 12px;border-right:1px solid #f1f5f9}
+    .row span:last-child{border-right:0}
+    .row:hover{background:#f8fafc}
+    .row:last-child{border-bottom:0}
+    .modal-f{
+      padding:10px 12px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .fbtn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:8px 12px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .demo-click{
+      box-shadow:0 0 0 2px rgba(0,103,177,.28), 0 0 0 7px rgba(0,103,177,.12);
+      transition:box-shadow .18s ease;
+    }
+    .click-ripple{
+      position:fixed;
+      width:18px;
+      height:18px;
+      border:2px solid rgba(0,103,177,.6);
+      border-radius:50%;
+      pointer-events:none;
+      transform:translate(-50%,-50%) scale(.6);
+      opacity:1;
+      animation:ripple .45s ease-out forwards;
+      z-index:999;
+    }
+    @keyframes ripple{
+      to{
+        transform:translate(-50%,-50%) scale(2);
+        opacity:0;
+      }
+    }
+    .select-demo-menu{
+      position:fixed;
+      min-width:180px;
+      max-width:320px;
+      background:#fff;
+      border:1px solid #cfd8e3;
+      border-radius:10px;
+      box-shadow:0 14px 28px rgba(15,23,42,.22);
+      padding:4px;
+      display:none;
+      z-index:150;
+      font-size:14px;
+    }
+    .select-demo-menu.show{display:block}
+    .select-demo-item{
+      padding:8px 10px;
+      border-radius:7px;
+      color:#334155;
+    }
+    .select-demo-item.active{
+      background:#e8f2fb;
+      color:#0b5a95;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title">신청정보 입력</div>
+      <div class="terminal-badge">영업점 단말</div>
+    </div>
+
+    <div class="content">
+      <section class="panel">
+        <div class="panel-b">
+          <div class="form">
+            <div class="field">
+              <label>차주명(법인)</label>
+              <input id="borrowerName" value="" />
+            </div>
+            <div class="field">
+              <label>신청번호</label>
+              <input id="applicationNo" value="" />
+            </div>
+            <div class="field">
+              <label>영업점 코드</label>
+              <div class="input-group">
+                <input id="branchCode" value="" />
+                <button id="branchLookupBtn" class="icon-btn" type="button" aria-label="영업점 코드 조회" data-popup="branch">조회</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>담당자</label>
+              <div class="input-group">
+                <input id="managerName" value="" />
+                <button id="managerLookupBtn" class="icon-btn" type="button" aria-label="담당자 조회" data-popup="manager">조회</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>신청일자</label>
+              <input id="applyDate" value="" />
+            </div>
+            <div class="field">
+              <label>대출상품</label>
+              <input id="loanProduct" value="" />
+            </div>
+            <div class="field">
+              <label>신청금액</label>
+              <input id="loanAmount" value="" />
+            </div>
+            <div class="field">
+              <label>만기일</label>
+              <input id="maturityDate" value="" />
+            </div>
+            <div class="field">
+              <label>상환방식</label>
+              <select id="repaymentType">
+                <option value="" selected style="color:#94a3b8">-선택-</option>
+                <option value="equal">원리금균등</option>
+                <option value="maturity">만기일시상환</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>취급구분</label>
+              <select id="handlingType">
+                <option value="" selected style="color:#94a3b8">-선택-</option>
+                <option value="new">신규</option>
+                <option value="extend">연장</option>
+                <option value="renew">재약정</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label>자금용도</label>
+              <input id="fundPurpose" value="" />
+            </div>
+            <div class="field">
+              <label>담보유형</label>
+              <select id="collateralType">
+                <option value="" selected style="color:#94a3b8">-선택-</option>
+                <option value="realEstate">부동산담보</option>
+                <option value="credit">신용</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>신청채널</label>
+              <select id="applyChannel">
+                <option value="" selected style="color:#94a3b8">-선택-</option>
+                <option value="branch">영업점</option>
+                <option value="online">비대면</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary">첨부문서 등록</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="overlay" id="lookupOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lookupTitle">
+      <div class="modal-h">
+        <div class="modal-title" id="lookupTitle">조회</div>
+        <button class="close-btn" id="closeLookup" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-b">
+        <div class="search">
+          <input id="lookupQuery" placeholder="검색어 입력" />
+          <button id="searchBtn" type="button">검색</button>
+        </div>
+        <div class="list" id="lookupList"></div>
+      </div>
+      <div class="modal-f">
+        <button class="fbtn" id="cancelLookup" type="button">취소</button>
+      </div>
+    </div>
+  </div>
+  <div class="select-demo-menu" id="selectDemoMenu" aria-hidden="true"></div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const branchData = [
+      { code: "411", name: "강남기업금융센터" },
+      { code: "238", name: "서초금융센터" },
+      { code: "105", name: "종로금융센터" },
+      { code: "522", name: "여의도금융센터" }
+    ];
+
+    const managerData = [
+      { id: "E1042", name: "김담당", branch: "강남기업금융센터" },
+      { id: "E0915", name: "이심사", branch: "서초금융센터" },
+      { id: "E1130", name: "박영업", branch: "여의도금융센터" },
+      { id: "E0873", name: "최담당", branch: "종로금융센터" }
+    ];
+
+    const overlay = document.getElementById("lookupOverlay");
+    const lookupTitle = document.getElementById("lookupTitle");
+    const lookupQuery = document.getElementById("lookupQuery");
+    const lookupList = document.getElementById("lookupList");
+    const closeLookup = document.getElementById("closeLookup");
+    const cancelLookup = document.getElementById("cancelLookup");
+    const searchBtn = document.getElementById("searchBtn");
+    const branchCode = document.getElementById("branchCode");
+    const managerName = document.getElementById("managerName");
+
+    let currentType = null;
+
+    function clickPulse(target){
+      if(!target) return;
+      const rect = target.getBoundingClientRect();
+      const ripple = document.createElement("div");
+      ripple.className = "click-ripple";
+      ripple.style.left = `${rect.left + rect.width / 2}px`;
+      ripple.style.top = `${rect.top + rect.height / 2}px`;
+      document.body.appendChild(ripple);
+      target.classList.add("demo-click");
+      setTimeout(() => target.classList.remove("demo-click"), 220);
+      setTimeout(() => ripple.remove(), 500);
+    }
+
+    function renderList(items, type){
+      lookupList.innerHTML = "";
+      const head = document.createElement("div");
+      head.className = `list-head ${type}`;
+      if(type === "branch"){
+        head.innerHTML = "<div>영업점 코드</div><div>영업점명</div>";
+      } else {
+        head.innerHTML = "<div>사번</div><div>담당자</div><div>영업점명</div>";
+      }
+      lookupList.appendChild(head);
+
+      items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `row ${type}`;
+        if(type === "branch"){
+          btn.innerHTML = `<span>${item.code}</span><span>${item.name}</span>`;
+          btn.addEventListener("click", () => {
+            clickPulse(btn);
+            branchCode.value = item.code;
+            closeModal();
+          });
+        } else {
+          btn.innerHTML = `<span>${item.id}</span><span>${item.name}</span><span>${item.branch}</span>`;
+          btn.addEventListener("click", () => {
+            clickPulse(btn);
+            managerName.value = item.name;
+            closeModal();
+          });
+        }
+        lookupList.appendChild(btn);
+      });
+    }
+
+    function filterAndRender(){
+      const q = lookupQuery.value.trim().toLowerCase();
+      if(currentType === "branch"){
+        const filtered = branchData.filter(x => (`${x.code} ${x.name}`).toLowerCase().includes(q));
+        renderList(filtered, "branch");
+      } else if(currentType === "manager"){
+        const filtered = managerData.filter(x => (`${x.id} ${x.name} ${x.branch}`).toLowerCase().includes(q));
+        renderList(filtered, "manager");
+      }
+    }
+
+    function openModal(type){
+      currentType = type;
+      lookupTitle.textContent = type === "branch" ? "영업점 코드 조회" : "담당자 조회";
+      lookupQuery.value = "";
+      renderList(type === "branch" ? branchData : managerData, type);
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+      lookupQuery.focus();
+    }
+
+    function closeModal(){
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      currentType = null;
+    }
+
+    document.querySelectorAll(".icon-btn[data-popup]").forEach(btn => {
+      btn.addEventListener("click", () => openModal(btn.dataset.popup));
+    });
+
+    closeLookup.addEventListener("click", closeModal);
+    cancelLookup.addEventListener("click", closeModal);
+    searchBtn.addEventListener("click", filterAndRender);
+    lookupQuery.addEventListener("keydown", e => {
+      if(e.key === "Enter") filterAndRender();
+      if(e.key === "Escape") closeModal();
+    });
+    overlay.addEventListener("click", e => {
+      if(e.target === overlay) closeModal();
+    });
+
+    const selectDemoMenu = document.getElementById("selectDemoMenu");
+    const demoFields = {
+      borrowerName: "(주)000바이오",
+      applicationNo: "CC411-2026-000123",
+      applyDate: "2026-03-05",
+      loanProduct: "기업운전일반자금대출",
+      loanAmount: "1,500,000,000",
+      maturityDate: "2027-12-31",
+      fundPurpose: "운전자금"
+    };
+
+    const DEMO_TIME_SCALE = 1.6;
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms * DEMO_TIME_SCALE));
+    }
+
+    async function typeValue(input, value, speed){
+      clickPulse(input);
+      input.focus();
+      input.value = "";
+      for(const ch of value){
+        input.value += ch;
+        await sleep(speed);
+      }
+      input.blur();
+    }
+
+    function showSelectMenu(selectEl){
+      const options = Array.from(selectEl.options);
+      const rect = selectEl.getBoundingClientRect();
+      selectDemoMenu.innerHTML = "";
+      options.forEach((option, idx) => {
+        const item = document.createElement("div");
+        item.className = "select-demo-item";
+        item.dataset.idx = idx;
+        item.textContent = option.textContent;
+        if(idx === selectEl.selectedIndex){
+          item.classList.add("active");
+        }
+        selectDemoMenu.appendChild(item);
+      });
+      selectDemoMenu.style.left = `${rect.left}px`;
+      selectDemoMenu.style.top = `${Math.min(window.innerHeight - 220, rect.bottom + 4)}px`;
+      selectDemoMenu.style.width = `${rect.width}px`;
+      selectDemoMenu.classList.add("show");
+      selectDemoMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function hideSelectMenu(){
+      selectDemoMenu.classList.remove("show");
+      selectDemoMenu.setAttribute("aria-hidden", "true");
+    }
+
+    async function chooseSelect(selectEl, targetIndex){
+      clickPulse(selectEl);
+      showSelectMenu(selectEl);
+      await sleep(150);
+      const targetItem = selectDemoMenu.querySelector(`.select-demo-item[data-idx="${targetIndex}"]`);
+      if(targetItem){
+        clickPulse(targetItem);
+        targetItem.classList.add("active");
+      }
+      await sleep(110);
+      selectEl.selectedIndex = targetIndex;
+      selectEl.dispatchEvent(new Event("change", { bubbles:true }));
+      hideSelectMenu();
+      await sleep(60);
+    }
+
+    async function chooseLookup(type){
+      const btn = document.querySelector(`.icon-btn[data-popup="${type}"]`);
+      clickPulse(btn);
+      openModal(type);
+      await sleep(420);
+      const row = lookupList.querySelector(`.row.${type}`);
+      if(row){
+        clickPulse(row);
+        await sleep(150);
+        row.click();
+      }
+      await sleep(120);
+    }
+
+    function initEmptyState(){
+      Object.keys(demoFields).forEach(id => {
+        const input = document.getElementById(id);
+        if(input) input.value = "";
+      });
+      branchCode.value = "";
+      managerName.value = "";
+      ["repaymentType", "handlingType", "collateralType", "applyChannel"].forEach(id => {
+        const selectEl = document.getElementById(id);
+        if(selectEl) selectEl.selectedIndex = 0;
+      });
+      hideSelectMenu();
+      closeModal();
+    }
+
+    async function runDemoSequence(){
+      initEmptyState();
+      await sleep(220);
+      await typeValue(document.getElementById("borrowerName"), demoFields.borrowerName, 44);
+      await typeValue(document.getElementById("applicationNo"), demoFields.applicationNo, 30);
+      await chooseLookup("branch");
+      await chooseLookup("manager");
+      await typeValue(document.getElementById("applyDate"), demoFields.applyDate, 24);
+      await typeValue(document.getElementById("loanProduct"), demoFields.loanProduct, 30);
+      await typeValue(document.getElementById("loanAmount"), demoFields.loanAmount, 24);
+      await typeValue(document.getElementById("maturityDate"), demoFields.maturityDate, 24);
+      await typeValue(document.getElementById("fundPurpose"), demoFields.fundPurpose, 42);
+      await chooseSelect(document.getElementById("repaymentType"), 1);
+      await chooseSelect(document.getElementById("handlingType"), 1);
+      await chooseSelect(document.getElementById("collateralType"), 1);
+      await chooseSelect(document.getElementById("applyChannel"), 1);
+      await sleep(180);
+      const nextBtn = document.querySelector(".actions .btn.primary");
+      clickPulse(nextBtn);
+      await sleep(220);
+    }
+
+    window.addEventListener("load", () => {
+      runDemoSequence().then(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(700);
+      });
+    });
+  </script>
+</body>
+</html>

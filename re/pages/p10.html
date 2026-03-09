@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P10 AI 브릿지 알림 (완료)</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+</head>
+<body>
+<div class="app-shell theme-bridge-mini">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">AI 알림 수신</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge channel-badge--bridge">브릿지 미니</span>
+    </div>
+  </header>
+
+  <div class="overlay-blur" id="overlay" style="opacity:0;transition:opacity 0.5s"></div>
+  <div class="mini-card" id="miniCard">
+    <div class="mini-card__header" id="cardHeader">
+      <span id="cardBadge" style="font-weight:var(--font-bold);font-size:var(--text-sm)"></span>
+      <span style="font-size:var(--text-xs);color:var(--gray-500)" id="cardTime"></span>
+    </div>
+    <div class="mini-card__body">
+      <p id="cardMsg" style="white-space:pre-line"></p>
+    </div>
+    <div class="mini-card__action">
+      <a href="#">대사 결과 확인 →</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { notifications } from '../data/notifications.js';
+
+StateManager.save({ currentPage: 'p10' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const n = notifications.complete;
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(400);
+
+  document.getElementById('overlay').style.opacity = '1';
+  await DemoEngine.wait(300);
+
+  document.getElementById('cardBadge').textContent = `✅ ${n.badge}`;
+  document.getElementById('cardBadge').style.color = '#0D7C3F';
+  document.getElementById('cardHeader').classList.add('success');
+  document.getElementById('cardTime').textContent = new Date().toLocaleTimeString('ko-KR');
+  document.getElementById('cardMsg').textContent = n.message;
+  document.getElementById('miniCard').classList.add('show');
+
+  await DemoEngine.wait(1200);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

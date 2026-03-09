@@ -1,0 +1,57 @@
+/* ── Wooridaum Font Face ── */
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../../assets/font/WooridaumL.woff2") format("woff2"),
+       url("../../assets/font/WooridaumL.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../../assets/font/WooridaumR.woff2") format("woff2"),
+       url("../../assets/font/WooridaumR.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../../assets/font/WooridaumB.woff2") format("woff2"),
+       url("../../assets/font/WooridaumB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ── Font Stacks ── */
+  --font-primary: "Wooridaum", "Pretendard", "Malgun Gothic", sans-serif;
+  --font-data: "Pretendard", "Wooridaum", "Malgun Gothic", sans-serif;
+  --font-micro: "Pretendard", "Malgun Gothic", sans-serif;
+
+  /* ── Weight ── */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-bold: 700;
+
+  /* ── Type Scale (auditorium: min 15px, body 22px+) ── */
+  --text-3xl: 52px;
+  --text-2xl: 44px;
+  --text-xl: 36px;
+  --text-lg: 28px;
+  --text-md: 22px;
+  --text-sm: 19px;
+  --text-xs: 15px;
+
+  /* ── Line Height ── */
+  --leading-3xl: 60px;
+  --leading-2xl: 52px;
+  --leading-xl: 44px;
+  --leading-lg: 36px;
+  --leading-md: 30px;
+  --leading-sm: 26px;
+  --leading-xs: 21px;
+}

@@ -1,0 +1,87 @@
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+
+.card__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--gray-900);
+  margin-bottom: var(--space-3);
+}
+
+/* Target cards (P3/P4) */
+.target-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.target-card {
+  background: var(--card);
+  border: var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+}
+
+.target-card__icon {
+  font-size: 24px;
+  margin-bottom: var(--space-1);
+}
+
+.target-card__label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--gray-700);
+  margin-bottom: var(--space-1);
+}
+
+.target-card__count {
+  font-family: var(--font-data);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
+/* Timeline (execution order) */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  transition: all var(--duration-normal) var(--ease-default);
+}
+
+.timeline-item.done {
+  background: var(--color-success-bg);
+}
+
+.timeline-item__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-300);
+  flex-shrink: 0;
+}
+
+.timeline-item.done .timeline-item__dot {
+  background: var(--color-success);
+}
+
+.timeline-item__text {
+  font-size: var(--text-sm);
+  color: var(--gray-700);
+}

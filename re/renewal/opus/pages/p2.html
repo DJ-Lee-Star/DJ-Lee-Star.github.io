@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P2 첨부서류 등록</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .doc-upload-list { display: grid; gap: 10px; }
+    .doc-upload-row { display: flex; align-items: center; gap: var(--space-4); padding: 12px 14px; border: 1px solid #cfd8e1; border-radius: 10px; background: #fff; opacity: 0; transform: translateY(6px); transition: all 0.3s var(--ease-out); }
+    .doc-upload-row.show { opacity: 1; transform: translateY(0); }
+    .doc-upload-row.done { border-color: #8dd3c7; background: #f0faf7; }
+    .doc-upload-row__name { flex: 1; font-size: var(--text-md); font-weight: var(--font-bold); color: #163249; }
+    .doc-upload-row__cat { font-size: var(--text-xs); color: #6a7b8c; min-width: 60px; }
+    .doc-upload-row__status { font-size: var(--text-sm); font-weight: var(--font-bold); color: #9ca3af; min-width: 80px; text-align: right; }
+    .doc-upload-row.done .doc-upload-row__status { color: #0D7C3F; }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-terminal">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">첨부서류 등록</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge">영업점 단말</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <section class="terminal-appbar">
+      <div class="terminal-appbar-group">
+        <span class="terminal-app-tag is-primary">기업여신 02-서류등록</span>
+        <span class="terminal-app-tag">CC411-2026-000123</span>
+        <span class="terminal-app-tag">(주)000바이오</span>
+      </div>
+      <div class="terminal-appbar-group">
+        <span class="terminal-app-tag">단계 2/8</span>
+      </div>
+    </section>
+
+    <section class="terminal-tabbar">
+      <span class="terminal-tab">신청정보입력</span>
+      <span class="terminal-tab is-active">첨부서류등록</span>
+      <span class="terminal-tab">심사진행현황</span>
+    </section>
+
+    <section class="terminal-status-strip">
+      <article class="terminal-status-box is-featured">
+        <span class="terminal-status-box__label">안내</span>
+        <span class="terminal-status-box__value" style="font-size:var(--text-md)">서류를 등록하면 Agent 분석이 시작됩니다</span>
+      </article>
+      <article class="terminal-status-box">
+        <span class="terminal-status-box__label">등록 현황</span>
+        <span class="terminal-status-box__value" id="sv-progress">0 / 8</span>
+      </article>
+      <article class="terminal-status-box">
+        <span class="terminal-status-box__label">담보서류</span>
+        <span class="terminal-status-box__value" id="sv-collateral">미등록</span>
+      </article>
+    </section>
+
+    <section class="terminal-workspace terminal-workspace--single">
+      <article class="terminal-panel">
+        <div class="terminal-panel-head">
+          <h2 class="terminal-panel-head__title">제출 서류 등록</h2>
+          <span class="terminal-panel-head__meta">기본 4종 + 담보 3종 + 인감 1종</span>
+        </div>
+        <div class="terminal-panel-body">
+          <div class="doc-upload-list" id="docList"></div>
+          <div class="terminal-note-box is-warn" id="warnNote" style="opacity:0;transition:opacity 0.4s">
+            <strong>다음 단계 안내</strong>
+            <p>서류 등록 완료 후 단말이 Agent 분석 요청을 전송합니다. 단말에서는 AI 결과를 직접 열거나 수정하지 않습니다.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="terminal-action-bar">
+      <span class="terminal-action-bar__note">모든 서류 등록 후 AI Agent 분석 요청</span>
+      <button class="btn btn--secondary" type="button">이전</button>
+      <button class="btn btn--primary" type="button" id="btnSubmit" style="opacity:0.5">AI Agent 분석 요청</button>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+
+StateManager.save({ currentPage: 'p2' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const uploadDocs = documents.list.filter(d => d.fileName);
+const docList = document.getElementById('docList');
+
+uploadDocs.forEach(doc => {
+  const row = document.createElement('div');
+  row.className = 'doc-upload-row';
+  row.innerHTML = `<span class="doc-upload-row__name">${doc.name}</span><span class="doc-upload-row__cat">${doc.category}</span><span class="doc-upload-row__status">대기</span>`;
+  docList.appendChild(row);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(300);
+
+  const rows = docList.querySelectorAll('.doc-upload-row');
+  let collateralDone = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].classList.add('show');
+    await DemoEngine.wait(100);
+  }
+
+  await DemoEngine.wait(200);
+
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].querySelector('.doc-upload-row__status').textContent = '등록 중...';
+    rows[i].querySelector('.doc-upload-row__status').style.color = '#2563eb';
+    await DemoEngine.wait(200);
+    rows[i].classList.add('done');
+    rows[i].querySelector('.doc-upload-row__status').textContent = '등록완료';
+    document.getElementById('sv-progress').textContent = `${i + 1} / ${uploadDocs.length}`;
+
+    if (uploadDocs[i].category === '담보') {
+      collateralDone++;
+      document.getElementById('sv-collateral').textContent = `${collateralDone}건 등록`;
+    }
+    await DemoEngine.wait(100);
+  }
+
+  document.getElementById('btnSubmit').style.opacity = '1';
+  document.getElementById('warnNote').style.opacity = '1';
+
+  await DemoEngine.wait(600);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

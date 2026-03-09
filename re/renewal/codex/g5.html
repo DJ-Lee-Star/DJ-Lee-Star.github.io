@@ -1,0 +1,92 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>G5 브릿지 검토 및 수정 반영</title>
+  <link rel="stylesheet" href="./styles/tokens.css" />
+  <link rel="stylesheet" href="./styles/templates.css" />
+</head>
+<body>
+  <div class="shell shell-bridge">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">WOORI AI BRIDGE</p>
+        <h1 class="page-title">브릿지 검토 및 수정 반영</h1>
+      </div>
+      <div class="channel-badge channel-badge-bridge">HITL Bridge</div>
+    </header>
+
+    <main class="bridge-layout">
+      <section class="step-flow">
+        <div class="step-item step-done">Agent 전달</div>
+        <div class="step-arrow">→</div>
+        <div class="step-item step-active">근거 검토</div>
+        <div class="step-arrow">→</div>
+        <div class="step-item">수정 반영 승인</div>
+        <div class="step-arrow">→</div>
+        <div class="step-item">단말 복귀</div>
+      </section>
+
+      <section class="bridge-body">
+        <article class="panel">
+          <div class="panel-head"><h2>검토 목록</h2><span class="head-meta">브릿지 작업 큐</span></div>
+          <div class="panel-body stack-list">
+            <div class="queue-item is-active"><strong>자본금 불일치</strong><span class="status-chip status-chip-run">현재 검토</span></div>
+            <div class="queue-item"><strong>주주명부 미제출</strong><span class="status-chip status-chip-warn">보완 후보</span></div>
+            <div class="queue-item"><strong>사정의견서 미제출</strong><span class="status-chip status-chip-warn">담보 검토</span></div>
+          </div>
+        </article>
+
+        <article class="panel evidence-paper">
+          <div class="panel-head"><h2>근거 문서 확인</h2><span class="head-meta">법인등기부등본 원문 근거</span></div>
+          <div class="panel-body">
+            <div class="paper-block">
+              <div class="paper-line"><span>법인명</span><strong>(주)000바이오</strong></div>
+              <div class="paper-line"><span>대표자</span><strong>홍길동</strong></div>
+              <div class="paper-line is-hit"><span>자본금</span><strong>1,600,000,000원</strong></div>
+              <div class="paper-line"><span>본점 주소</span><strong>서울특별시 중구 세종대로 00</strong></div>
+              <div class="paper-line"><span>설립일</span><strong>2019-06-17</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <div class="panel-head"><h2>브릿지 판단 액션</h2><span class="status-chip status-chip-warn">승인 필요</span></div>
+          <div class="panel-body split-stack">
+            <div class="review-callout">
+              <strong>검토 포인트</strong>
+              <p>단말 입력값은 1,000,000,000원, Agent 추출 근거는 1,600,000,000원입니다. 브릿지에서 수정 반영 여부를 확인해야 합니다.</p>
+            </div>
+            <div class="review-card">
+              <strong>현재 단말 값</strong>
+              <p class="doc-upload-desc">1,000,000,000원</p>
+            </div>
+            <div class="review-card">
+              <strong>근거 문서 값</strong>
+              <p class="doc-upload-desc">1,600,000,000원</p>
+            </div>
+            <div class="review-card is-live">
+              <strong>반영 예정 값</strong>
+              <p class="doc-upload-desc">1,600,000,000원</p>
+            </div>
+            <div class="info-note">
+              <strong>후속 효과</strong>
+              <p>수정 반영 승인 시 단말 반영 결과 확인 화면으로 이동하며, 이후 심사 요청 또는 보완 요청 분기로 이어집니다.</p>
+            </div>
+            <div class="info-note">
+              <strong>AI 제언</strong>
+              <p>부동산 담보 건은 자본금 수정 승인과 별개로 담보가치 근거 서류를 보완받는 것이 안전합니다. 사정의견서가 없으면 한도 확정보다 조건부 심사 또는 추가 담보 검토가 적절합니다.</p>
+            </div>
+            <div class="action-bar" style="justify-content:flex-start;">
+              <button class="btn btn-secondary" type="button">보완 요청</button>
+              <button class="btn btn-secondary" type="button">이슈 보류</button>
+              <button class="btn btn-primary" type="button">수정 반영 승인</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P13 AI QA 브릿지</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .chat-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: var(--space-5); gap: var(--space-5); }
+    .chat-msg { max-width: 80%; opacity: 0; transform: translateY(8px); transition: all 0.3s var(--ease-out); }
+    .chat-msg.show { opacity: 1; transform: translateY(0); }
+    .chat-msg--agent { align-self: flex-start; }
+    .chat-msg--user { align-self: flex-end; }
+    .chat-bubble { padding: var(--space-5); border-radius: var(--radius-lg); font-size: var(--text-md); line-height: var(--leading-lg); white-space: pre-line; }
+    .chat-msg--agent .chat-bubble { background: var(--card); border: 1px solid var(--gray-200); color: var(--gray-800); }
+    .chat-msg--user .chat-bubble { background: var(--color-primary); color: #fff; }
+    .chat-sender { font-size: var(--text-xs); color: var(--gray-500); margin-bottom: 4px; font-weight: var(--font-bold); }
+    .chat-msg--user .chat-sender { text-align: right; }
+    .action-plan { margin-top: var(--space-3); }
+    .action-plan-title { font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--gray-600); margin-bottom: var(--space-2); }
+    .action-plan-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) 0; font-size: var(--text-sm); }
+    .action-plan-item .check { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--gray-300); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .action-plan-item .check.done { background: #0D7C3F; border-color: #0D7C3F; color: #fff; }
+    .ref-links { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+    .ref-link { font-size: var(--text-xs); padding: 4px 10px; background: var(--color-primary-bg); border-radius: var(--radius-full); color: var(--color-primary); font-weight: var(--font-bold); }
+    .typing-dot { display: inline-flex; gap: 4px; padding: var(--space-3) var(--space-4); background: var(--card); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); }
+    .typing-dot span { width: 8px; height: 8px; background: var(--gray-400); border-radius: 50%; animation: dot-bounce 1.2s infinite; }
+    .typing-dot span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce { 0%,80%,100% { transform: scale(0.6); } 40% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-bridge">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/h1_01.png" alt="우리은행" class="app-header__logo-img" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">AI QA 대화</span>
+    </div>
+    <div class="app-header__right">
+      <span class="channel-badge channel-badge--bridge">AI 브릿지</span>
+    </div>
+  </header>
+
+  <div class="app-content" style="display:flex;flex-direction:column">
+    <div class="chat-area" id="chatArea"></div>
+    <div style="padding:var(--space-3) var(--space-5);border-top:1px solid var(--gray-200);display:flex;gap:var(--space-3);align-items:center">
+      <div style="flex:1;padding:var(--space-3) var(--space-4);border:1px solid var(--gray-300);border-radius:var(--radius-lg);font-size:var(--text-md);color:var(--gray-400)">메시지를 입력하세요...</div>
+      <button class="btn btn--primary" type="button">전송</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { qaScript } from '../data/qa-script.js';
+
+StateManager.save({ currentPage: 'p13' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const chatArea = document.getElementById('chatArea');
+
+function addMessage(turn) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `chat-msg chat-msg--${turn.role === 'agent' ? 'agent' : 'user'}`;
+
+  let html = `<div class="chat-sender">${turn.role === 'agent' ? 'AI Agent' : '담당자'}</div><div class="chat-bubble">${turn.content}</div>`;
+
+  if (turn.references?.length) {
+    html += '<div class="ref-links">';
+    turn.references.forEach(r => { html += `<span class="ref-link">📎 ${r.label}</span>`; });
+    html += '</div>';
+  }
+  if (turn.actionPlan?.length) {
+    html += '<div class="action-plan"><div class="action-plan-title">Action Plan</div>';
+    turn.actionPlan.forEach(a => {
+      html += `<div class="action-plan-item"><span class="check ${a.checked ? 'done' : ''}">${a.checked ? '✓' : ''}</span><span>${a.text}</span></div>`;
+    });
+    html += '</div>';
+  }
+
+  wrapper.innerHTML = html;
+  chatArea.appendChild(wrapper);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return wrapper;
+}
+
+function addTyping() {
+  const el = document.createElement('div');
+  el.className = 'chat-msg chat-msg--agent show';
+  el.innerHTML = '<div class="typing-dot"><span></span><span></span><span></span></div>';
+  chatArea.appendChild(el);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return el;
+}
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  await DemoEngine.wait(300);
+
+  for (const turn of qaScript.turns) {
+    if (turn.role === 'agent') {
+      const typingEl = addTyping();
+      await DemoEngine.wait(turn.delay || 800);
+      typingEl.remove();
+    } else {
+      await DemoEngine.wait(turn.delay || 600);
+    }
+    const el = addMessage(turn);
+    await DemoEngine.wait(50);
+    el.classList.add('show');
+    await DemoEngine.wait(200);
+  }
+
+  await DemoEngine.wait(600);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

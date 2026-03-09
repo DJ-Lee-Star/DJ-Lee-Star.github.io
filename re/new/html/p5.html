@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P5 진위검증</title>
+  <style>
+    :root{
+      --bg:#edf0f3;
+      --card:#f3f5f7;
+      --line:#bbbbbb;
+      --text:#1f2937;
+      --muted:#66768a;
+      --primary:#0067b1;
+      --primary-soft:#e8f2fb;
+      --ok:#1f9d55;
+      --warn:#b45309;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg);
+      border:1px solid #d4dae2;
+      border-radius:12px;
+      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      background:#eceff3;
+      border-bottom:2px solid var(--primary);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .title-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+    }
+    .meta{
+      font-size:16px;
+      color:#4b5563;
+      font-weight:700;
+      border:1px solid #d6dde6;
+      background:#f4f6f8;
+      border-radius:999px;
+      padding:5px 10px;
+    }
+    .run-badge{
+      display:flex;
+      align-items:center;
+      color:#374151;
+      background:#ffffff;
+      border:2px solid #0067b1;
+      border-radius:0;
+      padding:6px 12px;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .content{
+      height:656px;
+      padding:10px;
+      display:grid;
+      grid-template-rows:62px 1fr;
+      gap:6px;
+      background:#bbbbbb;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+    }
+    .flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      height:100%;
+      padding:6px 8px;
+      background:#e7ebf0;
+    }
+    .step{
+      min-width:142px;
+      border:1px solid #b8c2cf;
+      border-radius:8px;
+      padding:7px 9px;
+      background:#f8fafc;
+      text-align:center;
+      font-size:14px;
+      color:#475569;
+      font-weight:800;
+    }
+    .step.active{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .step.done{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .step.active.prep{
+      color:#17663c;
+      border-color:#86efac;
+      background:#f0fdf4;
+      animation:activePrepBlink 1s ease-in-out infinite;
+    }
+    @keyframes activePrepBlink{
+      0%,100%{box-shadow:0 0 0 0 rgba(31,157,85,0)}
+      50%{box-shadow:0 0 0 6px rgba(31,157,85,.16)}
+    }
+    .arrow{color:#7f8ea3;font-size:16px;line-height:1}
+    .main{min-height:0}
+    .main>.card{
+      min-height:0;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .box-h{
+      padding:10px 12px;
+      border-bottom:1px solid #c9d2dd;
+      font-size:15px;
+      font-weight:800;
+      color:#1f2937;
+      background:#dfe5ec;
+    }
+    .box-b{
+      padding:8px;
+      flex:1;
+      min-height:0;
+      background:#f4f6f9;
+    }
+    .verify-table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#fff;
+      border:1px solid #cfd7e1;
+      border-radius:10px;
+      overflow:hidden;
+      font-size:14px;
+    }
+    .verify-table th{
+      background:#e7edf4;
+      color:#334155;
+      font-weight:800;
+      border-bottom:1px solid #c7d1dd;
+      border-right:1px solid #d6dee8;
+      padding:9px 8px;
+      text-align:left;
+    }
+    .verify-table th:last-child{border-right:0}
+    .verify-table td{
+      border-bottom:1px solid #e2e8f0;
+      border-right:1px solid #eef2f7;
+      padding:9px 8px;
+      color:#1f2937;
+      vertical-align:middle;
+    }
+    .verify-table tr:last-child td{border-bottom:0}
+    .verify-table td:last-child{border-right:0}
+    .doc-name{font-weight:700;color:#334155}
+    .issuer{color:#475569;font-weight:700}
+    .rpa-row{
+      display:grid;
+      grid-template-columns:180px 130px 1fr;
+      align-items:center;
+      gap:10px;
+      padding:12px 12px;
+      margin-bottom:16px;
+      background:#ffffff;
+      border:1px solid #cfd7e1;
+      border-radius:10px;
+    }
+    .rpa-label{
+      font-size:14px;
+      font-weight:800;
+      color:#334155;
+    }
+    .rpa-status{
+      font-size:13px;
+      font-weight:800;
+      color:#0b5d99;
+    }
+    .rpa-status.done{color:#17663c}
+    .rpa-track{
+      height:16px;
+      border:1px solid #c7d2df;
+      background:#eef2f7;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .rpa-fill{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg,#60a5fa,#0067b1);
+      transition:width .15s linear;
+    }
+    .badge{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:800;
+      color:#475569;
+      background:#eceff3;
+    }
+    .badge.run{
+      color:var(--primary);
+      border-color:#93c5fd;
+      background:#eff6ff;
+    }
+    .badge.ok{
+      border-color:#99f6e4;
+      color:#17663c;
+      background:#ecfeff;
+    }
+    .blink{animation:blinkPulse .8s ease-in-out 2}
+    @keyframes blinkPulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(0,103,177,0)}
+      50%{box-shadow:0 0 0 6px rgba(0,103,177,.12)}
+    }
+    .state{
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      color:#475569;
+      background:#eceff3;
+    }
+    .state.run{
+      color:var(--primary);
+      border-color:#93c5fd;
+      background:#eff6ff;
+    }
+    .state.done{
+      color:#17663c;
+      border-color:#86efac;
+      background:#f0fdf4;
+    }
+    .legend{
+      margin-top:8px;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      font-size:12px;
+      color:#475569;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title-group">
+        <div class="title">진위검증</div>
+        <div class="meta">Agent</div>
+      </div>
+      <div class="run-badge">백그라운드 실행</div>
+    </div>
+
+    <div class="content">
+      <section class="card">
+        <div class="flow">
+          <div class="step done">실행 계획 수립</div>
+          <div class="arrow">→</div>
+          <div class="step done">문서 전처리</div>
+          <div class="arrow">→</div>
+          <div class="step active prep" id="activeFlowStep">진위검증</div>
+          <div class="arrow">→</div>
+          <div class="step">AI-OCR 및 필드 추출</div>
+          <div class="arrow">→</div>
+          <div class="step">대사/검증</div>
+        </div>
+      </section>
+
+      <section class="main">
+        <article class="card">
+          <div class="box-h">진위검증 실행</div>
+          <div class="box-b">
+            <div class="rpa-row" aria-label="진위확인 RPA 로딩 상태">
+              <div class="rpa-label">진위확인 RPA</div>
+              <div class="rpa-status" id="rpaStatus">로딩중 0%</div>
+              <div class="rpa-track"><div class="rpa-fill" id="rpaProgress"></div></div>
+            </div>
+            <table class="verify-table" aria-label="진위검증 실행 목록">
+              <thead>
+                <tr>
+                  <th style="width:260px">문서명</th>
+                  <th style="width:200px">발급기관</th>
+                  <th style="width:180px">기관 API 호출</th>
+                  <th style="width:180px">응답전문 파싱</th>
+                  <th style="width:180px">진위 확인</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-row="0">
+                  <td class="doc-name">사업자등록증명원.pdf</td>
+                  <td class="issuer">국세청(홈택스)</td>
+                  <td><span class="state verify-state" data-stage="api">대기</span></td>
+                  <td><span class="state verify-state" data-stage="parse">대기</span></td>
+                  <td><span class="state verify-state" data-stage="compare">대기</span></td>
+                </tr>
+                <tr data-row="1">
+                  <td class="doc-name">법인등기부등본.pdf</td>
+                  <td class="issuer">대법원 인터넷등기소</td>
+                  <td><span class="state verify-state" data-stage="api">대기</span></td>
+                  <td><span class="state verify-state" data-stage="parse">대기</span></td>
+                  <td><span class="state verify-state" data-stage="compare">대기</span></td>
+                </tr>
+                <tr data-row="2">
+                  <td class="doc-name">법인인감증명서.pdf</td>
+                  <td class="issuer">국세청(홈택스)</td>
+                  <td><span class="state verify-state" data-stage="api">대기</span></td>
+                  <td><span class="state verify-state" data-stage="parse">대기</span></td>
+                  <td><span class="state verify-state" data-stage="compare">대기</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const TOTAL_RUN_MS = 10000;
+    const DEMO_SCALE = TOTAL_RUN_MS / 10000;
+    const activeFlowStep = document.getElementById("activeFlowStep");
+    const verifyRows = Array.from(document.querySelectorAll("tbody tr[data-row]"));
+    const rpaStatus = document.getElementById("rpaStatus");
+    const rpaProgress = document.getElementById("rpaProgress");
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms * DEMO_SCALE));
+    }
+
+    function setVerifyState(rowIdx, stage, state){
+      const row = verifyRows[rowIdx];
+      if(!row) return;
+      const item = row.querySelector(`.verify-state[data-stage="${stage}"]`);
+      if(!item) return;
+      item.classList.remove("run", "done", "blink");
+      if(state === "run"){
+        item.classList.add("run");
+        item.textContent = "진행중";
+      } else if(state === "done"){
+        item.classList.add("done");
+        item.textContent = "완료";
+      } else {
+        item.textContent = "대기";
+      }
+      item.classList.add("blink");
+      setTimeout(() => item.classList.remove("blink"), 1200);
+    }
+
+    function getStagedProgress(t){
+      const points = [
+        { t: 0.00, p: 0 },
+        { t: 0.18, p: 14 },
+        { t: 0.33, p: 33 },
+        { t: 0.50, p: 47 },
+        { t: 0.65, p: 68 },
+        { t: 0.78, p: 76 },
+        { t: 0.90, p: 89 },
+        { t: 0.97, p: 95 },
+        { t: 1.00, p: 100 }
+      ];
+      for(let i = 0; i < points.length - 1; i++){
+        const a = points[i];
+        const b = points[i + 1];
+        if(t >= a.t && t <= b.t){
+          const local = (t - a.t) / (b.t - a.t || 1);
+          const eased = 1 - Math.pow(1 - local, 2);
+          return a.p + (b.p - a.p) * eased;
+        }
+      }
+      return 100;
+    }
+
+    async function runRpaLoading(){
+      const duration = 2200 * DEMO_SCALE;
+      const started = performance.now();
+      rpaStatus.textContent = "로딩중";
+      rpaStatus.classList.remove("done");
+      rpaProgress.style.width = "0%";
+      let rendered = 0;
+      while(true){
+        const elapsed = performance.now() - started;
+        const t = Math.min(elapsed / duration, 1);
+        let target = getStagedProgress(t);
+        if(t < 0.97){
+          target = Math.min(99, target + Math.random() * 1.5);
+        }
+        rendered = Math.max(rendered, target);
+        const percent = Math.min(99, Math.floor(rendered));
+        rpaProgress.style.width = `${percent}%`;
+        rpaStatus.textContent = `로딩중 ${percent}%`;
+        if(t >= 1) break;
+        await sleep(80 + Math.random() * 120);
+      }
+
+      rpaProgress.style.width = "100%";
+      rpaStatus.textContent = "로딩 완료 100%";
+      rpaStatus.classList.add("done");
+    }
+
+    async function runRowPipeline(rowIdx){
+      const apiDurations = [2000, 1000, 1500];
+      const apiMs = apiDurations[rowIdx] ?? 1200;
+      setVerifyState(rowIdx, "api", "run");
+      await sleep(apiMs);
+      setVerifyState(rowIdx, "api", "done");
+      setVerifyState(rowIdx, "parse", "run");
+      await sleep(550);
+      setVerifyState(rowIdx, "parse", "done");
+      setVerifyState(rowIdx, "compare", "run");
+      await sleep(550);
+      setVerifyState(rowIdx, "compare", "done");
+    }
+
+    async function runP5Animation(){
+      await sleep(700);
+      await runRpaLoading();
+      const jobs = [0, 1, 2].map(rowIdx => runRowPipeline(rowIdx));
+      await Promise.all(jobs);
+
+      activeFlowStep.classList.remove("prep");
+    }
+
+    window.addEventListener("load", () => {
+      runP5Animation().then(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(700);
+      });
+    });
+  </script>
+</body>
+</html>

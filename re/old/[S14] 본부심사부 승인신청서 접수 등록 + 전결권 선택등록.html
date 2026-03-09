@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S14] 승인신청서 접수 등록 + 전결권 선택/등록 — Full Light</title>
+  <style>
+    :root{
+      --page:#f6f8fb;
+      --card:#ffffff;
+      --card2:#f7f8fb;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.14);
+      --border2:rgba(15,23,42,.08);
+      --shadow:0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+    html,body{height:100%}
+    body{margin:0; font-family:var(--sans); background:var(--page); color:var(--text)}
+
+    /* Top */
+    .topbar{
+      position:sticky; top:0; z-index:30;
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,0));
+      border-bottom:1px solid var(--border);
+      padding:14px 18px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color:rgba(37,99,235,.95)}
+    .title{margin:6px 0 0; font-size:16px; font-weight:900; letter-spacing:-.2px}
+    .subtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; max-width:980px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Layout */
+    .wrap{padding:16px 18px 30px;}
+    .layout{
+      max-width:1500px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap:14px;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      background:var(--card2);
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:flex-start;
+    }
+    .card .head h2{margin:0; font-size:14px; font-weight:900}
+    .card .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .card .content{padding:12px 14px;}
+
+    /* Buttons */
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+    }
+    .btn:hover{background:#f3f5f9}
+    .btn.primary{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .btn.secondary{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .btn.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+
+    /* Badge */
+    .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px; height:10px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .badge.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .badge.ok .dot{background:var(--success)}
+    .badge.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .badge.warn .dot{background:var(--warning)}
+    .badge.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:#991b1b}
+    .badge.bad .dot{background:var(--danger)}
+    .badge.run{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .badge.run .dot{background:var(--primary)}
+
+    /* Form */
+    .form{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;}
+    .field{background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px;}
+    .field label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px;}
+    .field input,.field select,.field textarea{
+      width:100%; border:1px solid var(--border); border-radius:10px; padding:9px 10px; font-size:13px; outline:none;
+    }
+    .field textarea{min-height:78px; resize:vertical;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(37,99,235,.35); box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+    .full{grid-column:1/-1;}
+
+    /* Stepper */
+    .stepper{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;}
+    .step{border:1px solid var(--border); background:#fff; border-radius:999px; padding:6px 10px; font-size:12px; color:var(--muted); display:inline-flex; gap:8px; align-items:center;}
+    .step .dot{width:8px; height:8px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .step.on{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95)}
+    .step.on .dot{background:var(--primary)}
+    .step.done{border-color:rgba(22,163,74,.30); background:rgba(22,163,74,.10); color:#166534}
+    .step.done .dot{background:var(--success)}
+
+    .progress{margin-top:10px; border:1px solid var(--border); background:rgba(15,23,42,.04); border-radius:999px; height:10px; overflow:hidden;}
+    .progress > span{display:block; height:100%; width:0%; background:linear-gradient(90deg, rgba(37,99,235,.75), rgba(22,163,74,.60)); border-radius:999px; transition: width .45s ease;}
+
+    /* Table (delegation options) */
+    .tbl{border:1px solid var(--border); border-radius:12px; overflow:auto; background:#fff; max-height:320px;}
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px;}
+    thead th{ text-align:left; padding:10px 10px; color:var(--muted); border-bottom:1px solid var(--border); background:#f8fafc; position:sticky; top:0; z-index:1; }
+    tbody td{ padding:10px 10px; border-bottom:1px solid rgba(15,23,42,.06); vertical-align:top; }
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr{cursor:pointer}
+    tbody tr:hover{background:#f3f6ff}
+    tbody tr.active{background:rgba(37,99,235,.10)}
+
+    .hint{margin-top:10px; font-size:12px; color:var(--muted); line-height:1.45;}
+    .mono{font-family:var(--mono)}
+
+    /* Modal (delegation popup) */
+    .overlay{position:fixed; inset:0; background:rgba(2,8,23,.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:80;}
+    .overlay.show{display:flex;}
+    .modal{width:min(820px, 96vw); background:#fff; border:1px solid rgba(15,23,42,.20); border-radius:16px; box-shadow:var(--shadow); overflow:hidden;}
+    .modal .mhead{padding:12px 14px; background:#f8fafc; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;}
+    .modal .mhead .h{font-weight:900; font-size:14px;}
+    .modal .mhead .s{margin-top:4px; color:var(--muted); font-size:12px; line-height:1.35;}
+    .modal .mbody{padding:12px 14px;}
+    .modal .mfoot{padding:12px 14px; border-top:1px solid var(--border); background:#f8fafc; display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;}
+
+    /* Toast */
+    .toast{position:fixed; right:16px; bottom:16px; padding:10px 12px; border-radius:12px; border:1px solid rgba(37,99,235,.25); background:rgba(37,99,235,.10); color:rgba(37,99,235,.95); font-size:12px; opacity:0; transform:translateY(8px); transition:opacity .2s ease, transform .2s ease; pointer-events:none; z-index:90; box-shadow:var(--shadow);}    
+    .toast.show{opacity:1; transform:translateY(0);}    
+
+    @media (max-width: 1100px){
+      .layout{grid-template-columns: 1fr;}
+      .tbl{max-height:260px;}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S14] 승인신청서 접수 등록 + 전결권 선택/등록 · Full Light</div>
+      <div class="title">심사부 접수 등록 → 전결권 선택/등록(팝업) → 접수 완료</div>
+      <div class="subtitle">
+        심사부서가 신청 내용을 확인한 뒤 승인신청서 접수 등록을 수행하고, 전결권을 선택/등록하여 심사 프로세스로 진입하는 단계를 시연합니다.
+      </div>
+    </div>
+    <div class="pill"><b>심사/승인</b> 접수 + 전결권</div>
+  </div>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <!-- LEFT: Receipt registration -->
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>승인신청서 접수 등록</h2>
+            <p>심사역이 신청 내용 확인 후 접수 등록을 수행합니다.</p>
+          </div>
+          <span class="badge run" id="stateBadge"><span class="dot"></span><b>대기</b></span>
+        </div>
+
+        <div class="content">
+          <div class="stepper">
+            <div class="step" id="st1"><span class="dot"></span>신청내용 확인</div>
+            <div class="step" id="st2"><span class="dot"></span>접수 등록</div>
+            <div class="step" id="st3"><span class="dot"></span>전결권 선택</div>
+            <div class="step" id="st4"><span class="dot"></span>등록 완료</div>
+          </div>
+          <div class="progress"><span id="bar"></span></div>
+
+          <div class="form">
+            <div class="field">
+              <label>승인신청번호</label>
+              <input class="mono" id="appno" value="CC411-2026-000123" />
+            </div>
+            <div class="field">
+              <label>차주명</label>
+              <input id="cust" value="(주)000바이오" />
+            </div>
+            <div class="field">
+              <label>신청금액</label>
+              <input id="amt" value="1,500,000,000" />
+            </div>
+            <div class="field">
+              <label>여신과목</label>
+              <input id="prod" value="기업운전일반자금대출" />
+            </div>
+            <div class="field">
+              <label>자동입력 커버리지</label>
+              <input id="cov" value="18/24" disabled />
+            </div>
+            <div class="field">
+              <label>확인필요</label>
+              <input id="need" value="1건(저신뢰 항목)" disabled />
+            </div>
+            <div class="field full">
+              <label>접수 의견(요약)</label>
+              <textarea id="memo">자동입력값 및 근거 확인 완료. 확인필요 1건은 담당자 확인 후 정상화 예정.</textarea>
+            </div>
+          </div>
+
+          <div class="controls" style="margin-top:12px;">
+            <button class="btn" id="resetBtn" type="button">초기화</button>
+            <button class="btn primary" id="reviewBtn" type="button">신청내용 확인</button>
+            <button class="btn secondary" id="receiptBtn" type="button">접수 등록</button>
+          </div>
+
+          <div class="hint">* 접수 등록 후 전결권 선택/등록(팝업) 단계로 진행됩니다.</div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Delegation selection -->
+      <aside class="card">
+        <div class="head">
+          <div>
+            <h2>전결권 선택/등록</h2>
+            <p>조건에 따라 전결권을 선택하고 등록합니다(팝업/선택화면 예시).</p>
+          </div>
+          <span class="badge" id="delBadge"><span class="dot"></span><b>미선택</b></span>
+        </div>
+
+        <div class="content">
+          <div class="tbl">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:30%">전결권</th>
+                  <th style="width:22%">권한자</th>
+                  <th style="width:26%">조건(예시)</th>
+                  <th style="width:22%">상태</th>
+                </tr>
+              </thead>
+              <tbody id="delBody">
+                <tr data-id="d1">
+                  <td><b>영업점 전결</b></td>
+                  <td>지점장</td>
+                  <td class="muted">소액/조건 충족</td>
+                  <td><span class="badge ok"><span class="dot"></span><b>가능</b></span></td>
+                </tr>
+                <tr data-id="d2">
+                  <td><b>본부 전결</b></td>
+                  <td>심사역</td>
+                  <td class="muted">일반 심사</td>
+                  <td><span class="badge ok"><span class="dot"></span><b>권장</b></span></td>
+                </tr>
+                <tr data-id="d3">
+                  <td><b>전결 상향</b></td>
+                  <td>책임자</td>
+                  <td class="muted">특약/리스크</td>
+                  <td><span class="badge warn"><span class="dot"></span><b>검토</b></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="hint">* 목록 선택 후 “전결권 등록” 버튼을 누르면 팝업에서 최종 등록(데모)됩니다.</div>
+
+          <div class="controls" style="margin-top:12px;">
+            <button class="btn" id="openPopupBtn" type="button">전결권 등록(팝업)</button>
+            <button class="btn primary" id="completeBtn" type="button">등록 완료 처리</button>
+          </div>
+
+          <div class="hint" style="margin-top:10px;">발표 멘트: “접수 등록 후 전결권을 선택·등록하면 승인 프로세스로 진입합니다.”</div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Modal popup (전결권 선택/등록 팝업 예시) -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="modal">
+      <div class="mhead">
+        <div>
+          <div class="h">전결권 선택/등록 (팝업)</div>
+          <div class="s">선택한 전결권을 확인하고 등록합니다. (데모)</div>
+        </div>
+        <span class="badge" id="popupBadge"><span class="dot"></span><b>미선택</b></span>
+      </div>
+      <div class="mbody">
+        <div class="form">
+          <div class="field">
+            <label>선택 전결권</label>
+            <input id="popType" placeholder="-" disabled />
+          </div>
+          <div class="field">
+            <label>권한자</label>
+            <input id="popOwner" placeholder="-" disabled />
+          </div>
+          <div class="field full">
+            <label>등록 사유(선택)</label>
+            <textarea id="popReason" placeholder="예: 신청금액/담보/특약 조건을 반영하여 전결권 선택"></textarea>
+          </div>
+        </div>
+        <div class="hint">* 실제 구현에서는 전결권 선택 및 등록 화면(WINI 팝업)과 연계됩니다.</div>
+      </div>
+      <div class="mfoot">
+        <button class="btn" id="closePop" type="button">닫기</button>
+        <button class="btn secondary" id="savePop" type="button">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">완료</div>
+
+<script>
+  const st1 = document.getElementById('st1');
+  const st2 = document.getElementById('st2');
+  const st3 = document.getElementById('st3');
+  const st4 = document.getElementById('st4');
+  const bar = document.getElementById('bar');
+  const stateBadge = document.getElementById('stateBadge');
+
+  const reviewBtn = document.getElementById('reviewBtn');
+  const receiptBtn = document.getElementById('receiptBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const delBody = document.getElementById('delBody');
+  const delBadge = document.getElementById('delBadge');
+  const openPopupBtn = document.getElementById('openPopupBtn');
+  const completeBtn = document.getElementById('completeBtn');
+
+  const overlay = document.getElementById('overlay');
+  const closePop = document.getElementById('closePop');
+  const savePop = document.getElementById('savePop');
+  const popupBadge = document.getElementById('popupBadge');
+  const popType = document.getElementById('popType');
+  const popOwner = document.getElementById('popOwner');
+
+  const toast = document.getElementById('toast');
+
+  let selectedDel = null;
+  let receiptDone = false;
+
+  function toastShow(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1200);
+  }
+
+  function setStep(el, state){
+    el.classList.remove('on','done');
+    if(state==='on') el.classList.add('on');
+    if(state==='done') el.classList.add('done');
+  }
+
+  function setProgress(p){ bar.style.width = p + '%'; }
+
+  function setState(mode, text){
+    stateBadge.className = 'badge';
+    if(mode) stateBadge.classList.add(mode);
+    stateBadge.innerHTML = '<span class="dot"></span><b>' + text + '</b>';
+  }
+
+  function setDelBadge(mode, text){
+    delBadge.className = 'badge';
+    if(mode) delBadge.classList.add(mode);
+    delBadge.innerHTML = '<span class="dot"></span><b>' + text + '</b>';
+  }
+
+  function resetAll(){
+    setStep(st1,''); setStep(st2,''); setStep(st3,''); setStep(st4,'');
+    setProgress(0);
+    setState('run','대기');
+    receiptDone = false;
+
+    selectedDel = null;
+    delBody.querySelectorAll('tr').forEach(tr=>tr.classList.remove('active'));
+    setDelBadge('','미선택');
+    popType.value = ''; popOwner.value = '';
+    popupBadge.className = 'badge'; popupBadge.innerHTML = '<span class="dot"></span><b>미선택</b>';
+  }
+
+  reviewBtn.onclick = ()=>{
+    setStep(st1,'done');
+    setStep(st2,'on');
+    setProgress(30);
+    setState('run','신청내용 확인 완료');
+    toastShow('신청내용 확인 완료');
+  };
+
+  receiptBtn.onclick = ()=>{
+    // Require st1 done
+    setStep(st1,'done');
+    setStep(st2,'done');
+    setStep(st3,'on');
+    setProgress(55);
+    setState('run','접수 등록 완료');
+    receiptDone = true;
+    toastShow('접수 등록 완료 → 전결권 선택');
+  };
+
+  // Delegation row selection
+  delBody.querySelectorAll('tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      delBody.querySelectorAll('tr').forEach(x=>x.classList.remove('active'));
+      tr.classList.add('active');
+      selectedDel = tr.getAttribute('data-id');
+
+      const cells = tr.querySelectorAll('td');
+      const type = cells[0].innerText.trim();
+      const owner = cells[1].innerText.trim();
+
+      setDelBadge('run', '선택됨');
+      popType.value = type;
+      popOwner.value = owner;
+      popupBadge.className = 'badge run';
+      popupBadge.innerHTML = '<span class="dot"></span><b>' + type + '</b>';
+
+      toastShow('전결권 선택: ' + type);
+    });
+  });
+
+  openPopupBtn.onclick = ()=>{
+    if(!receiptDone){
+      toastShow('먼저 접수 등록을 수행하세요');
+      return;
+    }
+    if(!selectedDel){
+      toastShow('전결권을 먼저 선택하세요');
+      return;
+    }
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+  };
+
+  closePop.onclick = ()=>{
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+  };
+
+  savePop.onclick = ()=>{
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden','true');
+    setStep(st3,'done');
+    setStep(st4,'on');
+    setProgress(80);
+    setState('run','전결권 등록 완료');
+    setDelBadge('ok','등록됨');
+    toastShow('전결권 등록 완료');
+  };
+
+  completeBtn.onclick = ()=>{
+    if(!receiptDone){ toastShow('접수 등록이 필요합니다'); return; }
+    if(!selectedDel){ toastShow('전결권 선택/등록이 필요합니다'); return; }
+    setStep(st4,'done');
+    setProgress(100);
+    setState('ok','등록 완료');
+    toastShow('등록 완료 처리');
+  };
+
+  resetBtn.onclick = resetAll;
+
+  // init
+  resetAll();
+</script>
+</body>
+</html>

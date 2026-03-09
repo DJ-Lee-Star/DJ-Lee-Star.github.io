@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sample - 브릿지 템플릿</title>
+  <style>
+    :root{--bg:#eef3f8; --card:#fff; --line:#d6e0eb; --text:#1f2937; --muted:#607184; --bad:#dc2626; --ok:#15803d; --primary:#0067b1;}
+    *{box-sizing:border-box}
+    body{margin:0;background:#0b1220;display:grid;place-items:center;min-height:100vh;font-family:"Malgun Gothic","Segoe UI",sans-serif}
+    .app-shell{width:1280px;height:720px;background:var(--bg);overflow:hidden;border:1px solid #0f172a}
+    .header{height:64px;background:#fff;border-bottom:2px solid var(--primary);padding:12px 18px}
+    .title{font-size:19px;font-weight:700;color:var(--text)}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:3px}
+    .content{height:656px;padding:12px;display:grid;grid-template-columns:280px 1fr;gap:10px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:10px}
+    .h{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700}
+    .b{padding:10px}
+    .file{border:1px solid var(--line);border-radius:8px;padding:9px;margin-bottom:8px;font-size:13px}
+    .file.active{border-color:#7ab3df;background:#e9f3fb}
+    .split{display:grid;grid-template-rows:1fr 220px;gap:10px;height:100%}
+    .viewer{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fcfcfd;font-size:14px;line-height:1.65}
+    .hl{background:rgba(239,68,68,.15);border-bottom:2px solid rgba(239,68,68,.5)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left}
+    .bad{color:#b91c1c;font-weight:700}
+    .ok{color:#166534;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title">브릿지 템플릿 샘플 - P11 결과 확인(HITL)</div>
+      <div class="subtitle">좌측 파일목록 + 메인 에이전트 수행결과 확인/수정</div>
+    </div>
+    <div class="content">
+      <aside class="card">
+        <div class="h">파일 목록</div>
+        <div class="b">
+          <div class="file active">소득금액증명원.pdf</div>
+          <div class="file">사업자등록증명원.pdf</div>
+          <div class="file">법인등기부등본.pdf</div>
+          <div class="file">표준재무제표증명.pdf</div>
+          <div class="file">부가가치세 과세표준증명원.pdf</div>
+        </div>
+      </aside>
+      <section class="split">
+        <div class="card">
+          <div class="h">에이전트 수행 결과(근거 확인)</div>
+          <div class="b">
+            <div class="viewer">
+              성명: 홍길동<br/>
+              발급번호: <span class="hl">67647900439250</span> (제출본)<br/>
+              발급번호: <span class="hl">67647900439251</span> (발급본)<br/>
+              대사 결과: 발급번호 불일치 1건 검출
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h">검증 요약</div>
+          <div class="b">
+            <table>
+              <thead><tr><th>항목</th><th>결과</th><th>상태</th></tr></thead>
+              <tbody>
+                <tr><td>성명</td><td>일치</td><td class="ok">정상</td></tr>
+                <tr><td>주민등록번호</td><td>형식 불일치</td><td class="bad">확인필요</td></tr>
+                <tr><td>발급번호</td><td>값 불일치</td><td class="bad">수정필요</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P4 문서 전처리</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .p4-body { display: flex; gap: var(--space-4); flex: 1; min-height: 0; }
+    .p4-left { width: 480px; flex-shrink: 0; }
+    .p4-right { flex: 1; }
+    .pp-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .pp-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+    .pp-item.processing { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); box-shadow: 0 0 12px var(--agent-glow-blue); }
+    .pp-item.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.20); }
+    .pp-name { font-size: var(--text-md); font-weight: var(--font-bold); color: var(--agent-text-body); flex: 1; }
+    .pp-status { font-size: var(--text-sm); color: var(--agent-text-muted); }
+    .pp-item.processing .pp-status { color: #60A5FA; }
+    .pp-item.done .pp-status { color: #4ADE80; }
+    .task-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+    .task-card { padding: var(--space-5); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.03); text-align: center; opacity: 0.3; transition: all 0.3s; }
+    .task-card.done { opacity: 1; background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); }
+    .task-card__icon { font-size: 34px; margin-bottom: var(--space-2); }
+    .task-card__label { font-size: var(--text-md); font-weight: var(--font-bold); color: var(--agent-text-body); }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-agent">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/agent-logo.png" alt="AI" style="height:36px" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">문서 전처리</span>
+    </div>
+    <div class="app-header__right agent-sysinfo">
+      <span class="agent-sysinfo__item"><span class="agent-sysinfo__dot"></span>PREPROCESS</span>
+      <span class="agent-sysinfo__item" id="sysUptime">00:00</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="p4-body">
+      <div class="p4-left">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">대상 문서</div>
+          <div class="pp-list" id="ppList"></div>
+        </div>
+      </div>
+      <div class="p4-right">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">전처리 작업</div>
+          <div class="task-grid" id="taskGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="agent-data-flow"></div>
+  <div class="agent-process-log">
+    <span class="agent-process-log__prefix">[PREPROCESS]</span>
+    <span class="agent-process-log__text" id="logText">Loading pipeline...</span>
+    <span class="agent-process-log__cursor"></span>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+
+StateManager.save({ currentPage: 'p4' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const logEl = document.getElementById('logText');
+const upEl = document.getElementById('sysUptime');
+let _sec = 0;
+const _upTimer = setInterval(() => { _sec++; if(upEl) upEl.textContent = String(Math.floor(_sec/60)).padStart(2,'0')+':'+String(_sec%60).padStart(2,'0'); }, 1000);
+function setLog(m) { if(logEl) logEl.textContent = m; }
+
+const ppDocs = documents.list.filter(d => d.targets.preprocess);
+const ppList = document.getElementById('ppList');
+ppDocs.forEach(doc => {
+  const item = document.createElement('div');
+  item.className = 'pp-item';
+  item.innerHTML = `<span class="pp-name">${doc.name}</span><span class="pp-status">대기</span>`;
+  ppList.appendChild(item);
+});
+
+const taskGrid = document.getElementById('taskGrid');
+documents.preprocessTasks.forEach(t => {
+  const card = document.createElement('div');
+  card.className = 'task-card';
+  card.innerHTML = `<div class="task-card__icon">${t.key==='tilt'?'📐':t.key==='noise'?'🧹':t.key==='contrast'?'🎨':'📏'}</div><div class="task-card__label">${t.label}</div>`;
+  taskGrid.appendChild(card);
+});
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  setLog('Preprocessing engine ready');
+  await DemoEngine.wait(300);
+
+  const items = ppList.querySelectorAll('.pp-item');
+  const tasks = taskGrid.querySelectorAll('.task-card');
+
+  for (let i = 0; i < items.length; i++) {
+    items[i].classList.add('processing');
+    items[i].querySelector('.pp-status').textContent = '처리 중...';
+    setLog(`Processing: ${ppDocs[i].name}`);
+
+    for (let t = 0; t < tasks.length; t++) {
+      tasks[t].classList.add('done');
+      await DemoEngine.wait(80);
+    }
+
+    items[i].classList.remove('processing');
+    items[i].classList.add('done');
+    items[i].querySelector('.pp-status').textContent = '완료';
+    setLog(`✓ ${ppDocs[i].name} done`);
+    tasks.forEach(t => t.classList.remove('done'));
+    await DemoEngine.wait(150);
+  }
+
+  tasks.forEach(t => t.classList.add('done'));
+  setLog('✓ All documents preprocessed');
+  await DemoEngine.wait(400);
+  clearInterval(_upTimer);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

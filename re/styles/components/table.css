@@ -1,0 +1,64 @@
+/* ── Table ── */
+.data-table {
+  width: 100%;
+  border: var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.data-table thead {
+  background: var(--gray-50);
+}
+
+.data-table th {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--gray-700);
+  text-align: left;
+  border-bottom: var(--border-light);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-md);
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.data-table tbody tr.selected {
+  background: var(--color-primary-bg);
+}
+
+.data-table tbody tr.warn {
+  background: var(--color-warning-bg);
+}
+
+/* Numeric cells */
+.data-table td.num {
+  font-family: var(--font-data);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Confidence display */
+.conf { font-family: var(--font-data); font-weight: var(--font-bold); }
+.conf.high { color: var(--color-success); }
+.conf.mid { color: var(--color-info); }
+.conf.low { color: var(--color-danger); }
+
+/* Verify pipeline table */
+.verify-table td.stage {
+  text-align: center;
+  width: 130px;
+}

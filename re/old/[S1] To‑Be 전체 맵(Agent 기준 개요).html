@@ -1,0 +1,519 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S1] To‑Be 전체 맵(개요) — UC‑01 (Light)</title>
+  <style>
+    :root{
+      /* Light theme */
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --panel:#ffffff;
+      --panel2:#f7fafc;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.12);
+      --shadow: 0 12px 28px rgba(2,8,23,.12);
+      --radius:16px;
+
+      --accent:#2563eb; /* blue */
+      --accent2:#16a34a; /* green */
+      --warn:#f59e0b;   /* amber */
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: var(--bg);
+      color:var(--text);
+    }
+
+    /* Layout */
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px 18px;
+    }
+    .card{
+      width:min(1100px, 100%);
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(37,99,235,.07), rgba(255,255,255,0));
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kicker{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(37,99,235,.95);
+    }
+    h1{
+      margin:6px 0 0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.2px;
+    }
+    .sub{
+      margin:8px 0 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+      max-width:840px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background: rgba(15,23,42,.02);
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+    .body{
+      padding:18px 20px 22px;
+    }
+
+    /* Top 3-step flow */
+    .flow{
+      display:grid;
+      grid-template-columns: 1fr 72px 1fr 72px 1fr;
+      gap:10px;
+      align-items:stretch;
+      margin-bottom:16px;
+    }
+    .step{
+      background: #ffffff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 14px 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .step .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      color:var(--muted);
+      border:1px solid rgba(15,23,42,.10);
+      padding:4px 8px;
+      border-radius:999px;
+      background: rgba(15,23,42,.02);
+    }
+    .step h2{
+      margin:10px 0 6px;
+      font-size:15px;
+      font-weight:900;
+    }
+    .step p{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .step .glow{
+      position:absolute;
+      inset:-60px -60px auto auto;
+      width:150px; height:150px;
+      border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, rgba(37,99,235,.20), rgba(37,99,235,0) 70%);
+      filter: blur(4px);
+      opacity:0;
+      transition: opacity .25s ease;
+      pointer-events:none;
+    }
+    .step.active{
+      border-color: rgba(37,99,235,.35);
+      box-shadow: 0 0 0 1px rgba(37,99,235,.10) inset;
+      background: rgba(37,99,235,.03);
+    }
+    .step.active .glow{opacity:1}
+
+    /* Arrow connectors */
+    .arrow{
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .arrow svg{opacity:.85}
+    .arrow .beam{
+      position:absolute;
+      inset:0;
+      background: linear-gradient(90deg,
+        rgba(37,99,235,0) 0%,
+        rgba(37,99,235,.14) 50%,
+        rgba(37,99,235,0) 100%);
+      transform: translateX(-120%);
+      opacity:0;
+    }
+    .arrow.active{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.03);
+    }
+    .arrow.active .beam{
+      opacity:1;
+      animation: beam 1.4s ease-in-out infinite;
+    }
+    @keyframes beam{
+      0%{transform: translateX(-120%)}
+      100%{transform: translateX(120%)}
+    }
+
+    /* Bottom agent row */
+    .agents{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    .agent{
+      background: #ffffff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 12px 10px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      position:relative;
+      overflow:hidden;
+    }
+    .icon{
+      width:38px; height:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(15,23,42,.02);
+      border:1px solid rgba(15,23,42,.10);
+      flex:0 0 auto;
+    }
+    .agent .meta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .agent .code{
+      font-family:var(--mono);
+      font-size:12px;
+      color: rgba(37,99,235,.95);
+      font-weight:900;
+    }
+    .agent .name{
+      margin:0;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.25;
+    }
+    .agent .desc{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .agent .pulse{
+      position:absolute;
+      inset:auto -40px -40px auto;
+      width:120px; height:120px;
+      border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, rgba(22,163,74,.16), rgba(22,163,74,0) 70%);
+      opacity:0;
+      transition: opacity .25s ease;
+      pointer-events:none;
+      filter: blur(2px);
+    }
+    .agent.active{
+      border-color: rgba(22,163,74,.35);
+      box-shadow: 0 0 0 1px rgba(22,163,74,.10) inset;
+      background: rgba(22,163,74,.03);
+    }
+    .agent.active .pulse{opacity:1}
+    .agent.active .icon{
+      border-color: rgba(22,163,74,.35);
+      background: rgba(22,163,74,.08);
+    }
+
+    /* Footer hint */
+    .hint{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.02);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .hint b{color:var(--text)}
+    .kbd{
+      font-family:var(--mono);
+      font-size:11px;
+      border:1px solid var(--border);
+      padding:2px 6px;
+      border-radius:8px;
+      background: rgba(15,23,42,.02);
+      color:var(--text);
+      white-space:nowrap;
+    }
+
+    @media (max-width: 920px){
+      .flow{grid-template-columns: 1fr}
+      .arrow{display:none}
+      .agents{grid-template-columns: 1fr 1fr}
+    }
+    @media (max-width: 560px){
+      .agents{grid-template-columns: 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div style="min-width:0">
+          <div class="kicker">[S1] To‑Be 전체 맵(개요) · Light UI</div>
+          <h1>서류 스캔이 곧 검증·자동입력으로 연결되는 E2E 흐름</h1>
+          <p class="sub">
+            상단은 “영업점(접수) → AI Agent(검증) → 심사부(접수)” 3단 흐름,
+            하단은 A2/A3/A4/A8 기능을 아이콘으로 나열해 자동화 모듈을 한눈에 이해하도록 구성합니다.
+          </p>
+        </div>
+        <div class="pill"><b>Animation</b> 단계 점등 + Agent 순차 강조</div>
+      </div>
+
+      <div class="body">
+        <!-- Top 3-stage flow -->
+        <div class="flow">
+          <div class="step" id="st1">
+            <div class="glow"></div>
+            <span class="badge">STEP 1 · 영업점(접수)</span>
+            <h2>첨부문서 스캔/업로드</h2>
+            <p>WINI 2207/W‑F에서 여신심사 첨부문서를 등록하면 자동화가 시작됩니다.</p>
+          </div>
+
+          <div class="arrow" id="ar1" aria-hidden="true">
+            <div class="beam"></div>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h12" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+              <path d="M13 6l6 6-6 6" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="step" id="st2">
+            <div class="glow"></div>
+            <span class="badge">STEP 2 · AI Agent(검증)</span>
+            <h2>OCR/대사/전결권/진위</h2>
+            <p>서류 기반 필드 추출 후, 입력값 대사·전결권·진위 검증을 수행합니다.</p>
+          </div>
+
+          <div class="arrow" id="ar2" aria-hidden="true">
+            <div class="beam"></div>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h12" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+              <path d="M13 6l6 6-6 6" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <div class="step" id="st3">
+            <div class="glow"></div>
+            <span class="badge">STEP 3 · 심사부(접수)</span>
+            <h2>자동입력값 확인 & 접수</h2>
+            <p>TO‑DO에서 선택 후 자동입력값을 확인하고 승인신청서 접수를 진행합니다.</p>
+          </div>
+        </div>
+
+        <!-- Bottom agent icons -->
+        <div class="agents">
+          <div class="agent" id="agA2">
+            <div class="pulse"></div>
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h13M8 12h13M8 17h13" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+                <path d="M3 7h1M3 12h1M3 17h1" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="meta">
+              <div class="code">A2</div>
+              <p class="name">서류 대사 및 검증</p>
+              <p class="desc">OCR 추출값 ↔ 전산 입력값 대사(불일치/누락 탐지)</p>
+            </div>
+          </div>
+
+          <div class="agent" id="agA3">
+            <div class="pulse"></div>
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 16V9m0 0l-3 3m3-3l3 3" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="meta">
+              <div class="code">A3</div>
+              <p class="name">전결권 상향 검증</p>
+              <p class="desc">특약/조건 기반 상향 필요 여부 자동 식별</p>
+            </div>
+          </div>
+
+          <div class="agent" id="agA4">
+            <div class="pulse"></div>
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M7 3h7l3 3v15H7V3z" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M14 3v4h4" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M9 14l2 2 4-4" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="meta">
+              <div class="code">A4</div>
+              <p class="name">서류 진위 검증</p>
+              <p class="desc">발급기관 진위확인(RPA) + 위변조 대사</p>
+            </div>
+          </div>
+
+          <div class="agent" id="agA8">
+            <div class="pulse"></div>
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M4 5h16v14H4V5z" stroke="#2563eb" stroke-width="2" />
+                <path d="M7 9h10M7 13h6" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+                <path d="M17 12l-1 1-1-1" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="meta">
+              <div class="code">A8</div>
+              <p class="name">심사 정보 자동입력</p>
+              <p class="desc">검증 완료 항목을 심사 전자서식에 자동 반영</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint">
+          <span class="kbd">Space</span>
+          <span>
+            <b>자동 재생</b>: 단계가 순차적으로 점등됩니다. (상단 3단 → 하단 Agent 4개 순서)  
+            필요 시 <b>Space</b>를 눌러 “일시정지/재개”할 수 있습니다.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      document.getElementById("st1"),
+      document.getElementById("st2"),
+      document.getElementById("st3"),
+    ];
+    const arrows = [
+      document.getElementById("ar1"),
+      document.getElementById("ar2"),
+    ];
+    const agents = [
+      document.getElementById("agA2"),
+      document.getElementById("agA3"),
+      document.getElementById("agA4"),
+      document.getElementById("agA8"),
+    ];
+
+    let idx = 0;
+    let timer = null;
+    let running = true;
+
+    function clearAll(){
+      steps.forEach(s => s.classList.remove("active"));
+      arrows.forEach(a => a.classList.remove("active"));
+      agents.forEach(a => a.classList.remove("active"));
+    }
+
+    // Sequence:
+    // 0: st1
+    // 1: ar1 + st2
+    // 2: ar2 + st3
+    // 3: A2
+    // 4: A3
+    // 5: A4
+    // 6: A8
+    function tick(){
+      clearAll();
+      if(idx === 0){
+        steps[0].classList.add("active");
+      } else if(idx === 1){
+        steps[0].classList.add("active");
+        arrows[0].classList.add("active");
+        steps[1].classList.add("active");
+      } else if(idx === 2){
+        steps[1].classList.add("active");
+        arrows[1].classList.add("active");
+        steps[2].classList.add("active");
+      } else if(idx === 3){
+        steps[2].classList.add("active");
+        agents[0].classList.add("active");
+      } else if(idx === 4){
+        steps[2].classList.add("active");
+        agents[1].classList.add("active");
+      } else if(idx === 5){
+        steps[2].classList.add("active");
+        agents[2].classList.add("active");
+      } else if(idx === 6){
+        steps[2].classList.add("active");
+        agents[3].classList.add("active");
+      }
+      idx = (idx + 1) % 7;
+    }
+
+    function start(){
+      if(timer) return;
+      tick();
+      timer = setInterval(tick, 1400);
+    }
+    function stop(){
+      if(!timer) return;
+      clearInterval(timer);
+      timer = null;
+      clearAll();
+    }
+
+    start();
+
+    window.addEventListener("keydown", (e) => {
+      if(e.code === "Space"){
+        e.preventDefault();
+        running = !running;
+        if(running) start();
+        else stop();
+      }
+    });
+  </script>
+</body>
+</html>

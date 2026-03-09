@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S12] 여신 TO-DO LIST 선택(WINI CO101) - Full Light v2</title>
+  <style>
+    :root{
+      --page:#f6f8fb;
+      --card:#ffffff;
+      --card2:#f7f8fb;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.14);
+      --shadow:0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:var(--page);
+      color:var(--text);
+    }
+
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(255,255,255,0));
+      border-bottom:1px solid var(--border);
+      padding:14px 18px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color:rgba(37,99,235,.95)}
+    .title{margin:6px 0 0; font-size:16px; font-weight:900; letter-spacing:-.2px}
+    .subtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; max-width:980px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    .wrap{padding:16px 18px 30px;}
+    .layout{
+      display:grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap:14px;
+      max-width:1400px;
+      margin:0 auto;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      background:var(--card2);
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+    .card .head h2{margin:0; font-size:14px; font-weight:900}
+    .card .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .card .content{padding:12px 14px;}
+
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+    }
+    .btn:hover{background:#f3f5f9}
+    .btn.primary{
+      border-color:rgba(37,99,235,.35);
+      background:rgba(37,99,235,.10);
+      color:rgba(37,99,235,.95);
+    }
+    .btn.secondary{
+      border-color:rgba(22,163,74,.35);
+      background:rgba(22,163,74,.10);
+      color:#166534;
+    }
+
+    .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px; height:10px; border-radius:999px; background:rgba(15,23,42,.18)}
+    .badge.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .badge.ok .dot{background:var(--success)}
+    .badge.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .badge.warn .dot{background:var(--warning)}
+    .badge.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:#991b1b}
+    .badge.bad .dot{background:var(--danger)}
+
+    .filterRow{
+      display:grid;
+      grid-template-columns: 1fr 170px 170px;
+      gap:10px;
+      align-items:end;
+      margin-bottom:12px;
+    }
+    .field{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+    }
+    .field label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    .field input,.field select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:9px 10px;
+      font-size:13px;
+      outline:none;
+    }
+
+    .tbl{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:auto;
+      background:#fff;
+      max-height:560px;
+    }
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
+    thead th{
+      text-align:left;
+      padding:10px 10px;
+      color:var(--muted);
+      border-bottom:1px solid var(--border);
+      background:#f8fafc;
+      position:sticky; top:0; z-index:1;
+    }
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      vertical-align:top;
+    }
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr{cursor:pointer}
+    tbody tr:hover{background:#f3f6ff}
+    tbody tr.active{background:rgba(37,99,235,.10)}
+    .mono{font-family:var(--mono)}
+    .muted{color:var(--muted)}
+    .nowrap{white-space:nowrap}
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .box{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+    }
+    .box .k{font-size:11px; color:var(--muted)}
+    .box .v{margin-top:6px; font-size:13px; font-weight:900}
+    .box .s{margin-top:4px; font-size:12px; color:var(--muted); line-height:1.35}
+
+    .detailArea{
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .detailArea .top{
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      background:#f8fafc;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .detailArea .top .h{font-weight:900; font-size:13px}
+    .detailArea .top .s{font-size:12px; color:var(--muted)}
+    .detailArea .body{padding:12px}
+    .bul{margin:0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.6}
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    @media (max-width: 1100px){
+      .layout{grid-template-columns: 1fr}
+      .filterRow{grid-template-columns: 1fr}
+      .tbl{max-height:420px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S12] 여신 TO-DO LIST 선택(WINI CO101) · Full Light v2</div>
+      <div class="title">TO-DO 목록에서 심사 대상 선택 → 심사 화면으로 진입</div>
+      <div class="subtitle">
+        본부 심사부서(심사역)가 CO101 TO-DO LIST에서 대상 건을 선택하고,
+        심사 초기 화면/자동입력값 조회로 진입하는 단계를 시연합니다.
+      </div>
+    </div>
+    <div class="pill"><b>CO101</b> TO-DO 선택</div>
+  </div>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <section class="card">
+        <div class="head">
+          <div>
+            <h2>여신 TO-DO LIST (CO101)</h2>
+            <p>자동입력 완료 건을 우선 필터링하여 심사 대상 선택(데모).</p>
+          </div>
+          <div class="controls">
+            <button class="btn" id="resetBtn" type="button">초기화</button>
+            <button class="btn primary" id="autoBtn" type="button">자동입력 완료만</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="filterRow">
+            <div class="field">
+              <label>검색(차주명/신청번호/업무유형)</label>
+              <input id="q" placeholder="예: 000바이오 / CC411 / 서류자동입력" />
+            </div>
+            <div class="field">
+              <label>상태</label>
+              <select id="statusSel">
+                <option value="ALL">전체</option>
+                <option value="AUTO_DONE">자동입력 완료</option>
+                <option value="REVIEW">확인필요</option>
+                <option value="RETURN">반송</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>업무유형</label>
+              <select id="typeSel">
+                <option value="ALL">전체</option>
+                <option value="DOC_AUTO">서류 자동입력</option>
+                <option value="DOC_VERIFY">서류 검증</option>
+                <option value="OTHER">기타</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="tbl">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:18%">상태</th>
+                  <th style="width:22%">차주명</th>
+                  <th style="width:18%">승인신청번호</th>
+                  <th style="width:18%">업무유형</th>
+                  <th style="width:12%">접수일</th>
+                  <th style="width:12%">담당</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr data-id="t1">
+                  <td><span class="badge ok"><span class="dot"></span><b>자동입력 완료</b></span></td>
+                  <td><b>(주)000바이오</b><div class="muted" style="margin-top:4px; font-size:11px">업종: 제조/바이오</div></td>
+                  <td class="mono">CC411-2026-000123</td>
+                  <td>서류 자동입력</td>
+                  <td class="nowrap">2026-02-09</td>
+                  <td class="nowrap">심사역A</td>
+                </tr>
+                <tr data-id="t2">
+                  <td><span class="badge warn"><span class="dot"></span><b>확인필요</b></span></td>
+                  <td><b>(주)00건설</b><div class="muted" style="margin-top:4px; font-size:11px">업종: 건설</div></td>
+                  <td class="mono">CC411-2026-000241</td>
+                  <td>서류 검증</td>
+                  <td class="nowrap">2026-02-08</td>
+                  <td class="nowrap">심사역B</td>
+                </tr>
+                <tr data-id="t3">
+                  <td><span class="badge ok"><span class="dot"></span><b>자동입력 완료</b></span></td>
+                  <td><b>(주)0상사</b><div class="muted" style="margin-top:4px; font-size:11px">업종: 도소매</div></td>
+                  <td class="mono">CC411-2026-000198</td>
+                  <td>서류 자동입력</td>
+                  <td class="nowrap">2026-02-07</td>
+                  <td class="nowrap">심사역A</td>
+                </tr>
+                <tr data-id="t4">
+                  <td><span class="badge bad"><span class="dot"></span><b>반송</b></span></td>
+                  <td><b>(주)00운수</b><div class="muted" style="margin-top:4px; font-size:11px">업종: 운수</div></td>
+                  <td class="mono">CC411-2026-000077</td>
+                  <td>서류 검증</td>
+                  <td class="nowrap">2026-02-05</td>
+                  <td class="nowrap">심사역C</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="hint">*이 화면은 “목록 선택 → 심사 진입” 흐름을 시연하기 위한 예시 UI입니다.</div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="head">
+          <div>
+            <h2>선택 건 상세</h2>
+            <p>선택된 건의 요약/상태/권고 조치를 확인 후 심사 화면으로 이동합니다.</p>
+          </div>
+          <span class="badge warn" id="selBadge"><span class="dot"></span><b>미선택</b></span>
+        </div>
+
+        <div class="content">
+          <div class="kv">
+            <div class="box">
+              <div class="k">차주명</div>
+              <div class="v" id="d_name">-</div>
+              <div class="s" id="d_industry">-</div>
+            </div>
+            <div class="box">
+              <div class="k">승인신청번호</div>
+              <div class="v mono" id="d_appno">-</div>
+              <div class="s" id="d_date">-</div>
+            </div>
+            <div class="box">
+              <div class="k">자동입력</div>
+              <div class="v" id="d_autofill">-</div>
+              <div class="s">자동입력값 조회로 연결(다음 화면)</div>
+            </div>
+            <div class="box">
+              <div class="k">확인필요</div>
+              <div class="v" id="d_review">-</div>
+              <div class="s">HITL 확인 후 접수/전결 진행</div>
+            </div>
+          </div>
+
+          <div class="detailArea">
+            <div class="top">
+              <div>
+                <div class="h">권고 조치</div>
+                <div class="s">자동입력 완료/확인필요 항목 확인 후 심사 진입</div>
+              </div>
+              <div class="controls">
+                <button class="btn" id="openAutoBtn" type="button">자동입력값 조회</button>
+                <button class="btn secondary" id="enterBtn" type="button">심사 진입</button>
+              </div>
+            </div>
+            <div class="body">
+              <ul class="bul" id="d_actions">
+                <li class="muted">좌측 목록에서 건을 선택하세요.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="hint">“심사역은 CO101에서 대상 선택 후 자동입력값을 확인하고 승인신청서 접수 단계로 진입합니다.”</div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <script>
+    const DATA = {
+      t1: {
+        badgeClass:"ok", badgeText:"자동입력 완료",
+        name:"(주)000바이오", industry:"업종: 제조/바이오",
+        appno:"CC411-2026-000123", date:"2026-02-09", owner:"심사역A",
+        autofill:"필드 18개 자동입력", review:"확인필요 1건",
+        actions:[
+          "자동입력값 조회(서류정보 자동입력값) 확인",
+          "확인필요 1건(저신뢰 항목) HITL 확인 후 접수"
+        ]
+      },
+      t2: {
+        badgeClass:"warn", badgeText:"확인필요",
+        name:"(주)00건설", industry:"업종: 건설",
+        appno:"CC411-2026-000241", date:"2026-02-08", owner:"심사역B",
+        autofill:"필드 12개 자동입력", review:"불일치 2건",
+        actions:[
+          "서류 대사 결과 불일치 2건 확인 후 반송/수정 판단",
+          "필요 시 영업점 보완 요청(반송 사유 기재)"
+        ]
+      },
+      t3: {
+        badgeClass:"ok", badgeText:"자동입력 완료",
+        name:"(주)0상사", industry:"업종: 도소매",
+        appno:"CC411-2026-000198", date:"2026-02-07", owner:"심사역A",
+        autofill:"필드 20개 자동입력", review:"확인필요 0건",
+        actions:[
+          "자동입력값 확인 후 승인신청서 접수 등록 진행",
+          "전결권 선택/등록 단계로 이동"
+        ]
+      },
+      t4: {
+        badgeClass:"bad", badgeText:"반송",
+        name:"(주)00운수", industry:"업종: 운수",
+        appno:"CC411-2026-000077", date:"2026-02-05", owner:"심사역C",
+        autofill:"필드 10개 자동입력", review:"반송 사유 확인 필요",
+        actions:[
+          "반송 사유 확인(서류 진위 미확인)",
+          "영업점 재제출/추가 서류 요청"
+        ]
+      }
+    };
+
+    const tbody = document.getElementById("tbody");
+    const q = document.getElementById("q");
+    const statusSel = document.getElementById("statusSel");
+    const typeSel = document.getElementById("typeSel");
+    const resetBtn = document.getElementById("resetBtn");
+    const autoBtn = document.getElementById("autoBtn");
+
+    const selBadge = document.getElementById("selBadge");
+    const d_name = document.getElementById("d_name");
+    const d_industry = document.getElementById("d_industry");
+    const d_appno = document.getElementById("d_appno");
+    const d_date = document.getElementById("d_date");
+    const d_autofill = document.getElementById("d_autofill");
+    const d_review = document.getElementById("d_review");
+    const d_actions = document.getElementById("d_actions");
+
+    const openAutoBtn = document.getElementById("openAutoBtn");
+    const enterBtn = document.getElementById("enterBtn");
+
+    function clearActive(){
+      tbody.querySelectorAll("tr").forEach(tr=>tr.classList.remove("active"));
+    }
+
+    function setDetail(id){
+      const x = DATA[id];
+      if(!x) return;
+      selBadge.className = "badge " + x.badgeClass;
+      selBadge.innerHTML = '<span class="dot"></span><b>' + x.badgeText + '</b>';
+
+      d_name.textContent = x.name;
+      d_industry.textContent = x.industry;
+      d_appno.textContent = x.appno;
+      d_date.textContent = "접수일: " + x.date + " · 담당: " + x.owner;
+      d_autofill.textContent = x.autofill;
+      d_review.textContent = x.review;
+
+      d_actions.innerHTML = "";
+      x.actions.forEach(a=>{
+        const li = document.createElement("li");
+        li.textContent = a;
+        d_actions.appendChild(li);
+      });
+    }
+
+    tbody.querySelectorAll("tr").forEach(tr=>{
+      tr.addEventListener("click", ()=>{
+        const id = tr.getAttribute("data-id");
+        clearActive();
+        tr.classList.add("active");
+        setDetail(id);
+      });
+    });
+
+    function applyFilter(){
+      const query = (q.value||"").trim().toLowerCase();
+      const st = statusSel.value;
+      const tp = typeSel.value;
+
+      const statusMap = {t1:"AUTO_DONE", t2:"REVIEW", t3:"AUTO_DONE", t4:"RETURN"};
+      const typeMap = {t1:"DOC_AUTO", t2:"DOC_VERIFY", t3:"DOC_AUTO", t4:"DOC_VERIFY"};
+
+      tbody.querySelectorAll("tr").forEach(tr=>{
+        const id = tr.getAttribute("data-id");
+        const x = DATA[id];
+        if(!x) return;
+        const okQ = !query || (x.name.toLowerCase().includes(query) || x.appno.toLowerCase().includes(query));
+        const okS = (st==="ALL") || (statusMap[id]===st);
+        const okT = (tp==="ALL") || (typeMap[id]===tp);
+        tr.style.display = (okQ && okS && okT) ? "" : "none";
+      });
+    }
+
+    q.addEventListener("input", applyFilter);
+    statusSel.addEventListener("change", applyFilter);
+    typeSel.addEventListener("change", applyFilter);
+
+    resetBtn.addEventListener("click", ()=>{
+      q.value = "";
+      statusSel.value = "ALL";
+      typeSel.value = "ALL";
+      applyFilter();
+      clearActive();
+      selBadge.className = "badge warn";
+      selBadge.innerHTML = '<span class="dot"></span><b>미선택</b>';
+      d_name.textContent = "-";
+      d_industry.textContent = "-";
+      d_appno.textContent = "-";
+      d_date.textContent = "-";
+      d_autofill.textContent = "-";
+      d_review.textContent = "-";
+      d_actions.innerHTML = '<li class="muted">좌측 목록에서 건을 선택하세요.</li>';
+    });
+
+    autoBtn.addEventListener("click", ()=>{
+      statusSel.value = "AUTO_DONE";
+      applyFilter();
+    });
+
+    openAutoBtn.addEventListener("click", ()=>{
+      alert("데모: 자동입력값 조회(S13)로 전환하는 지점입니다.");
+    });
+
+    enterBtn.addEventListener("click", ()=>{
+      alert("데모: 심사 초기화면/접수 등록으로 진입하는 지점입니다.");
+    });
+
+    applyFilter();
+  </script>
+</body>
+</html>

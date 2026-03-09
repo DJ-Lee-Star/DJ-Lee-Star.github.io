@@ -1,0 +1,192 @@
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:54] "GET /index.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:54] "GET /styles/tokens.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:54] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:55] "GET /assets/font/WooridaumB.ttf HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:55] "GET /assets/font/WooridaumR.ttf HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 18:10:55] "GET /favicon.ico HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:11:31] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:11:31] "GET /assets/font/WooridaumL.ttf HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:11:52] "GET /g2.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:11:58] "GET /g3.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:12:02] "GET /terminal-template.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:12:05] "GET /mini-template.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:12:24] "GET /bridge-template.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:13:02] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:13:02] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:13:02] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:26:15] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:26:15] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:26:15] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:38:41] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:38:41] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:38:41] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:49:45] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:49:45] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:49:45] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:50:04] "GET /index.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:50:07] "GET /g2.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:50:11] "GET /g4.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:50:13] "GET /g3.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 18:50:20] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:16:29] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:16:29] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:16:29] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:17:04] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:17:06] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:22:17] "GET /g2.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:22:17] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:22:17] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:22:31] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:22:42] "GET /g3.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:23:26] "GET /g4.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:23:32] "GET /g5.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:37:38] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:37:38] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:37:38] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:37:38] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:30] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:30] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:35] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:35] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:35] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:35] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:42] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:42] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:42] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:42] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:42] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:43] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:43] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:43] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:43] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:44] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:44] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:44] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:44] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:49] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:49] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:49] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:49] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:51] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:51] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:52] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:52] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:52] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:52] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:56] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:56] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:49:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:56:15] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:56:15] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 20:56:15] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 20:56:15] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:02:37] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:02:37] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:02:37] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:02:37] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:04:51] "GET /g2.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:04:51] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:04:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:04:51] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:05] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:05] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:05] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:05] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:08] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:08] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:08] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:08] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:12] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:12] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:12] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:12] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:21] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:21] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:21] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:21] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:48] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:48] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:48] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:48] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:56] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:56] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:05:56] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:03] "GET /g3.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:03] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:03] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:03] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:55] "GET /g4.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:06:55] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:07:10] "GET /g5.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:07:10] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:07:10] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:13:24] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:13:24] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:13:24] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:13:24] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /assets/img/h1_01.png HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 21:51:15] "GET /assets/favicon.ico HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:13:45] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:13:45] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:13:45] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:13:45] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:18:22] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:18:22] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:18:22] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:18:22] "GET /styles/tokens.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:18:22] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:11] "GET /g2.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:11] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:11] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:11] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:35] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:35] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:35] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:22:35] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:26:42] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:26:42] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:26:42] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:26:42] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:34:25] "GET /g1.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:34:25] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:34:25] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:34:25] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:37:15] "GET /g1.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:37:15] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:37:15] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:37:15] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:08] "GET /g2.html HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:08] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:08] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:08] "GET /styles/templates.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:38] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:38] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:38] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:38] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:38] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:51] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:51] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:51] "GET /styles/templates.css HTTP/1.1" 304 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:55] code 404, message File not found
+::ffff:127.0.0.1 - - [08/Mar/2026 22:39:55] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+^C

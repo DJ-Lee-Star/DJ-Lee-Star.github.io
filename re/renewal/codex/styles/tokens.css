@@ -1,0 +1,86 @@
+:root {
+  --font-woori-light: "WooridaumL", "Malgun Gothic", "Segoe UI", sans-serif;
+  --font-woori-regular: "WooridaumR", "Malgun Gothic", "Segoe UI", sans-serif;
+  --font-woori-bold: "WooridaumB", "Malgun Gothic", "Segoe UI", sans-serif;
+
+  --color-bg: #e7edf5;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f4f7fb;
+  --color-border: #d4dde9;
+  --color-border-strong: #aebfd2;
+  --color-text: #1b2632;
+  --color-text-soft: #637284;
+  --color-brand: #0067b1;
+  --color-brand-strong: #004778;
+  --color-brand-soft: #e6f1fa;
+  --color-brand-ink: #0f3a5c;
+  --color-ok: #0c776b;
+  --color-ok-soft: #e5f7f4;
+  --color-warn: #a56d12;
+  --color-warn-soft: #fff3d8;
+  --color-danger: #c03c33;
+  --color-danger-soft: #fdecea;
+  --color-run: #2563eb;
+  --color-run-soft: #eaf1ff;
+  --color-gold: #b08a49;
+  --color-gold-soft: #f6ecda;
+  --color-navy: #17324d;
+
+  --shadow-shell: 0 24px 52px rgba(18, 31, 52, 0.16);
+  --shadow-card: 0 10px 24px rgba(18, 31, 52, 0.08);
+  --shadow-panel-strong: 0 14px 30px rgba(18, 31, 52, 0.1);
+
+  --radius-shell: 16px;
+  --radius-card: 12px;
+  --radius-button: 10px;
+  --radius-pill: 999px;
+
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+}
+
+@font-face {
+  font-family: "WooridaumL";
+  src: url("../assets/font/WooridaumL.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "WooridaumR";
+  src: url("../assets/font/WooridaumR.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "WooridaumB";
+  src: url("../assets/font/WooridaumB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(0, 103, 177, 0.14), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(176, 138, 73, 0.12), transparent 24%),
+    #dfe7f0;
+  color: var(--color-text);
+}
+
+body {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-woori-regular);
+}

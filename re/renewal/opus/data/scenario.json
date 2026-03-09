@@ -1,0 +1,67 @@
+{
+  "borrower": {
+    "name": "(주)000바이오",
+    "representative": "홍길동",
+    "bizRegNo": "123-45-67890",
+    "corpRegNo": "110111-1234567",
+    "address": "서울특별시 영등포구 여의대로 24",
+    "establishDate": "2016-04-01",
+    "capitalStock": "1,600,000,000",
+    "capitalStockOcr": "1,000,000,000",
+    "shares": "200,000주",
+    "bizType": "도매 및 소매업",
+    "bizItem": "의료기기 도소매",
+    "bizStatus": "계속사업자"
+  },
+  "application": {
+    "no": "CC411-2026-000123",
+    "date": "2026-03-05",
+    "product": "기업부동산담보대출",
+    "amount": "3,000,000,000",
+    "maturityDate": "2031-03-04",
+    "fundPurpose": "공장부지 매입 (부동산 취득)",
+    "repaymentType": "원리금균등",
+    "handlingType": "신규",
+    "collateralType": "부동산담보",
+    "applyChannel": "영업점"
+  },
+  "collateral": {
+    "type": "부동산(토지+건물)",
+    "location": "서울특별시 중구 세종대로 00",
+    "landArea": "1,320㎡",
+    "buildingArea": "2,640㎡",
+    "usage": "공장부지 및 건물",
+    "appraisedValue": "4,800,000,000",
+    "priorLien": "없음",
+    "ltv": "62.5%",
+    "owner": "(주)000바이오"
+  },
+  "branch": {
+    "code": "411",
+    "name": "강남기업금융센터"
+  },
+  "manager": {
+    "id": "E1042",
+    "name": "김담당"
+  },
+  "processMap": {
+    "stages": [
+      { "id": "intake", "label": "서류 접수", "icon": "📋", "pages": ["P1","P2"], "actor": "단말 (담당자)" },
+      { "id": "analysis", "label": "AI 분석", "icon": "🤖", "pages": ["P3","P4","P5","P6"], "actor": "Agent (AI)" },
+      { "id": "review", "label": "검토/수정", "icon": "👤", "pages": ["P7","P8","P9","P10","P11"], "actor": "브릿지 (HITL)" },
+      { "id": "submit", "label": "심사 전달", "icon": "✅", "pages": ["P12"], "actor": "단말 (심사요청)" }
+    ],
+    "keyMessages": [
+      "AI Agent가 서류 분류 · OCR · 담보평가 검증을 자율 수행",
+      "사람이 최종 확인하며 책임 소재 확보 (HITL)",
+      "오류 시 실시간 알림으로 즉시 대응"
+    ]
+  },
+  "approval": {
+    "level": "본부",
+    "reason": "대출금액 30억원 (영업점 전결 한도 초과) + 부동산 담보 LTV 62.5%",
+    "route": "영업점 → 본부심사역 → 부장",
+    "regulation": "내규 제42조 3항"
+  },
+  "reviewMemo": "자본금 OCR 오인식 수정 1건, 전결 상향 사유: 금액 기준 초과 + 부동산 담보 LTV 검토"
+}

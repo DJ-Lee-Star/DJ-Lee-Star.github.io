@@ -1,0 +1,721 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[S11-옵] 주주명부(공유차주) 자동입력(CI101) — Full Light</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface2:#f7f8fb;
+      --surface3:#eef2f7;
+
+      --text:#0f172a;
+      --muted:#475569;
+
+      --border:rgba(15,23,42,.12);
+      --border2:rgba(15,23,42,.08);
+      --shadow:0 10px 22px rgba(2,8,23,.10);
+      --radius:16px;
+
+      --primary:#2563eb;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial;
+    }
+
+    html,body{height:100%}
+    body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text);}
+
+    /* Top header */
+    .topbar{
+      position:sticky; top:0; z-index:30;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(37,99,235,.07), rgba(255,255,255,0));
+      padding:14px 18px;
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:12px; flex-wrap:wrap;
+    }
+    .kicker{font-family:var(--mono); font-size:12px; color:rgba(37,99,235,.95)}
+    .title{margin:6px 0 0; font-size:16px; font-weight:900; letter-spacing:-.2px}
+    .subtitle{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45; max-width:1050px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(15,23,42,.02);
+      white-space:nowrap;
+    }
+    .pill b{color:var(--text)}
+
+    /* Layout */
+    .layout{
+      min-height:calc(100vh - 78px);
+      display:grid;
+      grid-template-columns: 420px 1fr 420px;
+      gap:14px;
+      padding:16px 18px 30px;
+    }
+
+    /* Card */
+    .card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      background:var(--surface2);
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+    }
+    .card .head h2{margin:0; font-size:14px; font-weight:900}
+    .card .head p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .card .content{padding:12px 14px}
+
+    /* Buttons */
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      transition:transform .08s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .btn:hover{background:var(--surface2)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      border-color:rgba(37,99,235,.35);
+      background:rgba(37,99,235,.08);
+      color:rgba(37,99,235,.95);
+    }
+    .btn.primary:hover{background:rgba(37,99,235,.12)}
+    .btn.secondary{
+      border-color:rgba(22,163,74,.35);
+      background:rgba(22,163,74,.10);
+      color:#166534;
+    }
+    .btn.secondary:hover{background:rgba(22,163,74,.14)}
+    .btn.warn{
+      border-color:rgba(245,158,11,.45);
+      background:rgba(245,158,11,.10);
+      color:#92400e;
+    }
+
+    /* Badges */
+    .badge{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px; height:10px; border-radius:999px; background:rgba(15,23,42,.20)}
+    .badge.run{border-color:rgba(37,99,235,.35); background:rgba(37,99,235,.08); color:rgba(37,99,235,.95)}
+    .badge.run .dot{background:var(--primary)}
+    .badge.ok{border-color:rgba(22,163,74,.35); background:rgba(22,163,74,.10); color:#166534}
+    .badge.ok .dot{background:var(--success)}
+    .badge.warn{border-color:rgba(245,158,11,.45); background:rgba(245,158,11,.10); color:#92400e}
+    .badge.warn .dot{background:var(--warning)}
+    .badge.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.08); color:#991b1b}
+    .badge.bad .dot{background:var(--danger)}
+
+    /* Upload box (demo) */
+    .upload{
+      border:1px dashed rgba(37,99,235,.35);
+      background:rgba(37,99,235,.06);
+      border-radius:14px;
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .upload .h{font-weight:900; font-size:13px}
+    .upload .s{margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4}
+    input[type=file]{display:none}
+
+    /* Tables */
+    .tbl{
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .tbl table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
+    .tbl thead th{
+      text-align:left;
+      padding:10px 10px;
+      color:var(--muted);
+      border-bottom:1px solid var(--border);
+      background:var(--surface2);
+      position:sticky; top:0; z-index:1;
+    }
+    .tbl tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      vertical-align:top;
+    }
+    .tbl tbody tr:last-child td{border-bottom:none}
+    .rowwarn{background:rgba(245,158,11,.08)}
+    .rowbad{background:rgba(239,68,68,.06)}
+    .muted{color:var(--muted)}
+
+    /* Form (CI101{    /* Form (CI101 mock) */
+      margin-top:10px;
+      border:1px solid var(--border);
+      background:rgba(15,23,42,.04);
+      border-radius:999px;
+      height:10px;
+      overflow:hidden;
+    }
+    .progress > span{
+      display:block;
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(37,99,235,.75), rgba(22,163,74,.60));
+      border-radius:999px;
+      transition:width .45s ease;
+    }
+
+    /* Logs */
+    .log{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:10px;
+      font-family:var(--mono);
+      font-size:11px;
+      color:var(--muted);
+      max-height:220px;
+      overflow:auto;
+      line-height:1.5;
+    }
+    .log .ok{color:#166534}
+    .log .warn{color:#92400e}
+    .log .bad{color:#991b1b}
+    .log .blue{color:rgba(37,99,235,.95)}
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      right:16px; bottom:16px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(37,99,235,.25);
+      background:rgba(37,99,235,.10);
+      color:rgba(37,99,235,.95);
+      font-size:12px;
+      opacity:0;
+      transform:translateY(8px);
+      transition:opacity .2s ease, transform .2s ease;
+      pointer-events:none;
+      z-index:60;
+      box-shadow:var(--shadow);
+    }
+    .toast.show{opacity:1; transform:translateY(0)}
+
+    @media (max-width: 1200px){
+      .layout{grid-template-columns: 1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div style="min-width:0">
+      <div class="kicker">[S11-옵] 주주명부(공유차주) 자동입력(CI101) · Full Light</div>
+      <div class="title">주주명부 OCR → 구조화 → 검증 → CI101(주주현황) 자동입력 + HITL 확인</div>
+      <div class="subtitle">
+        주주명부를 OCR로 구조화하고(공유차주 포함 가능), 검증 후 CI101 주주현황 화면으로 자동입력하는 시연용 화면입니다. 
+      </div>
+    </div>
+    <div class="pill"><b>Animation</b> OCR → 검증 → CI101 자동입력</div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: Upload + OCR result -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h2>주주명부 입력(OCR)</h2>
+          <p>주주명부(스캔/PDF)를 OCR로 추출해 구조화합니다. </p>
+        </div>
+        <span class="badge" id="leftStatus"><span class="dot"></span><b>대기</b></span>
+      </div>
+
+      <div class="content">
+        <div class="upload">
+          <div>
+            <div class="h">📎 주주명부 업로드(데모)</div>
+            <div class="s">발표용 데모에서는 “데모 데이터 불러오기”로 OCR 결과를 생성합니다.</div>
+          </div>
+          <div class="controls">
+            <button class="btn" id="loadDemoBtn" type="button">데모 데이터 불러오기</button>
+            <button class="btn primary" id="ocrBtn" type="button">OCR 실행</button>
+          </div>
+        </div>
+
+        <div class="tbl" style="max-height:460px; overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:20%">구분</th>
+                <th style="width:22%">주주명/법인명</th>
+                <th style="width:20%">보유주식수</th>
+                <th style="width:18%">지분율(%)</th>
+                <th style="width:20%">검증</th>
+              </tr>
+            </thead>
+            <tbody id="ocrBody">
+              <tr>
+                <td class="muted">-</td>
+                <td class="muted">OCR 실행 후 결과 표시</td>
+                <td class="muted">-</td>
+                <td class="muted">-</td>
+                <td class="muted">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="progress"><span id="leftBar"></span></div>
+        <div class="log" id="leftLog"></div>
+      </div>
+    </section>
+
+    <!-- CENTER: Validation summary -->
+    <section class="card">
+      <div class="head">
+        <div>
+          <h2>검증(지분합/이상치/공유차주)</h2>
+          <p>총 지분율 합계, 지분율 계산, 공유차주(동일인) 징후 등을 확인합니다.</p>
+        </div>
+        <span class="badge run" id="midStatus"><span class="dot"></span><b>대기</b></span>
+      </div>
+
+      <div class="content">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div class="field">
+            <label>총 발행주식수(주주명부)</label>
+            <input id="totalShares" value="" placeholder="OCR 후 자동 계산" disabled />
+          </div>
+          <div class="field">
+            <label>지분율 합계(%)</label>
+            <input id="sumPct" value="" placeholder="OCR 후 자동 계산" disabled />
+          </div>
+          <div class="field">
+            <label>이상치/경고</label>
+            <input id="anomaly" value="" placeholder="검증 후 표시" disabled />
+          </div>
+          <div class="field">
+            <label>공유차주(동일인) 의심</label>
+            <input id="groupRisk" value="" placeholder="검증 후 표시" disabled />
+          </div>
+          <div class="field full">
+            <label>검증 요약</label>
+            <input id="summary" value="" placeholder="검증 후 요약" disabled />
+          </div>
+        </div>
+
+        <div class="progress"><span id="midBar"></span></div>
+
+        <div class="log" id="midLog"></div>
+
+        <div class="hint">
+          <b>포인트</b>: 검증은 자동으로 수행되지만, 최종 확정/수정은 담당자가(HITL) 수행합니다. 
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: CI101 Auto-fill -->
+    <aside class="card">
+      <div class="head">
+        <div>
+          <h2>CI101 주주현황(자동입력)</h2>
+          <p>검증 완료된 주주명부를 CI101 주주현황 화면에 자동 입력합니다. </p>
+        </div>
+        <div class="controls">
+          <button class="btn" id="resetBtn" type="button">초기화</button>
+          <button class="btn secondary" id="fillBtn" type="button">CI101 자동입력</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="badge" id="rightStatus"><span class="dot"></span><b>대기</b></div>
+
+        <div class="form" style="margin-top:12px;">
+          <div class="field">
+            <label>승인신청번호</label>
+            <input value="CC411-2026-000123" />
+          </div>
+          <div class="field">
+            <label>차주명</label>
+            <input value="(주)000바이오" />
+          </div>
+          <div class="field">
+            <label>총 발행주식수</label>
+            <input id="ci_total" placeholder="자동입력" disabled />
+          </div>
+          <div class="field">
+            <label>최대주주 지분율(%)</label>
+            <input id="ci_majorPct" placeholder="자동입력" disabled />
+          </div>
+
+          <div class="field full">
+            <label>주주현황(상위 3명 예시)</label>
+            <input id="ci_top3" placeholder="자동입력" disabled />
+          </div>
+
+          <div class="field full">
+            <label>확인 필요(예외)</label>
+            <input id="ci_review" placeholder="검증 결과에 따라 표시" disabled />
+          </div>
+        </div>
+
+        <div class="progress"><span id="rightBar"></span></div>
+        <div class="log" id="rightLog"></div>
+
+        <div class="hint">
+          <span class="badge warn"><span class="dot"></span>HITL</span>
+          자동입력 결과를 영업점 담당자가 확인/수정 후 확정합니다. 
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <div class="toast" id="toast">완료</div>
+
+<script>
+  // -----------------------------------------
+  // Demo shareholder register (OCR output mock)
+  // -----------------------------------------
+  const DEMO_ROWS = [
+    { type:"개인", name:"김00", shares: 52000, pct: 52.0, group:"동일인A" },
+    { type:"법인", name:"(주)000홀딩스", shares: 30000, pct: 30.0, group:"동일인A" },
+    { type:"개인", name:"이00", shares: 18000, pct: 18.0, group:"-" }
+  ];
+
+  // DOM refs
+  const loadDemoBtn = document.getElementById("loadDemoBtn");
+  const ocrBtn = document.getElementById("ocrBtn");
+  const fillBtn = document.getElementById("fillBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const ocrBody = document.getElementById("ocrBody");
+  const leftStatus = document.getElementById("leftStatus");
+  const midStatus = document.getElementById("midStatus");
+  const rightStatus = document.getElementById("rightStatus");
+
+  const leftBar = document.getElementById("leftBar");
+  const midBar = document.getElementById("midBar");
+  const rightBar = document.getElementById("rightBar");
+
+  const leftLog = document.getElementById("leftLog");
+  const midLog = document.getElementById("midLog");
+  const rightLog = document.getElementById("rightLog");
+  const toast = document.getElementById("toast");
+
+  const totalShares = document.getElementById("totalShares");
+  const sumPct = document.getElementById("sumPct");
+  const anomaly = document.getElementById("anomaly");
+  const groupRisk = document.getElementById("groupRisk");
+  const summary = document.getElementById("summary");
+
+  const ci_total = document.getElementById("ci_total");
+  const ci_majorPct = document.getElementById("ci_majorPct");
+  const ci_top3 = document.getElementById("ci_top3");
+  const ci_review = document.getElementById("ci_review");
+
+  let state = {
+    loaded: false,
+    ocrDone: false,
+    validated: false,
+    filled: false,
+    rows: []
+  };
+
+  function toastShow(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 1200);
+  }
+
+  function log(el, msg, cls){
+    const div = document.createElement("div");
+    div.innerHTML = cls ? `<span class="${cls}">${msg}</span>` : msg;
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function setBadge(el, mode, text){
+    el.className = "badge";
+    if(mode) el.classList.add(mode);
+    el.innerHTML = `<span class="dot"></span><b>${text}</b>`;
+  }
+
+  function setBar(el, pct){
+    el.style.width = pct + "%";
+  }
+
+  function renderOcrTable(rows){
+    ocrBody.innerHTML = "";
+    rows.forEach(r=>{
+      const ok = (r.pct >= 0 && r.pct <= 100);
+      const tr = document.createElement("tr");
+      tr.className = ok ? "" : "rowwarn";
+      tr.innerHTML = `
+        <td>${r.type}</td>
+        <td><b>${r.name}</b></td>
+        <td>${r.shares.toLocaleString()}</td>
+        <td>${r.pct.toFixed(1)}</td>
+        <td>${ok ? `<span class="badge ok"><span class="dot"></span>정상</span>`
+                 : `<span class="badge warn"><span class="dot"></span>확인</span>`}</td>
+      `;
+      ocrBody.appendChild(tr);
+    });
+  }
+
+  function validate(rows){
+    // total shares
+    const total = rows.reduce((a,b)=>a + b.shares, 0);
+    const pctSum = rows.reduce((a,b)=>a + b.pct, 0);
+
+    // anomalies
+    const pctGap = Math.abs(pctSum - 100);
+    const warnList = [];
+    if(pctGap > 0.1) warnList.push(`지분율 합계 ${pctSum.toFixed(1)}% (100%와 차이)`);
+    // group risk: same group appears across >1 row and sum pct >= 50
+    const groupMap = {};
+    rows.forEach(r=>{
+      if(!r.group || r.group === "-") return;
+      groupMap[r.group] = (groupMap[r.group] || 0) + r.pct;
+    });
+    const riskyGroups = Object.entries(groupMap).filter(([g,p])=>p >= 50);
+
+    return {
+      totalShares: total,
+      pctSum,
+      pctGap,
+      warnings: warnList,
+      riskyGroups
+    };
+  }
+
+  function buildTop3(rows){
+    const sorted = rows.slice().sort((a,b)=>b.pct - a.pct);
+    return sorted.slice(0,3).map(r=>`${r.name}(${r.pct.toFixed(1)}%)`).join(" / ");
+  }
+
+  function resetAll(){
+    state = { loaded:false, ocrDone:false, validated:false, filled:false, rows:[] };
+
+    ocrBody.innerHTML = `
+      <tr>
+        <td class="muted">-</td>
+        <td class="muted">OCR 실행 후 결과 표시</td>
+        <td class="muted">-</td>
+        <td class="muted">-</td>
+        <td class="muted">-</td>
+      </tr>
+    `;
+
+    leftLog.innerHTML = ""; midLog.innerHTML = ""; rightLog.innerHTML = "";
+    log(leftLog, "READY | 주주명부 업로드 대기", "blue");
+    log(midLog, "READY | 검증 대기", "blue");
+    log(rightLog, "READY | CI101 자동입력 대기", "blue");
+
+    setBadge(leftStatus, "", "대기");
+    setBadge(midStatus, "run", "대기");
+    setBadge(rightStatus, "", "대기");
+
+    setBar(leftBar, 0); setBar(midBar, 0); setBar(rightBar, 0);
+
+    totalShares.value = ""; sumPct.value = ""; anomaly.value=""; groupRisk.value=""; summary.value="";
+    ci_total.value=""; ci_majorPct.value=""; ci_top3.value=""; ci_review.value="";
+  }
+
+  // Load demo rows (simulate upload)
+  loadDemoBtn.onclick = ()=>{
+    state.loaded = true;
+    state.rows = JSON.parse(JSON.stringify(DEMO_ROWS));
+    setBadge(leftStatus, "run", "업로드됨");
+    setBar(leftBar, 15);
+    log(leftLog, "INFO | 데모 주주명부 로드 완료", "blue");
+    toastShow("데모 주주명부 로드 완료");
+  };
+
+  // OCR run -> render table + validate
+  ocrBtn.onclick = ()=>{
+    if(!state.loaded){
+      toastShow("먼저 데모 데이터를 불러오세요.");
+      return;
+    }
+    setBadge(leftStatus, "run", "OCR 중");
+    setBar(leftBar, 35);
+    log(leftLog, "RUN  | OCR 실행(주주명부)", "blue");
+
+    // Simulated OCR delay
+    setTimeout(()=>{
+      state.ocrDone = true;
+      renderOcrTable(state.rows);
+      setBadge(leftStatus, "ok", "OCR 완료");
+      setBar(leftBar, 100);
+      log(leftLog, "OK   | OCR 결과 구조화 완료(주주 리스트 생성)", "ok");
+
+      // Validation step (center)
+      setBadge(midStatus, "run", "검증 중");
+      setBar(midBar, 45);
+      log(midLog, "RUN  | 지분합/이상치/동일인(공유차주) 검증 시작", "blue");
+
+      setTimeout(()=>{
+        const v = validate(state.rows);
+        state.validated = true;
+
+        totalShares.value = v.totalShares.toLocaleString();
+        sumPct.value = v.pctSum.toFixed(1);
+        setBar(midBar, 100);
+
+        // anomalies display
+        if(v.warnings.length){
+          anomaly.value = v.warnings.join(" / ");
+          log(midLog, "WARN | " + anomaly.value, "warn");
+        } else {
+          anomaly.value = "이상 없음";
+          log(midLog, "OK   | 지분율 합계 정상", "ok");
+        }
+
+        if(v.riskyGroups.length){
+          const gtxt = v.riskyGroups.map(([g,p])=>`${g}(${p.toFixed(1)}%)`).join(", ");
+          groupRisk.value = gtxt;
+          log(midLog, "WARN | 공유차주(동일인) 의심: " + gtxt, "warn");
+        } else {
+          groupRisk.value = "의심 없음";
+          log(midLog, "OK   | 공유차주(동일인) 의심 없음", "ok");
+        }
+
+        summary.value = `총발행 ${v.totalShares.toLocaleString()}주 / 지분합 ${v.pctSum.toFixed(1)}%`;
+        setBadge(midStatus, "ok", "검증 완료");
+        toastShow("OCR+검증 완료");
+
+      }, 700);
+
+    }, 700);
+  };
+
+  // CI101 auto-fill
+  fillBtn.onclick = ()=>{
+    if(!state.validated){
+      toastShow("먼저 OCR/검증을 완료하세요.");
+      return;
+    }
+    setBadge(rightStatus, "run", "자동입력 중");
+    setBar(rightBar, 15);
+    log(rightLog, "RUN  | CI101 주주현황 자동입력 시작", "blue");
+
+    const rows = state.rows.slice().sort((a,b)=>b.pct-a.pct);
+    const top = rows[0];
+
+    // Fill sequence with animation
+    const steps = [
+      ()=>{ ci_total.value = rows.reduce((a,b)=>a+b.shares,0).toLocaleString(); flash(ci_total); log(rightLog, "OK   | 총발행주식수 입력", "ok"); setBar(rightBar, 35); },
+      ()=>{ ci_majorPct.value = top.pct.toFixed(1); flash(ci_majorPct); log(rightLog, `OK   | 최대주주 지분율 입력(${top.pct.toFixed(1)}%)`, "ok"); setBar(rightBar, 55); },
+      ()=>{ ci_top3.value = buildTop3(rows); flash(ci_top3); log(rightLog, "OK   | 상위 주주 요약 입력", "ok"); setBar(rightBar, 75); },
+      ()=>{ 
+        // set review note based on validation results
+        const v = validate(rows);
+        const notes = [];
+        if(Math.abs(v.pctSum-100)>0.1) notes.push("지분합 100% 미충족(확인 필요)");
+        if(v.riskyGroups.length) notes.push("공유차주(동일인) 의심 존재(확인 필요)");
+        ci_review.value = notes.length ? notes.join(" / ") : "확인 필요 없음";
+        flash(ci_review);
+        log(rightLog, notes.length ? "WARN | 확인 필요 항목 존재" : "OK   | 확인 필요 없음", notes.length ? "warn":"ok");
+        setBar(rightBar, 92);
+      },
+      ()=>{ setBar(rightBar, 100); setBadge(rightStatus, "ok", "자동입력 완료"); state.filled=true; log(rightLog, "OK   | CI101 자동입력 완료(HITL 확인 단계)", "ok"); toastShow("CI101 자동입력 완료"); }
+    ];
+
+    let i=0;
+    function next(){
+      if(i>=steps.length) return;
+      stepsi++;
+      if(i<steps.length) setTimeout(next, 520);
+    }
+    setTimeout(next, 500);
+  };
+
+  function flash(el){
+    el.classList.add("flash");
+    setTimeout(()=>el.classList.remove("flash"), 600);
+  }
+
+  resetBtn.onclick = ()=> resetAll();
+
+  // init
+  resetAll();
+</script>
+</body>
+</html>
+    .form{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .field{
+      background:var(--surface2);
+      border:1px solid var(--border2);
+      border-radius:12px;
+      padding:10px;
+    }
+    .field label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    .field input, .field select{
+      width:100%;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius:10px;
+      padding:9px 10px;
+      outline:none;
+      font-size:13px;
+    }
+    .field input:focus, .field select:focus{
+      border-color:rgba(37,99,235,.35);
+      box-shadow:0 0 0 3px rgba(37,99,235,.10);
+    }
+    .full{grid-column:1/-1}
+
+    /* Flash fill effect */
+    .flash{ animation: flash .55s ease; }
+    @keyframes flash{
+      0%{ box-shadow:0 0 0 0 rgba(37,99,235,0); }
+      60%{ box-shadow:0 0 0 4px rgba(37,99,235,.14); }
+      100%{ box-shadow:0 0 0 0 rgba(37,99,235,0); }
+    }
+
+    /* Progress */

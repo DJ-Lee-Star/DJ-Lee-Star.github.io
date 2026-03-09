@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>P6 AI-OCR / 필드추출</title>
+  <link rel="stylesheet" href="../styles/main.css" />
+  <style>
+    .p6-body { display: flex; gap: var(--space-4); flex: 1; min-height: 0; }
+    .p6-left { width: 480px; flex-shrink: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+    .p6-right { flex: 1; display: flex; flex-direction: column; gap: var(--space-4); }
+    .od-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .od-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--agent-card-border); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+    .od-item.active { background: var(--agent-active-bg); border-color: rgba(0,131,202,0.25); }
+    .od-item.done { background: var(--agent-done-bg); border-color: rgba(13,124,63,0.20); }
+    .od-item.warn { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.25); }
+    .od-name { font-size: var(--text-md); font-weight: var(--font-bold); color: var(--agent-text-body); flex: 1; }
+    .ocr-result-area { flex: 1; overflow-y: auto; }
+    .ocr-row { display: flex; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: var(--text-sm); opacity: 0; transform: translateY(4px); transition: all 0.2s; }
+    .ocr-row.show { opacity: 1; transform: translateY(0); }
+    .ocr-row .label { width: 160px; color: var(--agent-text-muted); flex-shrink: 0; }
+    .ocr-row .value { flex: 1; color: var(--agent-text); font-weight: var(--font-bold); }
+    .ocr-row .conf { width: 60px; text-align: right; }
+    .ocr-row .conf.high { color: #4ADE80; }
+    .ocr-row .conf.low { color: #F87171; }
+    .msg-bar { padding: var(--space-4) var(--space-5); border-radius: var(--radius-md); font-size: var(--text-sm); display: flex; align-items: center; gap: var(--space-2); opacity: 0; transition: opacity 0.4s; }
+    .msg-bar.show { opacity: 1; }
+    .msg-bar.warn { background: rgba(251,191,36,0.12); color: #FBBF24; border: 1px solid rgba(251,191,36,0.20); }
+  </style>
+</head>
+<body>
+<div class="app-shell theme-agent">
+  <header class="app-header">
+    <div class="app-header__left">
+      <img src="../assets/img/agent-logo.png" alt="AI" style="height:36px" />
+      <span class="app-header__divider"></span>
+      <span class="app-header__title">AI-OCR / 필드추출</span>
+    </div>
+    <div class="app-header__right agent-sysinfo">
+      <span class="agent-sysinfo__item"><span class="agent-sysinfo__dot"></span>AI-OCR</span>
+      <span class="agent-sysinfo__item" id="sysUptime">00:00</span>
+    </div>
+  </header>
+
+  <div class="app-content">
+    <div class="p6-body">
+      <div class="p6-left">
+        <div class="agent-card agent-card--full">
+          <div class="card__title">OCR 대상 문서</div>
+          <div class="od-list" id="ocrDocList"></div>
+        </div>
+      </div>
+      <div class="p6-right">
+        <div class="agent-card agent-card--full" style="display:flex;flex-direction:column">
+          <div class="card__title" id="resultTitle">추출 결과</div>
+          <div class="ocr-result-area" id="resultArea"></div>
+          <div class="msg-bar" id="msgBar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="agent-data-flow"></div>
+  <div class="agent-process-log">
+    <span class="agent-process-log__prefix">[AI-OCR]</span>
+    <span class="agent-process-log__text" id="logText">Initializing OCR model...</span>
+    <span class="agent-process-log__cursor"></span>
+  </div>
+</div>
+
+<script type="module">
+import { DemoEngine } from '../js/common/demo-engine.js';
+import { DemoNavigator } from '../js/common/demo-navigator.js';
+import { StateManager } from '../js/common/state-manager.js';
+import { documents } from '../data/documents.js';
+import { ocrResults } from '../data/ocr-results.js';
+
+StateManager.save({ currentPage: 'p6' });
+DemoNavigator.autoScale();
+DemoNavigator.fadeIn();
+DemoEngine.init();
+
+const logEl = document.getElementById('logText');
+const upEl = document.getElementById('sysUptime');
+let _sec = 0;
+const _upTimer = setInterval(() => { _sec++; if(upEl) upEl.textContent = String(Math.floor(_sec/60)).padStart(2,'0')+':'+String(_sec%60).padStart(2,'0'); }, 1000);
+function setLog(m) { if(logEl) logEl.textContent = m; }
+
+const ocrDocs = documents.list.filter(d => d.targets.ocr);
+const docList = document.getElementById('ocrDocList');
+ocrDocs.forEach(doc => {
+  const item = document.createElement('div');
+  item.className = 'od-item';
+  item.dataset.id = doc.id;
+  item.innerHTML = `<span class="od-name">${doc.name}</span><span class="badge badge--na" style="font-size:var(--text-xs)">대기</span>`;
+  docList.appendChild(item);
+});
+
+const resultArea = document.getElementById('resultArea');
+const msgBar = document.getElementById('msgBar');
+
+function renderOCR(docId) {
+  resultArea.innerHTML = '';
+  const data = ocrResults[docId];
+  if (!data) return;
+  document.getElementById('resultTitle').textContent = `추출 결과 — ${data.title}`;
+  data.extracts.forEach(([label, value, conf]) => {
+    const row = document.createElement('div');
+    row.className = 'ocr-row';
+    const confNum = typeof conf === 'number' ? conf : 1.0;
+    const confCls = confNum >= 0.95 ? 'high' : 'low';
+    const confLabel = typeof conf === 'string' ? conf : (confNum*100).toFixed(0)+'%';
+    row.innerHTML = `<span class="label">${label}</span><span class="value">${value}</span><span class="conf ${confCls}">${confLabel}</span>`;
+    resultArea.appendChild(row);
+  });
+}
+
+async function showFields() {
+  const rows = resultArea.querySelectorAll('.ocr-row');
+  for (const row of rows) { row.classList.add('show'); await DemoEngine.wait(60); }
+}
+
+async function run() {
+  if (!DemoEngine.lockSequence()) return;
+  setLog('OCR model loaded');
+  await DemoEngine.wait(300);
+
+  const items = docList.querySelectorAll('.od-item');
+  for (let i = 0; i < items.length; i++) {
+    const docId = items[i].dataset.id;
+    items[i].classList.add('active');
+    items[i].querySelector('.badge').textContent = 'OCR 중';
+    setLog(`ocr: ${ocrDocs[i].name}`);
+
+    renderOCR(docId);
+    await showFields();
+    await DemoEngine.wait(150);
+
+    const hasLow = ocrResults[docId]?.extracts.some(e => typeof e[2]==='number' && e[2] < 0.92);
+    items[i].classList.remove('active');
+    if (hasLow) {
+      items[i].classList.add('warn');
+      items[i].querySelector('.badge').textContent = '검토필요';
+      items[i].querySelector('.badge').style.color = '#D97706';
+      setLog(`⚠ ${ocrDocs[i].name} — low confidence`);
+    } else {
+      items[i].classList.add('done');
+      items[i].querySelector('.badge').textContent = '완료';
+      items[i].querySelector('.badge').style.color = '#0D7C3F';
+    }
+    await DemoEngine.wait(150);
+  }
+
+  msgBar.className = 'msg-bar warn show';
+  msgBar.textContent = '⚠️ 법인등기부등본 자본금 필드 — 신뢰도 91%, 검토 필요';
+  setLog('⚠ HITL required: 자본금 conf=91%');
+
+  await DemoEngine.wait(600);
+  clearInterval(_upTimer);
+  DemoEngine.unlockSequence();
+  DemoNavigator.next();
+}
+run();
+</script>
+</body>
+</html>

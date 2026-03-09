@@ -1,0 +1,69 @@
+:root {
+  /* ── Brand: Woori Bank CI ── */
+  --woori-deep-blue: #0067AC;
+  --woori-blue: #0083CA;
+  --woori-light-blue: #20C4F4;
+  --woori-white: #FFFFFF;
+
+  /* ── Primary (Deep Blue 기반) ── */
+  --color-primary: #0067AC;
+  --color-primary-hover: #005490;
+  --color-primary-active: #004578;
+  --color-primary-bg: #E8F4FD;
+  --color-primary-bg-hover: #D6ECFA;
+
+  /* ── Semantic ── */
+  --color-success: #0D7C3F;
+  --color-success-bg: #E8F8EF;
+  --color-warning: #D97706;
+  --color-warning-bg: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEF2F2;
+  --color-info: #0083CA;
+  --color-info-bg: #E0F2FE;
+
+  /* ── Neutral (Gray Scale) ── */
+  --gray-900: #1A2332;
+  --gray-700: #475569;
+  --gray-500: #64748B;
+  --gray-300: #CBD5E1;
+  --gray-100: #F1F5F9;
+  --gray-50: #F8FAFC;
+
+  /* ── Surface ── */
+  --card: #FFFFFF;
+  --overlay: rgba(15, 23, 42, 0.30);
+  --overlay-blur: blur(4px);
+
+  /* ── WINI Terminal Chrome ── */
+  --wini-titlebar: #1B2A4A;
+  --wini-titlebar-text: rgba(255, 255, 255, 0.92);
+  --wini-menubar: #F0F2F4;
+  --wini-menubar-text: #374151;
+  --wini-menubar-hover: #E2E6EA;
+  --wini-tabbar: #FFFFFF;
+  --wini-tab-active: var(--color-primary);
+  --wini-tab-inactive: #9CA3AF;
+  --wini-sidebar: #F5F7F9;
+  --wini-sidebar-active: var(--color-primary);
+  --wini-sidebar-text: #4B5563;
+  --wini-statusbar: #E8ECF0;
+  --wini-statusbar-text: #6B7280;
+
+  /* ── Agent Dark Theme ── */
+  --agent-bg: #0C1A2E;
+  --agent-card: rgba(255, 255, 255, 0.06);
+  --agent-card-border: rgba(255, 255, 255, 0.10);
+  --agent-card-blur: blur(12px);
+  --agent-text: #FFFFFF;
+  --agent-text-body: rgba(255, 255, 255, 0.85);
+  --agent-text-muted: rgba(255, 255, 255, 0.50);
+  --agent-border: rgba(255, 255, 255, 0.08);
+  --agent-header: rgba(255, 255, 255, 0.04);
+  --agent-glow-blue: rgba(0, 131, 202, 0.25);
+  --agent-glow-green: rgba(13, 124, 63, 0.20);
+  --agent-glow-warn: rgba(217, 119, 6, 0.20);
+  --agent-active-bg: rgba(0, 131, 202, 0.15);
+  --agent-done-bg: rgba(13, 124, 63, 0.12);
+  --agent-dot-grid: rgba(255, 255, 255, 0.03);
+}

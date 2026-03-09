@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P7 검토 요청 알림</title>
+  <style>
+    :root{
+      --bg:#eef3f8;
+      --card:#ffffff;
+      --line:#d6e0eb;
+      --text:#1f2937;
+      --muted:#607184;
+      --primary:#0067b1;
+      --primary-soft:#e8f2fb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      position:relative;
+      background:var(--bg);
+      border:1px solid #d6e0eb;
+      border-radius:12px;
+      box-shadow:0 10px 28px rgba(15,23,42,.14);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      background:#fff;
+      border-bottom:2px solid var(--primary);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .title{font-size:24px; font-weight:800; line-height:1}
+    .terminal-badge{
+      display:flex;
+      align-items:center;
+      color:#374151;
+      background:#ffffff;
+      border:2px solid #0067b1;
+      border-radius:0;
+      padding:6px 12px;
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .content{
+      height:656px;
+      padding:14px;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:10px;
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding:10px;
+    }
+    .main-grid{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:1fr 260px;
+      gap:10px;
+    }
+    .box{
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      overflow:hidden;
+      min-height:0;
+    }
+    .box-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      background:#f8fafc;
+      color:#334155;
+      font-size:16px;
+      font-weight:800;
+    }
+    .box-b{padding:10px 12px}
+    .center{
+      display:grid;
+      grid-template-rows:auto auto 1fr;
+      gap:10px;
+      min-height:0;
+    }
+    .customer-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .name{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.2px;
+      color:#0f172a;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .minor{
+      font-size:16px;
+      font-weight:700;
+      color:#64748b;
+    }
+    .vip{
+      padding:3px 8px;
+      border-radius:999px;
+      background:#f5e3b7;
+      color:#745314;
+      font-size:14px;
+      font-weight:800;
+    }
+    .meta{
+      margin-top:4px;
+      font-size:16px;
+      font-weight:700;
+      color:#334155;
+    }
+    .chips{display:flex;gap:6px}
+    .chip{
+      border:1px solid #c0d5e7;
+      background:#f4f9ff;
+      color:#35577d;
+      border-radius:6px;
+      padding:4px 8px;
+      font-size:15px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .assets{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid #e2eaf3;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+    }
+    .asset{
+      border:1px solid #dbe5f0;
+      border-radius:8px;
+      background:#fbfdff;
+      padding:8px;
+    }
+    .asset .k{font-size:15px;color:#64748b;font-weight:800}
+    .asset .v{margin-top:4px;font-size:22px;font-weight:900;white-space:nowrap}
+    .asset .v.red{color:#d12e22}
+    .open-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+    .step{font-size:16px;font-weight:800;color:#1e3a67}
+    .faux{
+      margin-top:6px;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+      font-size:16px;
+      color:#334155;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .btns{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      justify-content:center;
+    }
+    .btn{
+      min-width:120px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:8px;
+      padding:10px 14px;
+      font-size:15px;
+      font-weight:700;
+      text-align:center;
+    }
+    .btn.primary{
+      color:var(--primary);
+      border-color:#7ab3df;
+      background:var(--primary-soft);
+    }
+    .bottom{
+      display:grid;
+      grid-template-columns:1.55fr 1fr;
+      gap:10px;
+      min-height:0;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+      table-layout:fixed;
+    }
+    th,td{
+      border-bottom:1px solid #e4ebf3;
+      padding:8px 6px;
+      text-align:left;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    th{
+      background:#f8fafc;
+      color:#475569;
+      font-weight:800;
+    }
+    .noti{
+      margin:0;
+      padding:0 0 0 18px;
+      color:#334155;
+      font-size:16px;
+      line-height:1.8;
+      font-weight:700;
+    }
+    .noti li::marker{color:#dc2626}
+    .right{
+      display:grid;
+      grid-template-rows:auto auto auto;
+      gap:10px;
+      min-height:0;
+    }
+    .right-list{
+      margin:0;
+      padding:0 0 0 18px;
+      color:#334155;
+      font-size:16px;
+      line-height:1.8;
+      font-weight:700;
+    }
+    .right-list li::marker{color:#2563eb}
+    .alert-layer{
+      position:absolute;
+      left:0;
+      right:0;
+      top:64px;
+      bottom:0;
+      z-index:9;
+      opacity:0;
+      pointer-events:none;
+      background:rgba(15,23,42,.05);
+      backdrop-filter:blur(1px);
+      -webkit-backdrop-filter:blur(1px);
+    }
+    .alert-layer.show{
+      animation:layerFadeIn .45s ease-out forwards;
+    }
+    @keyframes layerFadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+    .mini{
+      position:absolute;
+      right:18px;
+      bottom:18px;
+      width:370px;
+      border:1px solid rgba(0,103,177,.35);
+      background:#ffffff;
+      border-radius:12px;
+      box-shadow:0 12px 28px rgba(2,8,23,.22);
+      overflow:hidden;
+      z-index:10;
+      opacity:0;
+      transform:translateY(90px);
+      pointer-events:none;
+    }
+    .mini.show{
+      animation:miniSlideUp .8s ease-out forwards;
+    }
+    @keyframes miniSlideUp{
+      from{opacity:0; transform:translateY(90px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+    .mini.show .mini-h{
+      animation:miniHeaderBlink 1s ease-in-out .8s infinite;
+    }
+    @keyframes miniHeaderBlink{
+      0%,100%{background:#ffffff}
+      50%{background:#fff1f1}
+    }
+    .mini-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .mini-title{
+      font-size:13px;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .mini-badge{
+      font-size:11px;
+      color:#fff;
+      background:#dc2626;
+      padding:3px 7px;
+      border-radius:999px;
+      font-weight:800;
+    }
+    .mini-b{padding:12px}
+    .mini-k{font-size:12px;color:#607184}
+    .mini-v{
+      margin-top:5px;
+      font-size:13px;
+      color:#1f2937;
+      line-height:1.45;
+    }
+    .mini-act{
+      margin-top:10px;
+      font-size:12px;
+      color:#0067b1;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title">검토 완료 알림</div>
+      <div class="terminal-badge">AI 브릿지(알림)</div>
+    </div>
+
+    <main class="content">
+      <section class="panel">
+        <section class="main-grid">
+          <section class="center">
+            <article class="box">
+              <div class="box-h">고객정보</div>
+              <div class="box-b">
+                <div class="customer-row">
+                  <div>
+                    <div class="name">홍길동 <span class="minor">(남 / 1982.05.14)</span> <span class="vip">VIP</span></div>
+                    <div class="meta">고객번호: 1002457896 | 연락처: 010-1234-5678 | 담당PB: 김민수</div>
+                  </div>
+                  <div class="chips">
+                    <span class="chip">고객 360°</span>
+                    <span class="chip">상담기록</span>
+                    <span class="chip">문서함</span>
+                  </div>
+                </div>
+                <div class="assets">
+                  <div class="asset"><div class="k">총자산</div><div class="v">3,420,000,000원</div></div>
+                  <div class="asset"><div class="k">예금</div><div class="v">2,100,000,000원</div></div>
+                  <div class="asset"><div class="k">대출</div><div class="v red">800,000,000원</div></div>
+                  <div class="asset"><div class="k">카드한도</div><div class="v">50,000,000원</div></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="box">
+              <div class="box-h">계좌개설</div>
+              <div class="box-b">
+                <div class="open-grid">
+                  <div>
+                    <div class="step">1. 상품선택</div>
+                    <div class="faux">상품종류: 보통예금</div>
+                  </div>
+                  <div>
+                    <div class="step">2. 가입정보</div>
+                    <div class="faux">가입금액: 0원</div>
+                  </div>
+                  <div>
+                    <div class="step">3. 약관동의</div>
+                    <div class="faux">자동이체: 설정 / 미설정</div>
+                  </div>
+                  <div>
+                    <div class="step">4. 서명</div>
+                    <div class="faux">SMS 알림: 신청</div>
+                  </div>
+                </div>
+                <div class="btns">
+                  <div class="btn primary">확인</div>
+                  <div class="btn">취소</div>
+                  <div class="btn">다음</div>
+                </div>
+              </div>
+            </article>
+
+            <div class="bottom">
+              <article class="box">
+                <div class="box-h">최근 거래 내역</div>
+                <div class="box-b">
+                  <table aria-label="최근 거래 내역">
+                    <thead>
+                      <tr>
+                        <th style="width:22%;">날짜</th>
+                        <th style="width:16%;">구분</th>
+                        <th style="width:24%;">내용</th>
+                        <th style="width:18%;">금액</th>
+                        <th style="width:20%;">잔액</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>24.04.22</td>
+                        <td>입금</td>
+                        <td>급여이체</td>
+                        <td style="color:#0b7b43;">+5,000,000</td>
+                        <td>12,400,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.20</td>
+                        <td>출금</td>
+                        <td>온라인쇼핑</td>
+                        <td style="color:#d12e22;">-320,000</td>
+                        <td>7,400,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.18</td>
+                        <td>이체</td>
+                        <td>친구이체</td>
+                        <td style="color:#d12e22;">-500,000</td>
+                        <td>7,720,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.12</td>
+                        <td>입금</td>
+                        <td>적금 만기</td>
+                        <td style="color:#0b7b43;">+1,200,000</td>
+                        <td>8,220,000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+              <article class="box">
+                <div class="box-h">시스템 알림</div>
+                <div class="box-b">
+                  <ul class="noti">
+                    <li>VIP 등급 - PB 상담 추천</li>
+                    <li>적금 만기 예정 : 2026-04-12</li>
+                    <li>대출 금리 인하 가능</li>
+                  </ul>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <aside class="right">
+            <article class="box">
+              <div class="box-h">영업지원</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>추천상품</li>
+                  <li>고객 상담 히스토리</li>
+                  <li>이벤트/알림</li>
+                </ul>
+              </div>
+            </article>
+            <article class="box">
+              <div class="box-h">추천상품</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>IRP (개인형 퇴직연금)</li>
+                  <li>주식형 펀드</li>
+                  <li>ELT (주가연계신탁)</li>
+                </ul>
+              </div>
+            </article>
+            <article class="box">
+              <div class="box-h">고객 상담 히스토리</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>24.03.18 펀드 상담</li>
+                  <li>23.11.02 대출 상담</li>
+                  <li>23.09.15 카드 발급</li>
+                </ul>
+              </div>
+            </article>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <div class="alert-layer" id="alertLayer" aria-hidden="true"></div>
+
+    <div class="mini" id="alertMini">
+      <div class="mini-h">
+        <div class="mini-title">새 메시지</div>
+        <div class="mini-badge">오류</div>
+      </div>
+      <div class="mini-b">
+        <div class="mini-v">법인등기부등본 신뢰도평가 검토필요 1건 발생. 값 확인 및 수정이 필요합니다.</div>
+        <div class="mini-act">AI 브릿지 열기</div>
+      </div>
+    </div>
+  </div>
+  <script src="./js/common.js"></script>
+  <script>
+    window.addEventListener("load", () => {
+      const layer = document.getElementById("alertLayer");
+      const mini = document.getElementById("alertMini");
+      setTimeout(() => {
+        layer.classList.add("show");
+        mini.classList.add("show");
+      }, 250);
+      setTimeout(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(0);
+      }, 4200);
+    });
+  </script>
+</body>
+</html>

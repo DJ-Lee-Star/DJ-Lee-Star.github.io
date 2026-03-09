@@ -1,0 +1,16 @@
+{
+  "error": {
+    "type": "error",
+    "badge": "오류",
+    "title": "AI 서류검토 알림",
+    "message": "법인등기부등본 자본금 필드 신뢰도 91%\n값 확인 및 수정이 필요합니다.",
+    "action": "AI 브릿지 열기"
+  },
+  "complete": {
+    "type": "success",
+    "badge": "완료",
+    "title": "AI 서류검토 알림",
+    "message": "[CC411-2026-000123]\n부동산담보대출 제출서류 AI검토 완료\n결과를 확인해주세요.",
+    "action": "AI 브릿지 열기"
+  }
+}
