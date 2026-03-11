@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="./images/favicon.png" />
+  <title>P2 첨부문서 등록</title>
+  <link href="./fonts/fonts.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg: #EDE9E2;
+      --bg-warm: #F5F3EF;
+      --card: #FFFFFF;
+      --card-alt: #FAFAF8;
+      --line: #D4CFC6;
+      --line-soft: #E4E0D8;
+      --line-focus: #3a8dfd;
+      --text: #1A1816;
+      --text-sub: #52504B;
+      --text-muted: #98938A;
+      --wb-deep: #0a1f4a;
+      --wb-dark: #1a3c7a;
+      --wb-mid: #2b6ad0;
+      --wb-blue: #3a8dfd;
+      --wb-light: #5ea3fd;
+      --wb-soft: #e8f1ff;
+      --wb-glow: rgba(58,141,253,0.14);
+      --gold: #B8975A;
+      --gold-light: #D4B978;
+      --gold-soft: #F2EBDC;
+      --shadow-s: 0 1px 3px rgba(26,24,22,0.05), 0 0 0 1px rgba(26,24,22,0.03);
+      --shadow-m: 0 4px 14px rgba(26,24,22,0.08), 0 1px 3px rgba(26,24,22,0.05);
+      --shadow-l: 0 12px 36px rgba(0,20,40,0.13), 0 2px 8px rgba(0,20,40,0.06);
+      --shadow-xl: 0 24px 48px rgba(0,20,40,0.20), 0 4px 12px rgba(0,20,40,0.07);
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --ease: 0.2s ease;
+      --ease-out: 0.32s cubic-bezier(0.16,1,0.3,1);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg-warm);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-l);
+      overflow:hidden;
+    }
+
+    /* ── Header ── */
+    .header{
+      height:64px;
+      position:relative;
+      background:#3a8dfd;
+      padding:0 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+    .header::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 1px,
+        transparent 1px,
+        transparent 48px
+      );
+      pointer-events:none;
+    }
+    .header::after{display:none;}
+    .header-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .header-logo{
+      height:28px;
+      width:auto;
+      object-fit:contain;
+      margin-right:4px;
+    }
+    .header-divider{
+      width:1px;
+      height:20px;
+      background:rgba(255,255,255,0.35);
+      margin:0 4px;
+    }
+    .title{
+      font-size:22px;
+      font-weight:800;
+      line-height:1;
+      color:#FFFFFF;
+      text-shadow:0 1px 4px rgba(0,0,0,0.3);
+      position:relative;
+      z-index:1;
+    }
+    .terminal-badge{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,0.10);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.22);
+      border-radius:var(--r-sm);
+      padding:6px 14px;
+      font-size:13px;
+      font-weight:700;
+      color:rgba(255,255,255,0.95);
+      letter-spacing:0.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .terminal-badge::before{
+      content:"";
+      display:inline-block;
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#6EE7B7;
+      box-shadow:0 0 6px rgba(110,231,183,0.7);
+      flex-shrink:0;
+    }
+
+    /* ─── Top Menu ─── */
+    .top-menu{
+      height:42px;
+      background:var(--card);
+      border-bottom:1px solid var(--line-soft);
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      gap:2px;
+    }
+    .top-menu-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 16px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-sub);
+      text-decoration:none;
+      border-radius:var(--r-sm);
+      cursor:pointer;
+      transition:all var(--ease);
+    }
+    .top-menu-item:hover{
+      background:var(--card-alt);
+      color:var(--text);
+    }
+    .top-menu-item.active{
+      color:var(--wb-blue);
+      background:var(--wb-soft);
+    }
+    .tm-icon{width:18px;height:18px;flex-shrink:0}
+
+    /* ── Content / Panel ── */
+    .content{
+      height:614px;
+      padding:14px;
+      display:grid;
+      grid-template-columns:210px 1fr;
+      gap:12px;
+    }
+
+    /* ─── Tree Sidebar ─── */
+    .tree-sidebar{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      box-shadow:var(--shadow-s);
+      padding:0;
+      overflow-y:auto;
+      font-size:13px;
+      user-select:none;
+    }
+    .tree-sidebar::-webkit-scrollbar{width:5px}
+    .tree-sidebar::-webkit-scrollbar-track{background:transparent}
+    .tree-sidebar::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+    .tree-header{
+      padding:12px 14px 10px;
+      font-size:11px;
+      font-weight:800;
+      color:var(--text-muted);
+      letter-spacing:1px;
+      border-bottom:1px solid var(--line-soft);
+    }
+    [class^="tree-lv"]{
+      display:block;
+      padding:7px 14px;
+      color:var(--text-sub);
+      cursor:pointer;
+      transition:background var(--ease), color var(--ease);
+      text-decoration:none;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tree-lv0{padding-left:14px;font-weight:700;color:var(--text);font-size:13px}
+    .tree-lv1{padding-left:30px;font-weight:600;font-size:13px}
+    .tree-lv2{padding-left:44px;font-weight:600;font-size:12px}
+    .tree-lv3{padding-left:56px;font-weight:500;font-size:12px}
+    [class^="tree-lv"]:hover{background:var(--card-alt)}
+    .tree-ic{
+      display:inline-block;
+      width:14px;
+      font-size:10px;
+      color:var(--text-muted);
+      text-align:center;
+      margin-right:4px;
+    }
+    a[class^="tree-lv"].active{
+      background:var(--wb-soft);
+      color:var(--wb-blue);
+      font-weight:700;
+      border-right:3px solid var(--wb-blue);
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      box-shadow:var(--shadow-s);
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .panel-b{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      height:100%;
+    }
+
+    /* ── Section bar / meta ── */
+    .main-meta{
+      display:flex;
+      gap:8px;
+      font-size:13px;
+      color:var(--text-sub);
+    }
+    .pill{
+      border:1px solid var(--line);
+      background:var(--card-alt);
+      border-radius:999px;
+      padding:6px 12px;
+      font-weight:700;
+      color:var(--text-sub);
+      font-size:13px;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .left-actions,.right-info{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    /* ── Buttons ── */
+    .btn{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:var(--r-sm);
+      padding:9px 16px;
+      font-size:14px;
+      font-weight:700;
+      font-family:inherit;
+      cursor:pointer;
+      color:var(--text);
+      transition:transform var(--ease), box-shadow var(--ease), background var(--ease);
+    }
+    .btn.primary{
+      color:#FFFFFF;
+      border:none;
+      background:#3a8dfd;
+      box-shadow:0 2px 8px rgba(58,141,253,0.28);
+    }
+    .btn.primary:hover{
+      background:#2b7ce8;
+      transform:translateY(-1px);
+      box-shadow:0 4px 14px rgba(58,141,253,0.36);
+    }
+    .btn.primary:active{
+      transform:translateY(0);
+      box-shadow:0 2px 6px rgba(58,141,253,0.24);
+    }
+    .btn.ghost{
+      color:var(--text-sub);
+      border:1px solid var(--line);
+      background:var(--card-alt);
+    }
+    .btn.ghost:hover{
+      background:var(--line-soft);
+    }
+    .guide{
+      font-size:13px;
+      color:var(--text-muted);
+      font-weight:700;
+    }
+    .status{
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    /* ── Table ── */
+    .table-wrap{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      flex:1;
+      min-height:0;
+      background:var(--card);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:14px;
+    }
+    thead th{
+      background:#F6F4F0;
+      color:var(--text-sub);
+      border-bottom:1px solid var(--line);
+      border-right:1px solid var(--line-soft);
+      padding:10px 8px;
+      text-align:left;
+      font-size:13px;
+      font-weight:700;
+    }
+    thead th:last-child{border-right:0}
+    tbody td{
+      border-bottom:1px solid var(--line-soft);
+      border-right:1px solid var(--line-soft);
+      padding:10px 8px;
+      vertical-align:middle;
+      color:var(--text);
+    }
+    tbody td:last-child{border-right:0}
+    tbody tr:last-child td{border-bottom:1px solid var(--line-soft)}
+    tbody tr:hover td{background:#FAFAF8}
+    .doc-type{font-weight:700;color:var(--text-sub)}
+    .file-name{color:var(--text);font-weight:700}
+
+    /* ── Tags ── */
+    .tag{
+      display:inline-block;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:12px;
+      font-weight:800;
+    }
+    .tag.ok{
+      border:1px solid #A7D7C5;
+      background:#EBF5F0;
+      color:#17663C;
+    }
+    .tag.pending{
+      border:1px solid #E4D5A8;
+      background:#FBF6EA;
+      color:#8B6914;
+    }
+
+    /* ── Actions row ── */
+    .actions{
+      margin-top:auto;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      padding-top:2px;
+    }
+    .actions .btn{
+      min-width:170px;
+    }
+
+    /* ── Checkbox ── */
+    .check-cell{
+      width:44px;
+      text-align:center;
+      padding:8px 6px;
+    }
+    .check-cell input{
+      width:16px;
+      height:16px;
+      accent-color:var(--wb-blue);
+      cursor:pointer;
+    }
+    tbody .doc-row{display:none}
+    tbody .doc-row.visible{display:table-row}
+    .empty-state td{
+      text-align:center;
+      padding:80px 8px;
+      color:var(--text-muted);
+      font-weight:700;
+      font-size:14px;
+    }
+
+    /* ── Overlay / Modal ── */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,20,40,0.38);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:640px;
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-xl);
+      overflow:hidden;
+      animation:slideUp var(--ease-out) both;
+    }
+    @keyframes slideUp{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    .modal-h{
+      padding:13px 16px;
+      border-bottom:1px solid var(--line-soft);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:var(--card-alt);
+    }
+    .modal-title{font-size:16px;font-weight:800;color:var(--text)}
+    .close-btn{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:var(--r-sm);
+      width:32px;
+      height:32px;
+      font-size:14px;
+      cursor:pointer;
+      color:var(--text-sub);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:inherit;
+      transition:background var(--ease);
+    }
+    .close-btn:hover{background:var(--line-soft)}
+    .modal-b{padding:14px}
+
+    /* ── Picker list ── */
+    .picker-guide{
+      font-size:13px;
+      color:var(--text-muted);
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .picker-list{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      height:330px;
+      overflow:hidden;
+    }
+    .picker-row{
+      display:grid;
+      grid-template-columns:44px 200px 1fr;
+      align-items:center;
+      border-bottom:1px solid var(--line-soft);
+      padding:8px 6px;
+      font-size:14px;
+      color:var(--text);
+    }
+    .picker-row:last-child{border-bottom:0}
+    .picker-head{
+      background:#F6F4F0;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-sub);
+    }
+    .picker-file{
+      color:var(--text);
+      font-weight:700;
+    }
+    .modal-f{
+      padding:10px 14px;
+      border-top:1px solid var(--line-soft);
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      background:var(--card-alt);
+    }
+
+    /* ── Loading / Notice ── */
+    .loading-body{
+      padding:28px 20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+      color:var(--text-sub);
+      font-weight:700;
+    }
+    .spinner{
+      width:34px;
+      height:34px;
+      border:3px solid var(--line-soft);
+      border-top-color:var(--wb-blue);
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+    .notice-body{
+      padding:28px 24px;
+      font-size:16px;
+      font-weight:700;
+      color:var(--text);
+      text-align:center;
+    }
+
+    /* ── Demo effects ── */
+    @keyframes demoClickPulse{
+      0%{box-shadow:0 0 0 0 rgba(0,86,160,0.45), 0 0 0 0 rgba(0,86,160,0.18)}
+      50%{box-shadow:0 0 0 4px rgba(0,86,160,0.3), 0 0 0 12px rgba(0,86,160,0.10)}
+      100%{box-shadow:0 0 0 2px rgba(0,86,160,0.15), 0 0 0 6px rgba(0,86,160,0.04)}
+    }
+    .demo-click{
+      animation:demoClickPulse .4s ease-out both !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="header-left">
+        <img class="header-logo" src="./images/logo.png" alt="logo">
+        <div class="header-divider"></div>
+        <div class="title">첨부문서 등록</div>
+      </div>
+      <div class="terminal-badge">영업점 단말</div>
+    </div>
+
+    <nav class="top-menu">
+      <a class="top-menu-item active"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1" width="12" height="16" rx="2"/><path d="M7 5h4M7 8h4M7 11h2"/></svg>여신</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16h14M3 7h12L9 2 3 7zM5 7v7M9 7v7M13 7v7"/></svg>수신</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><path d="M2 9h14M9 2c2 2 3 4.5 3 7s-1 5-3 7M9 2c-2 2-3 4.5-3 7s1 5 3 7"/></svg>외환</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>고객</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14l4-5 3 3 5-7M2 16h14"/></svg>자금</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="10" rx="2"/><path d="M6 16h6M9 12v4"/></svg>전자금융</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.3 3.3l1.4 1.4M13.3 13.3l1.4 1.4M3.3 14.7l1.4-1.4M13.3 4.7l1.4-1.4"/></svg>관리</a>
+    </nav>
+
+    <div class="content">
+      <nav class="tree-sidebar">
+        <div class="tree-header">업무 메뉴</div>
+        <div class="tree-lv0"><span class="tree-ic">▾</span>여신업무</div>
+        <div class="tree-lv1"><span class="tree-ic">▾</span>기업여신</div>
+        <div class="tree-lv2"><span class="tree-ic">▾</span>신규대출</div>
+        <a class="tree-lv3">신청정보 입력</a>
+        <a class="tree-lv3 active">첨부문서 등록</a>
+        <a class="tree-lv3">심사정보 입력</a>
+        <a class="tree-lv3">심사요청</a>
+        <a class="tree-lv2">대출실행</a>
+        <a class="tree-lv2">대출관리</a>
+        <a class="tree-lv2">기한연장</a>
+        <a class="tree-lv1">개인여신</a>
+        <a class="tree-lv1">담보관리</a>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>수신업무</div>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>외환업무</div>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>고객관리</div>
+      </nav>
+
+      <section class="panel">
+        <div class="panel-b">
+          <div class="main-meta">
+            <div class="pill">신청번호: CC411-2026-000123</div>
+            <div class="pill">차주명: (주)000바이오</div>
+          </div>
+          <div class="toolbar">
+            <div class="left-actions">
+              <button class="btn primary" id="openPickerBtn" type="button">문서 파일 추가</button>
+              <button class="btn ghost" id="deleteSelectedBtn" type="button">선택 항목 삭제</button>
+            </div>
+            <div class="right-info">
+              <div class="guide">허용 확장자: pdf, jpg, png / 최대 20MB</div>
+              <div class="status" id="uploadStatus">등록현황 0 / 0</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table aria-label="첨부문서 등록 목록">
+              <thead>
+                <tr>
+                  <th class="check-cell"><input type="checkbox" id="checkAllRows" aria-label="전체선택" /></th>
+                  <th style="width:150px">문서구분</th>
+                  <th style="width:240px">문서명</th>
+                  <th>업로드 파일명</th>
+                  <th style="width:160px">등록일시</th>
+                  <th style="width:120px">검증상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="empty-state" id="emptyRow">
+                  <td colspan="6">등록된 문서가 없습니다. '문서 파일 추가' 버튼을 클릭하여 문서를 등록하세요.</td>
+                </tr>
+                <tr data-doc-id="사업자등록증명원" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">필수서류</td>
+                  <td>사업자등록증명원</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+                <tr data-doc-id="법인등기부등본" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">필수서류</td>
+                  <td>법인등기부등본</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+                <tr data-doc-id="표준재무제표증명" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">필수서류</td>
+                  <td>표준재무제표증명</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+                <tr data-doc-id="부가가치세 과세표준증명원" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">필수서류</td>
+                  <td>부가가치세 과세표준증명원</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+                <tr data-doc-id="법인인감증명서" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">필수서류</td>
+                  <td>법인인감증명서</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+                <tr data-doc-id="주주명부" class="doc-row">
+                  <td class="check-cell"><input type="checkbox" class="row-check" /></td>
+                  <td class="doc-type">추가서류</td>
+                  <td>주주명부</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><span class="tag pending">미등록</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="bprSendBtn" type="button">BPR전송</button>
+            <button class="btn primary" id="reviewInputBtn" type="button">서류입력 및 검수(AI)</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="overlay" id="pickerOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+      <div class="modal-h">
+        <div class="modal-title" id="pickerTitle">파일 선택</div>
+        <button class="close-btn" id="closePickerBtn" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-b">
+        <div class="picker-list" id="pickerList">
+          <div class="picker-row picker-head">
+            <div class="check-cell"><input type="checkbox" id="checkAllPicker" aria-label="전체선택" /></div>
+            <div>문서명</div>
+            <div>파일명</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" id="cancelPickerBtn" type="button">취소</button>
+        <button class="btn primary" id="confirmPickerBtn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="bprLoadingOverlay" aria-hidden="true">
+    <div class="modal" style="width:360px;">
+      <div class="loading-body">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>BPR전송 처리중...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="bprDoneOverlay" aria-hidden="true">
+    <div class="modal" style="width:400px;">
+      <div class="notice-body">BPR전송이 완료되었습니다.</div>
+      <div class="modal-f">
+        <button class="btn primary" id="bprDoneOkBtn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const pickerFiles = [
+      { docId: "사업자등록증명원", docName: "사업자등록증명원", fileName: "사업자등록증명원.pdf" },
+      { docId: "법인등기부등본", docName: "법인등기부등본", fileName: "법인등기부등본.pdf" },
+      { docId: "표준재무제표증명", docName: "표준재무제표증명", fileName: "표준재무제표증명.pdf" },
+      { docId: "부가가치세 과세표준증명원", docName: "부가가치세 과세표준증명원", fileName: "부가가치세 과세표준증명원.pdf" },
+      { docId: "법인인감증명서", docName: "법인인감증명서", fileName: "법인인감증명서.pdf" }
+    ];
+
+    const pickerOverlay = document.getElementById("pickerOverlay");
+    const bprLoadingOverlay = document.getElementById("bprLoadingOverlay");
+    const bprDoneOverlay = document.getElementById("bprDoneOverlay");
+    const pickerList = document.getElementById("pickerList");
+    const checkAllPicker = document.getElementById("checkAllPicker");
+    const checkAllRows = document.getElementById("checkAllRows");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const bprSendBtn = document.getElementById("bprSendBtn");
+    const openPickerBtn = document.getElementById("openPickerBtn");
+    const confirmPickerBtn = document.getElementById("confirmPickerBtn");
+    const bprDoneOkBtn = document.getElementById("bprDoneOkBtn");
+    const DEMO_TIME_SCALE = 1.5;
+
+    function nowStamp(){
+      return "2026-03-05 09:25";
+    }
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms * DEMO_TIME_SCALE));
+    }
+
+    function clickPulse(target){
+      if(!target) return;
+      target.classList.remove("demo-click");
+      void target.offsetWidth;
+      target.classList.add("demo-click");
+      setTimeout(() => target.classList.remove("demo-click"), 450);
+    }
+
+    function renderPickerRows(){
+      pickerList.querySelectorAll(".picker-row.data-row").forEach(el => el.remove());
+      pickerFiles.forEach(file => {
+        const row = document.createElement("div");
+        row.className = "picker-row data-row";
+        row.innerHTML = `
+          <div class="check-cell"><input type="checkbox" class="picker-check" data-doc-id="${file.docId}" /></div>
+          <div>${file.docName}</div>
+          <div class="picker-file">${file.fileName}</div>
+        `;
+        pickerList.appendChild(row);
+      });
+    }
+
+    function openPicker(){
+      renderPickerRows();
+      checkAllPicker.checked = false;
+      pickerOverlay.classList.add("show");
+      pickerOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closePicker(){
+      pickerOverlay.classList.remove("show");
+      pickerOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function openOverlay(target){
+      target.classList.add("show");
+      target.setAttribute("aria-hidden", "false");
+    }
+
+    function closeOverlay(target){
+      target.classList.remove("show");
+      target.setAttribute("aria-hidden", "true");
+    }
+
+    function updateStatus(){
+      const rows = Array.from(document.querySelectorAll("tbody tr"));
+      const uploadedCount = rows.filter(row => {
+        const state = row.querySelector(".tag");
+        return state && state.textContent.trim() === "등록완료";
+      }).length;
+      uploadStatus.textContent = `등록현황 ${uploadedCount} / ${rows.length}`;
+    }
+
+    function setRowUploaded(docId, fileName){
+      const row = document.querySelector(`tbody tr[data-doc-id="${docId}"]`);
+      if(!row) return;
+      row.children[3].textContent = fileName;
+      row.children[3].classList.add("file-name");
+      row.children[4].textContent = nowStamp();
+      row.children[5].innerHTML = `<span class="tag ok">등록완료</span>`;
+    }
+
+    function clearRowUploaded(row){
+      row.children[3].textContent = "-";
+      row.children[3].classList.remove("file-name");
+      row.children[4].textContent = "-";
+      row.children[5].innerHTML = `<span class="tag pending">미등록</span>`;
+      row.querySelector(".row-check").checked = false;
+    }
+
+    openPickerBtn.addEventListener("click", openPicker);
+    document.getElementById("closePickerBtn").addEventListener("click", closePicker);
+    document.getElementById("cancelPickerBtn").addEventListener("click", closePicker);
+
+    confirmPickerBtn.addEventListener("click", () => {
+      const selected = Array.from(document.querySelectorAll(".picker-check:checked"));
+      if(selected.length > 0){
+        const emptyRow = document.getElementById("emptyRow");
+        if(emptyRow) emptyRow.style.display = "none";
+        document.querySelectorAll(".doc-row").forEach(row => row.classList.add("visible"));
+      }
+      selected.forEach(chk => {
+        const docId = chk.dataset.docId;
+        const file = pickerFiles.find(x => x.docId === docId);
+        if(file) setRowUploaded(file.docId, file.fileName);
+      });
+      updateStatus();
+      closePicker();
+    });
+
+    checkAllPicker.addEventListener("change", () => {
+      document.querySelectorAll(".picker-check").forEach(chk => {
+        chk.checked = checkAllPicker.checked;
+      });
+    });
+
+    checkAllRows.addEventListener("change", () => {
+      document.querySelectorAll(".row-check").forEach(chk => {
+        chk.checked = checkAllRows.checked;
+      });
+    });
+
+    document.getElementById("deleteSelectedBtn").addEventListener("click", () => {
+      const rows = Array.from(document.querySelectorAll("tbody tr"));
+      rows.forEach(row => {
+        const chk = row.querySelector(".row-check");
+        if(chk && chk.checked){
+          clearRowUploaded(row);
+        }
+      });
+      checkAllRows.checked = false;
+      updateStatus();
+    });
+
+    pickerOverlay.addEventListener("click", e => {
+      if(e.target === pickerOverlay) closePicker();
+    });
+
+    bprSendBtn.addEventListener("click", () => {
+      bprSendBtn.disabled = true;
+      openOverlay(bprLoadingOverlay);
+      setTimeout(() => {
+        closeOverlay(bprLoadingOverlay);
+        openOverlay(bprDoneOverlay);
+        bprSendBtn.disabled = false;
+      }, 900);
+    });
+
+    bprDoneOkBtn.addEventListener("click", () => {
+      closeOverlay(bprDoneOverlay);
+    });
+
+    bprDoneOverlay.addEventListener("click", e => {
+      if(e.target === bprDoneOverlay) closeOverlay(bprDoneOverlay);
+    });
+
+    function resetDemoState(){
+      document.querySelectorAll(".doc-row").forEach(row => {
+        row.classList.remove("visible");
+        row.children[3].textContent = "-";
+        row.children[3].classList.remove("file-name");
+        row.children[4].textContent = "-";
+        row.children[5].innerHTML = `<span class="tag pending">미등록</span>`;
+        row.querySelector(".row-check").checked = false;
+      });
+      const emptyRow = document.getElementById("emptyRow");
+      if(emptyRow) emptyRow.style.display = "";
+      checkAllRows.checked = false;
+      closeOverlay(bprLoadingOverlay);
+      closeOverlay(bprDoneOverlay);
+      closePicker();
+      updateStatus();
+    }
+
+    async function runDemoSequence(){
+      resetDemoState();
+      await sleep(500);
+
+      clickPulse(openPickerBtn);
+      openPickerBtn.click();
+      await sleep(550);
+
+      clickPulse(checkAllPicker);
+      checkAllPicker.checked = true;
+      checkAllPicker.dispatchEvent(new Event("change", { bubbles:true }));
+      await sleep(260);
+
+      clickPulse(confirmPickerBtn);
+      confirmPickerBtn.click();
+      await sleep(700);
+
+      clickPulse(bprSendBtn);
+      await sleep(500);
+      bprSendBtn.click();
+      await sleep(1250);
+
+      clickPulse(bprDoneOkBtn);
+      await sleep(400);
+      bprDoneOkBtn.click();
+      await sleep(260);
+
+      const reviewInputBtn = document.getElementById("reviewInputBtn");
+      clickPulse(reviewInputBtn);
+      await sleep(500);
+    }
+
+    updateStatus();
+    window.addEventListener("load", () => {
+      runDemoSequence().then(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(700);
+      });
+    });
+  </script>
+</body>
+</html>

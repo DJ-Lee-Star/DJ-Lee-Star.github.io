@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="./images/favicon.png" />
+  <title>P7 검토 요청 알림</title>
+  <link href="./fonts/fonts.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:          #EBF2FA;
+      --bg-warm:     #F0F5FC;
+      --card:        #FFFFFF;
+      --card-alt:    #F5F8FC;
+      --line:        #C4D5E8;
+      --line-soft:   #DAE4F0;
+      --line-focus:  #2563EB;
+      --text:        #0F1D2E;
+      --text-sub:    #3B516B;
+      --text-muted:  #7B93AD;
+      --blue:        #2563EB;
+      --blue-light:  #3B82F6;
+      --blue-soft:   rgba(37,99,235,0.08);
+      --blue-glow:   rgba(37,99,235,0.14);
+      --bridge:      #1D4ED8;
+      --bridge-dark: #1E3A8A;
+      --bridge-soft: #EFF6FF;
+      --ok:          #059669;
+      --warn:        #D97706;
+      --danger:      #DC2626;
+      --danger-soft: #FEF2F2;
+      --shadow-s:    0 1px 3px rgba(15,50,80,0.06), 0 0 0 1px rgba(15,50,80,0.02);
+      --shadow-m:    0 4px 14px rgba(15,50,80,0.08), 0 1px 3px rgba(15,50,80,0.04);
+      --shadow-l:    0 12px 36px rgba(15,50,80,0.12), 0 2px 8px rgba(15,50,80,0.05);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+      --ease: 0.22s ease;
+      --ease-out: 0.32s cubic-bezier(0.16,1,0.3,1);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      position:relative;
+      background:var(--bg-warm);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-l), 0 0 0 1px rgba(0,0,0,0.02);
+      overflow:hidden;
+    }
+    .header{
+      height:64px;
+      position:relative;
+      background:linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 40%, #2563EB 100%);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+    .header::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.015) 0px,
+        rgba(255,255,255,0.015) 1px,
+        transparent 1px,
+        transparent 40px
+      );
+      pointer-events:none;
+    }
+    .header::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:3px;
+      background:linear-gradient(90deg, #60A5FA 0%, #93C5FD 30%, #BFDBFE 50%, #93C5FD 70%, #60A5FA 100%);
+    }
+    .header-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .header-logo{
+      height:28px;
+      width:auto;
+      object-fit:contain;
+      margin-right:4px;
+    }
+    .header-divider{
+      width:1px;
+      height:20px;
+      background:rgba(255,255,255,0.35);
+      margin:0 4px;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+      color:#FFFFFF;
+      text-shadow:0 1px 3px rgba(0,0,0,0.15);
+      position:relative;
+      z-index:1;
+    }
+    .terminal-badge{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,0.12);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.22);
+      color:rgba(255,255,255,0.95);
+      border-radius:var(--r-sm);
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+    }
+    .terminal-badge::before{
+      content:"";
+      display:inline-block;
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#60A5FA;
+      box-shadow:0 0 6px rgba(37,99,235,0.6);
+      flex-shrink:0;
+    }
+    .content{
+      height:656px;
+      padding:14px;
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      box-shadow:var(--shadow-s);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding:10px;
+    }
+    .main-grid{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:1fr 260px;
+      gap:10px;
+    }
+    .box{
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      background:var(--card);
+      overflow:hidden;
+      min-height:0;
+    }
+    .box-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line-soft);
+      background:#F0F5FC;
+      color:var(--text);
+      font-size:15px;
+      font-weight:800;
+    }
+    .box-b{padding:10px 12px}
+    .center{
+      display:grid;
+      grid-template-rows:auto auto 1fr;
+      gap:10px;
+      min-height:0;
+    }
+    .customer-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .name{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.2px;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .minor{
+      font-size:16px;
+      font-weight:700;
+      color:var(--text-muted);
+    }
+    .vip{
+      padding:3px 8px;
+      border-radius:999px;
+      background:#DBEAFE;
+      color:#1E3A8A;
+      border:1px solid #BFDBFE;
+      font-size:14px;
+      font-weight:800;
+    }
+    .meta{
+      margin-top:4px;
+      font-size:16px;
+      font-weight:700;
+      color:var(--text-sub);
+    }
+    .chips{display:flex;gap:6px}
+    .chip{
+      border:1px solid var(--line);
+      background:var(--card-alt);
+      color:var(--text-sub);
+      border-radius:var(--r-sm);
+      padding:4px 8px;
+      font-size:15px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .assets{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid var(--line-soft);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+    }
+    .asset{
+      border:1px solid var(--line-soft);
+      border-radius:8px;
+      background:var(--card-alt);
+      padding:8px;
+    }
+    .asset .k{font-size:15px;color:var(--text-muted);font-weight:800}
+    .asset .v{margin-top:4px;font-size:22px;font-weight:900;white-space:nowrap;color:var(--text)}
+    .asset .v.red{color:#DC2626}
+    .open-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+    .step{font-size:16px;font-weight:800;color:var(--bridge-dark)}
+    .faux{
+      margin-top:6px;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:var(--card-alt);
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+      font-size:16px;
+      color:var(--text-sub);
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .btns{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      justify-content:center;
+    }
+    .btn{
+      min-width:120px;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:var(--r-sm);
+      padding:10px 14px;
+      font-size:15px;
+      font-weight:700;
+      text-align:center;
+      color:var(--text);
+    }
+    .btn.primary{
+      color:#fff;
+      border:none;
+      background:linear-gradient(135deg, var(--bridge-dark), var(--blue));
+      box-shadow:0 2px 8px rgba(37,99,235,0.25);
+    }
+    .bottom{
+      display:grid;
+      grid-template-columns:1.55fr 1fr;
+      gap:10px;
+      min-height:0;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+      table-layout:fixed;
+    }
+    th,td{
+      border-bottom:1px solid var(--line-soft);
+      padding:8px 6px;
+      text-align:left;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    th{
+      background:#F0F5FC;
+      color:var(--text-sub);
+      font-weight:800;
+      border-color:var(--line-soft);
+    }
+    td{
+      border-color:var(--line-soft);
+      color:var(--text-sub);
+    }
+    .noti{
+      margin:0;
+      padding:0 0 0 18px;
+      color:var(--text-sub);
+      font-size:16px;
+      line-height:1.8;
+      font-weight:700;
+    }
+    .noti li::marker{color:var(--danger)}
+    .right{
+      display:grid;
+      grid-template-rows:auto auto auto;
+      gap:10px;
+      min-height:0;
+    }
+    .right-list{
+      margin:0;
+      padding:0 0 0 18px;
+      color:var(--text-sub);
+      font-size:16px;
+      line-height:1.8;
+      font-weight:700;
+    }
+    .right-list li::marker{color:var(--blue)}
+    .alert-layer{
+      position:absolute;
+      left:0;
+      right:0;
+      top:64px;
+      bottom:0;
+      z-index:9;
+      opacity:0;
+      pointer-events:none;
+      background:rgba(15,50,80,0.05);
+      backdrop-filter:blur(1px);
+      -webkit-backdrop-filter:blur(1px);
+    }
+    .alert-layer.show{
+      animation:layerFadeIn .45s ease-out forwards;
+    }
+    @keyframes layerFadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+    .mini{
+      position:absolute;
+      right:18px;
+      bottom:18px;
+      width:370px;
+      border:1px solid rgba(37,99,235,0.35);
+      background:var(--card);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-m);
+      overflow:hidden;
+      z-index:10;
+      opacity:0;
+      transform:translateY(90px);
+      pointer-events:none;
+    }
+    .mini.show{
+      animation:miniSlideUp .8s ease-out forwards;
+    }
+    @keyframes miniSlideUp{
+      from{opacity:0; transform:translateY(90px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+    .mini.show .mini-h{
+      animation:miniHeaderBlink 1s ease-in-out .8s infinite;
+    }
+    @keyframes miniHeaderBlink{
+      0%,100%{background:var(--card)}
+      50%{background:#FEF2F2}
+    }
+    .mini-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line-soft);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .mini-title{
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
+    }
+    .mini-badge{
+      font-size:11px;
+      color:#fff;
+      background:#DC2626;
+      padding:3px 7px;
+      border-radius:999px;
+      font-weight:800;
+    }
+    .mini-b{padding:12px}
+    .mini-k{font-size:12px;color:var(--text-muted)}
+    .mini-v{
+      margin-top:5px;
+      font-size:13px;
+      color:var(--text-sub);
+      line-height:1.45;
+    }
+    .mini-act{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--blue);
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="header-left">
+        <img class="header-logo" src="./images/logo.png" alt="logo">
+        <div class="header-divider"></div>
+        <div class="title">검토 완료 알림</div>
+      </div>
+      <div class="terminal-badge">AI 브릿지(알림)</div>
+    </div>
+
+    <main class="content">
+      <section class="panel">
+        <section class="main-grid">
+          <section class="center">
+            <article class="box">
+              <div class="box-h">고객정보</div>
+              <div class="box-b">
+                <div class="customer-row">
+                  <div>
+                    <div class="name">홍길동 <span class="minor">(남 / 1982.05.14)</span> <span class="vip">VIP</span></div>
+                    <div class="meta">고객번호: 1002457896 | 연락처: 010-1234-5678 | 담당PB: 김민수</div>
+                  </div>
+                  <div class="chips">
+                    <span class="chip">고객 360°</span>
+                    <span class="chip">상담기록</span>
+                    <span class="chip">문서함</span>
+                  </div>
+                </div>
+                <div class="assets">
+                  <div class="asset"><div class="k">총자산</div><div class="v">3,420,000,000원</div></div>
+                  <div class="asset"><div class="k">예금</div><div class="v">2,100,000,000원</div></div>
+                  <div class="asset"><div class="k">대출</div><div class="v red">800,000,000원</div></div>
+                  <div class="asset"><div class="k">카드한도</div><div class="v">50,000,000원</div></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="box">
+              <div class="box-h">계좌개설</div>
+              <div class="box-b">
+                <div class="open-grid">
+                  <div>
+                    <div class="step">1. 상품선택</div>
+                    <div class="faux">상품종류: 보통예금</div>
+                  </div>
+                  <div>
+                    <div class="step">2. 가입정보</div>
+                    <div class="faux">가입금액: 0원</div>
+                  </div>
+                  <div>
+                    <div class="step">3. 약관동의</div>
+                    <div class="faux">자동이체: 설정 / 미설정</div>
+                  </div>
+                  <div>
+                    <div class="step">4. 서명</div>
+                    <div class="faux">SMS 알림: 신청</div>
+                  </div>
+                </div>
+                <div class="btns">
+                  <div class="btn primary">확인</div>
+                  <div class="btn">취소</div>
+                  <div class="btn">다음</div>
+                </div>
+              </div>
+            </article>
+
+            <div class="bottom">
+              <article class="box">
+                <div class="box-h">최근 거래 내역</div>
+                <div class="box-b">
+                  <table aria-label="최근 거래 내역">
+                    <thead>
+                      <tr>
+                        <th style="width:22%;">날짜</th>
+                        <th style="width:16%;">구분</th>
+                        <th style="width:24%;">내용</th>
+                        <th style="width:18%;">금액</th>
+                        <th style="width:20%;">잔액</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>24.04.22</td>
+                        <td>입금</td>
+                        <td>급여이체</td>
+                        <td style="color:#059669;">+5,000,000</td>
+                        <td>12,400,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.20</td>
+                        <td>출금</td>
+                        <td>온라인쇼핑</td>
+                        <td style="color:#d12e22;">-320,000</td>
+                        <td>7,400,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.18</td>
+                        <td>이체</td>
+                        <td>친구이체</td>
+                        <td style="color:#d12e22;">-500,000</td>
+                        <td>7,720,000</td>
+                      </tr>
+                      <tr>
+                        <td>24.04.12</td>
+                        <td>입금</td>
+                        <td>적금 만기</td>
+                        <td style="color:#059669;">+1,200,000</td>
+                        <td>8,220,000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+              <article class="box">
+                <div class="box-h">시스템 알림</div>
+                <div class="box-b">
+                  <ul class="noti">
+                    <li>VIP 등급 - PB 상담 추천</li>
+                    <li>적금 만기 예정 : 2026-04-12</li>
+                    <li>대출 금리 인하 가능</li>
+                  </ul>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <aside class="right">
+            <article class="box">
+              <div class="box-h">영업지원</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>추천상품</li>
+                  <li>고객 상담 히스토리</li>
+                  <li>이벤트/알림</li>
+                </ul>
+              </div>
+            </article>
+            <article class="box">
+              <div class="box-h">추천상품</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>IRP (개인형 퇴직연금)</li>
+                  <li>주식형 펀드</li>
+                  <li>ELT (주가연계신탁)</li>
+                </ul>
+              </div>
+            </article>
+            <article class="box">
+              <div class="box-h">고객 상담 히스토리</div>
+              <div class="box-b">
+                <ul class="right-list">
+                  <li>24.03.18 펀드 상담</li>
+                  <li>23.11.02 대출 상담</li>
+                  <li>23.09.15 카드 발급</li>
+                </ul>
+              </div>
+            </article>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <div class="alert-layer" id="alertLayer" aria-hidden="true"></div>
+
+    <div class="mini" id="alertMini">
+      <div class="mini-h">
+        <div class="mini-title">새 메시지</div>
+        <div class="mini-badge">오류</div>
+      </div>
+      <div class="mini-b">
+        <div class="mini-v">법인등기부등본 신뢰도평가 검토필요 1건 발생. 값 확인 및 수정이 필요합니다.</div>
+        <div class="mini-act">AI 브릿지 열기</div>
+      </div>
+    </div>
+  </div>
+  <script src="./js/common.js"></script>
+  <script>
+    window.addEventListener("load", () => {
+      const layer = document.getElementById("alertLayer");
+      const mini = document.getElementById("alertMini");
+      setTimeout(() => {
+        layer.classList.add("show");
+        mini.classList.add("show");
+      }, 250);
+      setTimeout(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(0);
+      }, 4200);
+    });
+  </script>
+</body>
+</html>

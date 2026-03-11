@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="./images/favicon.png" />
+  <title>P11 결과 확인(HITL)</title>
+  <link href="./fonts/fonts.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:          #EBF2FA;
+      --bg-warm:     #F0F5FC;
+      --card:        #FFFFFF;
+      --card-alt:    #F5F8FC;
+      --line:        #C4D5E8;
+      --line-soft:   #DAE4F0;
+      --line-focus:  #2563EB;
+      --text:        #0F1D2E;
+      --text-sub:    #3B516B;
+      --text-muted:  #7B93AD;
+      --blue:        #2563EB;
+      --blue-light:  #3B82F6;
+      --blue-soft:   rgba(37,99,235,0.08);
+      --blue-glow:   rgba(37,99,235,0.14);
+      --bridge:      #1D4ED8;
+      --bridge-dark: #1E3A8A;
+      --bridge-soft: #EFF6FF;
+      --ok:          #059669;
+      --warn:        #D97706;
+      --danger:      #DC2626;
+      --danger-soft: #FEF2F2;
+      --shadow-s:    0 1px 3px rgba(15,50,80,0.06), 0 0 0 1px rgba(15,50,80,0.02);
+      --shadow-m:    0 4px 14px rgba(15,50,80,0.08), 0 1px 3px rgba(15,50,80,0.04);
+      --shadow-l:    0 12px 36px rgba(15,50,80,0.12), 0 2px 8px rgba(15,50,80,0.05);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+      --ease: 0.22s ease;
+      --ease-out: 0.32s cubic-bezier(0.16,1,0.3,1);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Pretendard","Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg-warm);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-l);
+      overflow:hidden;
+      position:relative;
+    }
+    .header{
+      height:64px;
+      background:linear-gradient(135deg, #1E3A8A, #1D4ED8, #2563EB);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:relative;
+      overflow:hidden;
+    }
+    .header::after{
+      content:"";
+      position:absolute;
+      bottom:0;
+      left:0;
+      right:0;
+      height:2px;
+      background:linear-gradient(90deg, rgba(59,130,246,0.6), rgba(96,165,250,0.9), rgba(59,130,246,0.6));
+    }
+    .header::before{
+      content:"";
+      position:absolute;
+      top:-40px;
+      right:-40px;
+      width:160px;
+      height:160px;
+      background:radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .title-group{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+    .header-logo{
+      height:28px;
+      width:auto;
+      object-fit:contain;
+      margin-right:4px;
+    }
+    .header-divider{
+      width:1px;
+      height:20px;
+      background:rgba(255,255,255,0.35);
+      margin:0 4px;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+      color:#ffffff;
+      letter-spacing:-0.3px;
+    }
+    .meta{
+      font-size:13px;
+      color:rgba(255,255,255,0.9);
+      font-weight:700;
+      border:1px solid rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.12);
+      backdrop-filter:blur(8px);
+      border-radius:999px;
+      padding:4px 10px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .meta::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#60A5FA;
+      box-shadow:0 0 0 2px rgba(96,165,250,0.3);
+      flex-shrink:0;
+    }
+    .run-badge{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color:rgba(255,255,255,0.95);
+      background:rgba(255,255,255,0.14);
+      backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,0.25);
+      border-radius:var(--r-sm);
+      padding:6px 14px;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+      position:relative;
+      z-index:1;
+    }
+    .run-badge::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#60A5FA;
+      box-shadow:0 0 0 2px rgba(96,165,250,0.35);
+      flex-shrink:0;
+    }
+    .content{
+      height:656px;
+      padding:14px;
+      display:grid;
+      grid-template-rows:78px 1fr;
+      gap:10px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      box-shadow:var(--shadow-s);
+    }
+    .flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      height:100%;
+      padding:6px 8px;
+      background:var(--card);
+    }
+    .step{
+      min-width:142px;
+      border:1px solid var(--line);
+      border-radius:var(--r-sm);
+      padding:14px 9px;
+      background:var(--card);
+      text-align:center;
+      font-size:15px;
+      color:var(--text-muted);
+      font-weight:700;
+      cursor:pointer;
+      transition:border-color var(--ease), box-shadow var(--ease), background var(--ease), color var(--ease);
+    }
+    .step:hover{
+      border-color:var(--blue-light);
+      color:var(--text-sub);
+    }
+    @keyframes stepPulse{
+      0%{box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 0 0 6px rgba(37,99,235,0.06)}
+      50%{box-shadow:0 0 0 5px rgba(37,99,235,0.28), 0 0 0 10px rgba(37,99,235,0.10)}
+      100%{box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 0 0 6px rgba(37,99,235,0.06)}
+    }
+    .step.selected{
+      border-width:2px;
+      border-color:var(--blue);
+      color:#ffffff;
+      background:linear-gradient(135deg, var(--bridge), var(--blue));
+      box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 0 0 6px rgba(37,99,235,0.06);
+      animation:stepPulse 2s ease-in-out infinite;
+    }
+    .step.done{
+      color:var(--bridge);
+      border-color:#93C5FD;
+      background:var(--blue-soft);
+      font-weight:800;
+    }
+    .step.done.selected{
+      border-color:var(--blue);
+      color:#ffffff;
+      background:linear-gradient(135deg, var(--bridge), var(--blue));
+      box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 0 0 6px rgba(37,99,235,0.06);
+      animation:stepPulse 2s ease-in-out infinite;
+    }
+    .step.error{
+      color:var(--danger);
+      border-color:#FCA5A5;
+      background:var(--danger-soft);
+    }
+    .step.verify{
+      border-color:var(--line);
+    }
+    .arrow{color:var(--text-muted);font-size:16px;line-height:1}
+    .main{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:8px;
+      min-height:0;
+    }
+    .main > .card{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .left-pane{
+      background:var(--card);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .left-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line-soft);
+      font-size:14px;
+      font-weight:800;
+      color:var(--text-sub);
+      background:var(--card-alt);
+      letter-spacing:-0.1px;
+    }
+    .doc-list{
+      padding:10px;
+      display:grid;
+      gap:8px;
+      overflow:auto;
+    }
+    .doc-item{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-sm);
+      background:var(--card);
+      padding:9px 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      transition:border-color var(--ease), background-color var(--ease), box-shadow var(--ease);
+    }
+    .doc-item:hover{
+      border-color:var(--blue-light);
+      background:var(--bridge-soft);
+      box-shadow:var(--shadow-s);
+    }
+    .doc-item.selected{
+      border-color:var(--blue);
+      background:rgba(37,99,235,0.07);
+      box-shadow:0 0 0 2px var(--blue-soft) inset;
+    }
+    .doc-name{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-sub);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .doc-item.selected .doc-name{
+      color:var(--bridge-dark);
+    }
+    .state{
+      border-radius:999px;
+      padding:3px 9px;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid #93C5FD;
+      color:#1E3A8A;
+      background:#EFF6FF;
+      flex:0 0 auto;
+    }
+    .state.ok{
+      border-color:#93C5FD;
+      color:#1E3A8A;
+      background:#EFF6FF;
+    }
+    .state.warn{
+      color:#92400E;
+      border-color:#FCD34D;
+      background:#FFFBEB;
+    }
+    .state.na{
+      color:var(--text-muted);
+      border-color:var(--line);
+      background:var(--card-alt);
+    }
+    .state.before{
+      color:var(--text-muted);
+      border-color:var(--line-soft);
+      background:var(--card);
+    }
+    .right-pane{
+      flex:1;
+      min-height:0;
+      background:var(--card);
+      display:flex;
+      flex-direction:column;
+    }
+    .view{
+      flex:1;
+      min-height:0;
+      padding:10px;
+    }
+    .view.hidden{display:none}
+    .plan-rows{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-sm);
+      background:var(--card);
+      overflow:hidden;
+    }
+    .plan-row{
+      display:grid;
+      grid-template-columns:140px 1fr;
+      border-bottom:1px solid var(--line-soft);
+      min-height:46px;
+      align-items:center;
+    }
+    .plan-row:last-child{border-bottom:0}
+    .plan-row .k{
+      height:100%;
+      background:var(--card-alt);
+      border-right:1px solid var(--line-soft);
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-sub);
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+    }
+    .plan-row .v{
+      padding:8px 10px;
+      font-size:14px;
+      color:var(--text);
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .target-line{
+      display:flex;
+      gap:6px;
+      flex-wrap:nowrap;
+    }
+    .flag{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:3px 9px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      color:var(--text-muted);
+      background:var(--card-alt);
+    }
+    .flag.target{
+      color:var(--bridge-dark);
+      border-color:#93C5FD;
+      background:#EFF6FF;
+    }
+    .placeholder{
+      height:100%;
+      border:1px dashed var(--line);
+      border-radius:var(--r-sm);
+      background:var(--card-alt);
+      color:var(--text-muted);
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:12px;
+    }
+    .right-footer{
+      border-top:1px solid var(--line-soft);
+      background:var(--card-alt);
+      padding:8px 10px;
+      display:flex;
+      justify-content:flex-end;
+    }
+    .resume-btn{
+      border:1px solid var(--blue);
+      background:linear-gradient(135deg, var(--bridge), var(--blue));
+      color:#ffffff;
+      border-radius:var(--r-sm);
+      padding:8px 18px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      letter-spacing:0.1px;
+      box-shadow:0 2px 8px rgba(37,99,235,0.25);
+      transition:box-shadow var(--ease), opacity var(--ease);
+      font-family:inherit;
+    }
+    .resume-btn:hover{
+      box-shadow:0 4px 14px rgba(37,99,235,0.35);
+      opacity:0.92;
+    }
+    .demo-click{
+      box-shadow:0 0 0 2px rgba(37,99,235,0.4), 0 0 0 7px rgba(37,99,235,0.14) !important;
+      transition:box-shadow .18s ease;
+    }
+    .ocr-split{
+      height:100%;
+      display:grid;
+      grid-template-columns:49% 51%;
+      gap:10px;
+      min-height:0;
+    }
+    .ocr-pane{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-sm);
+      background:var(--card);
+      min-height:0;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .doc-wrap{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:12px;
+      background:var(--card-alt);
+      display:flex;
+    }
+    .doc-paper{
+      width:100%;
+      min-height:100%;
+      background:#ffffff;
+      border:1px solid var(--line-soft);
+      box-shadow:var(--shadow-m);
+      padding:16px 18px;
+      font-size:13px;
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      border-radius:var(--r-sm);
+    }
+    .paper-title{
+      text-align:center;
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:1px;
+      margin-bottom:10px;
+      color:var(--text);
+    }
+    .paper-table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      margin-bottom:10px;
+    }
+    .paper-table th,
+    .paper-table td{
+      border:1px solid var(--line-soft);
+      padding:6px 8px;
+      vertical-align:top;
+      line-height:1.45;
+    }
+    .paper-table th{
+      background:var(--card-alt);
+      width:130px;
+      text-align:left;
+      color:var(--text-sub);
+      font-weight:800;
+    }
+    .seal-mark{
+      width:62px;
+      height:62px;
+      border:3px solid #DC2626;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#DC2626;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.2px;
+      background:#FFF5F5;
+      box-shadow:inset 0 0 0 2px rgba(220,38,38,.12);
+    }
+    .extract-wrap{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      background:var(--card);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .extract-table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:13px;
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-sm);
+      overflow:hidden;
+    }
+    .extract-table th,
+    .extract-table td{
+      border-bottom:1px solid var(--line-soft);
+      border-right:1px solid rgba(196,213,232,0.5);
+      padding:8px 7px;
+      text-align:left;
+      vertical-align:middle;
+    }
+    .extract-table th:last-child,
+    .extract-table td:last-child{border-right:0}
+    .extract-table tr:last-child td{border-bottom:0}
+    .extract-table th{
+      background:var(--card-alt);
+      color:var(--text-sub);
+      font-weight:800;
+      position:sticky;
+      top:0;
+      z-index:1;
+      font-size:12px;
+    }
+    .extract-table tbody tr{cursor:pointer}
+    .extract-table tbody tr:hover{background:var(--bridge-soft)}
+    .extract-table tbody tr.selected{background:rgba(37,99,235,0.08)}
+    .extract-table td.edited-value{
+      color:var(--bridge);
+      font-weight:800;
+    }
+    .extract-edit{
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-sm);
+      background:var(--card-alt);
+      padding:8px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .extract-edit.hidden{display:none}
+    .edit-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .edit-label{
+      min-width:120px;
+      font-size:13px;
+      color:var(--text-sub);
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .edit-field-name{
+      min-width:120px;
+      font-size:13px;
+      color:var(--text);
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .edit-input{
+      flex:1;
+      height:34px;
+      border:1px solid var(--line);
+      border-radius:var(--r-sm);
+      background:#ffffff;
+      padding:0 10px;
+      font-size:13px;
+      color:var(--text);
+      font-weight:700;
+      font-family:inherit;
+      transition:border-color var(--ease), box-shadow var(--ease);
+      outline:none;
+    }
+    .edit-input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px var(--blue-soft);
+    }
+    .edit-input:disabled{
+      background:var(--card-alt);
+      color:var(--text-muted);
+      cursor:not-allowed;
+    }
+    .edit-actions{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .edit-btn{
+      border:1px solid var(--blue);
+      background:linear-gradient(135deg, var(--bridge), var(--blue));
+      color:#ffffff;
+      border-radius:var(--r-sm);
+      padding:7px 14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      font-family:inherit;
+      transition:opacity var(--ease), box-shadow var(--ease);
+      box-shadow:0 1px 4px rgba(37,99,235,0.2);
+    }
+    .edit-btn:hover:not(:disabled){
+      opacity:0.9;
+      box-shadow:0 3px 10px rgba(37,99,235,0.3);
+    }
+    .edit-btn:disabled{
+      border-color:var(--line);
+      background:var(--card-alt);
+      color:var(--text-muted);
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .conf{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      border:1px solid var(--line);
+      padding:2px 8px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--text-muted);
+      background:var(--card-alt);
+    }
+    .conf.high{border-color:#93C5FD;color:#1E3A8A;background:#EFF6FF}
+    .conf.mid{border-color:#BFDBFE;color:var(--bridge);background:rgba(37,99,235,0.06)}
+    .conf.low{border-color:#FCA5A5;color:#B91C1C;background:#FEF2F2}
+    .evidence{
+      font-family:"IBM Plex Mono", monospace;
+      font-size:12px;
+      color:var(--text-sub);
+      white-space:nowrap;
+    }
+    #ocrView .paper-table .hl-target{
+      display:inline-block;
+      border-radius:3px;
+      padding:1px 4px;
+    }
+    #ocrView .paper-table .hl-target.has-evidence{
+      position:relative;
+      overflow:visible;
+    }
+    #ocrView .paper-table .hl-target.has-evidence::before{
+      content:attr(data-evidence-id);
+      position:absolute;
+      top:-10px;
+      left:0;
+      font-size:9px;
+      line-height:1;
+      color:var(--bridge);
+      font-weight:800;
+      background:#ffffff;
+      letter-spacing:.15px;
+      pointer-events:none;
+      z-index:2;
+    }
+    #ocrView .paper-table .hl-target.related{
+      background:rgba(37,99,235,0.07);
+      outline:1px solid #BFDBFE;
+    }
+    #ocrView .paper-table .hl-target.hit{
+      background:#EFF6FF;
+      box-shadow:none;
+      outline:2px solid var(--blue);
+      border-radius:3px;
+    }
+    #ocrView .paper-table .seal-mark.hl-target,
+    #ocrView .paper-table .seal-mark.hl-target.hit{
+      border-radius:50%;
+      padding:0;
+      display:flex;
+    }
+    #ocrView .paper-table .seal-mark.hl-target.has-evidence{
+      padding-top:0;
+    }
+    #ocrView .paper-table .seal-mark.hl-target.has-evidence::before{
+      top:-11px;
+      left:0;
+      right:0;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title-group">
+        <img class="header-logo" src="./images/logo.png" alt="logo">
+        <div class="header-divider"></div>
+        <div class="title">결과 확인(HITL)</div>
+      </div>
+      <div class="run-badge">AI 브릿지</div>
+    </div>
+
+    <div class="content">
+      <section class="card">
+        <div class="flow">
+          <div class="step done selected">실행 계획 수립</div>
+          <div class="step done">문서 전처리</div>
+          <div class="step done">진위검증</div>
+          <div class="step done">AI-OCR 및 필드 추출</div>
+          <div class="step verify done">대사/검증</div>
+        </div>
+      </section>
+
+      <section class="main">
+        <article class="card">
+          <section class="left-pane">
+            <div class="left-h">문서 목록</div>
+            <div class="doc-list">
+              <div class="doc-item selected" data-doc="사업자등록증명원.pdf">
+                <div class="doc-name">사업자등록증명원.pdf</div>
+                <span class="state ok">정상</span>
+              </div>
+              <div class="doc-item" data-doc="법인등기부등본.pdf">
+                <div class="doc-name">법인등기부등본.pdf</div>
+                <span class="state warn">검토필요</span>
+              </div>
+              <div class="doc-item" data-doc="표준재무제표증명.pdf">
+                <div class="doc-name">표준재무제표증명.pdf</div>
+                <span class="state ok">정상</span>
+              </div>
+              <div class="doc-item" data-doc="부가가치세 과세표준증명원.pdf">
+                <div class="doc-name">부가가치세 과세표준증명원.pdf</div>
+                <span class="state ok">정상</span>
+              </div>
+              <div class="doc-item" data-doc="법인인감증명서.pdf">
+                <div class="doc-name">법인인감증명서.pdf</div>
+                <span class="state ok">정상</span>
+              </div>
+            </div>
+          </section>
+        </article>
+        <article class="card">
+          <section class="right-pane" aria-label="메인 영역">
+            <div class="view" id="planView">
+              <div class="plan-rows">
+                <div class="plan-row">
+                  <div class="k">파일명</div>
+                  <div class="v" id="planDocName">사업자등록증명원.pdf</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">문서종류</div>
+                  <div class="v" id="planDocType">사업자등록증명원</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">구조인식</div>
+                  <div class="v"><span class="state ok">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">품질점검</div>
+                  <div class="v"><span class="state ok">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">대상 판단</div>
+                  <div class="v">
+                    <div class="target-line">
+                      <span class="flag" id="flagPreprocess">-</span>
+                      <span class="flag" id="flagOcr">-</span>
+                      <span class="flag" id="flagVerify">-</span>
+                      <span class="flag" id="flagReconcile">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view hidden" id="preprocessView">
+              <div class="plan-rows">
+                <div class="plan-row">
+                  <div class="k">파일명</div>
+                  <div class="v" id="preDocName">사업자등록증명원.pdf</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">문서종류</div>
+                  <div class="v" id="preDocType">사업자등록증명원</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">전처리 상태</div>
+                  <div class="v"><span class="state ok" id="preOverall">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">기울기 보정</div>
+                  <div class="v"><span class="state ok" id="preTilt">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">노이즈 제거</div>
+                  <div class="v"><span class="state ok" id="preNoise">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">명암/대비 보정</div>
+                  <div class="v"><span class="state ok" id="preContrast">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">페이지 정렬</div>
+                  <div class="v"><span class="state ok" id="preAlign">완료</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view hidden" id="verifyView">
+              <div class="plan-rows">
+                <div class="plan-row">
+                  <div class="k">파일명</div>
+                  <div class="v" id="verDocName">사업자등록증명원.pdf</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">문서종류</div>
+                  <div class="v" id="verDocType">사업자등록증명원</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">발급기관</div>
+                  <div class="v" id="verIssuer">-</div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">기관 API 호출</div>
+                  <div class="v"><span class="state ok" id="verApi">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">응답전문 파싱</div>
+                  <div class="v"><span class="state ok" id="verParse">완료</span></div>
+                </div>
+                <div class="plan-row">
+                  <div class="k">진위 확인</div>
+                  <div class="v"><span class="state ok" id="verMatch">완료</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view hidden" id="ocrView">
+              <div class="ocr-split">
+                <section class="ocr-pane">
+                  <div class="doc-wrap">
+                    <article class="doc-paper">
+                      <div class="paper-title">사업자등록증명원</div>
+                      <table class="paper-table" aria-label="문서 핵심 데이터">
+                        <tbody id="ocrTableBody">
+                          <tr><th>발급일자</th><td>2026-03-05</td></tr>
+                          <tr><th>항목 로딩중</th><td>문서를 선택하면 핵심 항목이 표시됩니다.</td></tr>
+                        </tbody>
+                      </table>
+
+                    </article>
+                  </div>
+                </section>
+
+                <section class="ocr-pane">
+                  <div class="extract-wrap">
+                    <table class="extract-table" aria-label="추출 항목 목록">
+                      <thead>
+                        <tr>
+                          <th style="width:26%;">항목명</th>
+                          <th style="width:36%;">입력/추출값</th>
+                          <th style="width:16%;">신뢰도</th>
+                          <th style="width:22%;">근거ID</th>
+                        </tr>
+                      </thead>
+                      <tbody id="ocrExtractBody">
+                        <tr><td colspan="4">문서를 선택하면 추출 항목이 표시됩니다.</td></tr>
+                      </tbody>
+                    </table>
+                    <div class="extract-edit hidden" id="extractEditPanel">
+                      <div class="edit-item">
+                        <div class="edit-field-name" id="editFieldNameText">항목명</div>
+                        <input class="edit-input" id="editValueInput" type="text" />
+                      </div>
+                      <div class="edit-item">
+                        <div class="edit-label">변경사유</div>
+                        <input class="edit-input" id="editReasonInput" type="text" value="OCR 오인식(스캔 품질)"/>
+                      </div>
+                      <div class="edit-actions">
+                        <button class="edit-btn" id="applyEditBtn" type="button">변경</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="view hidden" id="placeholderView">
+              <div class="placeholder" id="placeholderText">해당 단계 화면은 다음으로 구성 예정입니다.</div>
+            </div>
+            <div class="right-footer">
+              <button class="resume-btn" type="button">WINI 전송</button>
+            </div>
+          </section>
+        </article>
+      </section>
+    </div>
+  </div>
+  <script src="./js/common.js"></script>
+  <script>
+    const flowSteps = Array.from(document.querySelectorAll(".flow .step"));
+    const DOCS = [
+      "사업자등록증명원.pdf",
+      "법인등기부등본.pdf",
+      "표준재무제표증명.pdf",
+      "부가가치세 과세표준증명원.pdf",
+      "법인인감증명서.pdf"
+    ];
+    const docStatusByStep = {
+      "실행 계획 수립": {
+        "사업자등록증명원.pdf": "ok",
+        "법인등기부등본.pdf": "ok",
+        "표준재무제표증명.pdf": "ok",
+        "부가가치세 과세표준증명원.pdf": "ok",
+        "법인인감증명서.pdf": "ok"
+      },
+      "문서 전처리": {
+        "사업자등록증명원.pdf": "ok",
+        "법인등기부등본.pdf": "ok",
+        "표준재무제표증명.pdf": "ok",
+        "부가가치세 과세표준증명원.pdf": "na",
+        "법인인감증명서.pdf": "na"
+      },
+      "진위검증": {
+        "사업자등록증명원.pdf": "ok",
+        "법인등기부등본.pdf": "ok",
+        "표준재무제표증명.pdf": "na",
+        "부가가치세 과세표준증명원.pdf": "na",
+        "법인인감증명서.pdf": "ok"
+      },
+      "AI-OCR 및 필드 추출": {
+        "사업자등록증명원.pdf": "ok",
+        "법인등기부등본.pdf": "ok",
+        "표준재무제표증명.pdf": "ok",
+        "부가가치세 과세표준증명원.pdf": "ok",
+        "법인인감증명서.pdf": "ok"
+      },
+      "대사/검증": {
+        "사업자등록증명원.pdf": "before",
+        "법인등기부등본.pdf": "before",
+        "표준재무제표증명.pdf": "na",
+        "부가가치세 과세표준증명원.pdf": "na",
+        "법인인감증명서.pdf": "na"
+      }
+    };
+    const stateMeta = {
+      ok: { text: "정상", className: "ok" },
+      warn: { text: "검토필요", className: "warn" },
+      na: { text: "미대상", className: "na" },
+      before: { text: "실행전", className: "before" }
+    };
+    const targetRules = {
+      preprocess: new Set(["사업자등록증명원.pdf", "법인등기부등본.pdf", "표준재무제표증명.pdf"]),
+      ocr: new Set(DOCS),
+      verify: new Set(["사업자등록증명원.pdf", "법인등기부등본.pdf", "법인인감증명서.pdf"]),
+      reconcile: new Set(["사업자등록증명원.pdf", "법인등기부등본.pdf"])
+    };
+    const preprocessTaskRules = {
+      tilt: new Set(["사업자등록증명원.pdf", "법인등기부등본.pdf"]),
+      noise: new Set(["사업자등록증명원.pdf", "표준재무제표증명.pdf"]),
+      contrast: new Set(["표준재무제표증명.pdf", "법인등기부등본.pdf"]),
+      align: new Set(["사업자등록증명원.pdf", "법인등기부등본.pdf", "표준재무제표증명.pdf"])
+    };
+    const issuerByDoc = {
+      "사업자등록증명원.pdf": "국세청",
+      "법인등기부등본.pdf": "대법원 등기소",
+      "표준재무제표증명.pdf": "-",
+      "부가가치세 과세표준증명원.pdf": "-",
+      "법인인감증명서.pdf": "국세청"
+    };
+    const ocrDocMock = {
+      "사업자등록증명원.pdf": {
+        title: "사업자등록증명원",
+        issueDate: "2026-03-05",
+        essentials: [
+          ["사업자등록번호", "123-45-67890"],
+          ["상호(법인명)", "(주)000바이오"],
+          ["대표자 성명", "홍길동"],
+          ["개업연월일", "2016-04-01"],
+          ["사업장 주소", "서울특별시 영등포구 여의대로 24"],
+          ["사업자 상태", "계속사업자"],
+          ["업태", "도매 및 소매업"],
+          ["종목", "의료기기 도소매"]
+        ],
+        extracts: [
+          ["사업자등록번호", "123-45-67890", 0.99, "E-BIZ-001"],
+          ["상호(법인명)", "(주)000바이오", 0.98, "E-BIZ-002"],
+          ["대표자 성명", "홍길동", 0.97, "E-BIZ-003"],
+          ["사업장 주소", "서울특별시 영등포구 여의대로 24", 0.95, "E-BIZ-004"],
+          ["사업자 상태", "계속사업자", 0.96, "E-BIZ-005"],
+          ["업태", "도매 및 소매업", 0.93, "E-BIZ-006"],
+          ["종목", "의료기기 도소매", 0.94, "E-BIZ-007"]
+        ]
+      },
+      "법인등기부등본.pdf": {
+        title: "법인등기부등본",
+        issueDate: "2026-03-05",
+        essentials: [
+          ["법인명", "(주)000바이오"],
+          ["법인등록번호", "110111-1234567"],
+          ["본점주소", "서울특별시 영등포구 여의대로 24"],
+          ["회사 설립일", "2016-04-01"],
+          ["자본금", "1,600,000,000원"],
+          ["발행주식 총 수", "200,000주"],
+          ["대표이사", "홍길동"]
+        ],
+        extracts: [
+          ["법인명", "(주)000바이오", 0.98, "E-REG-001"],
+          ["법인등록번호", "110111-1234567", 0.99, "E-REG-002"],
+          ["본점주소", "서울특별시 영등포구 여의대로 24", 0.94, "E-REG-003"],
+          ["회사 설립일", "2016-04-01", 0.92, "E-REG-004"],
+          ["자본금", "1,600,000,000원", "입력", "E-REG-005"],
+          ["발행주식 총 수", "200,000주", 0.93, "E-REG-006"],
+          ["대표이사", "홍길동", 0.96, "E-REG-007"]
+        ]
+      },
+      "표준재무제표증명.pdf": {
+        title: "표준재무제표증명",
+        issueDate: "2026-03-05",
+        essentials: [
+          ["사업연도", "2025년"],
+          ["총자산", "6,820,000,000원"],
+          ["총부채", "2,100,000,000원"],
+          ["자본총계", "4,720,000,000원"],
+          ["매출액", "4,820,000,000원"],
+          ["매출원가", "3,190,000,000원"],
+          ["영업이익", "540,000,000원"],
+          ["영억이익", "540,000,000원"],
+          ["당기순이익", "410,000,000원"]
+        ],
+        extracts: [
+          ["총자산", "6,820,000,000원", 0.97, "E-FIN-001"],
+          ["총부채", "2,100,000,000원", 0.97, "E-FIN-002"],
+          ["자본총계", "4,720,000,000원", 0.96, "E-FIN-003"],
+          ["매출액", "4,820,000,000원", 0.95, "E-FIN-004"],
+          ["매출원가", "3,190,000,000원", 0.93, "E-FIN-005"],
+          ["영업이익", "540,000,000원", 0.94, "E-FIN-006"],
+          ["당기순이익", "410,000,000원", 0.92, "E-FIN-007"]
+        ]
+      },
+      "부가가치세 과세표준증명원.pdf": {
+        title: "부가가치세 과세표준증명원",
+        issueDate: "2026-03-05",
+        essentials: [
+          ["사업자등록번호", "123-45-67890"],
+          ["상호", "(주)000바이오"],
+          ["과세기간", "2025년 제2기"],
+          ["과세표준금액", "1,920,000,000원"],
+          ["매출세액", "192,000,000원"],
+          ["납부세액", "162,000,000원"],
+          ["신고유형", "정기신고"],
+          ["신고상태", "신고완료"]
+        ],
+        extracts: [
+          ["상호", "(주)000바이오", 0.96, "E-VAT-001"],
+          ["과세기간", "2025년 제2기", 0.95, "E-VAT-002"],
+          ["과세표준금액", "1,920,000,000원", 0.94, "E-VAT-003"],
+          ["매출세액", "192,000,000원", 0.93, "E-VAT-004"],
+          ["납부세액", "162,000,000원", 0.92, "E-VAT-005"],
+          ["신고유형", "정기신고", 0.97, "E-VAT-006"],
+          ["신고상태", "신고완료", 0.98, "E-VAT-007"]
+        ]
+      },
+      "법인인감증명서.pdf": {
+        title: "법인인감증명서",
+        issueDate: "2026-03-05",
+        essentials: [
+          ["법인명", "(주)000바이오"],
+          ["법인등록번호", "110111-1234567"],
+          ["대표자", "홍길동"],
+          ["인감이미지", "__SEAL__"],
+          ["발급일", "2026-03-05"],
+          ["발급기관", "대한민국 법원 인터넷등기소"],
+          ["증명서번호", "IC-2026-0311-000245"],
+          ["발급횟수", "2회"],
+          ["본점주소", "서울특별시 영등포구 여의대로 24"]
+        ],
+        extracts: [
+          ["법인명", "(주)000바이오", 0.98, "E-SEAL-001"],
+          ["법인등록번호", "110111-1234567", 0.99, "E-SEAL-002"],
+          ["대표자", "홍길동", 0.96, "E-SEAL-003"],
+          ["증명서번호", "IC-2026-0311-000245", 0.95, "E-SEAL-004"],
+          ["발급횟수", "2회", 0.93, "E-SEAL-005"],
+          ["본점주소", "서울특별시 영등포구 여의대로 24", 0.94, "E-SEAL-006"]
+        ]
+      }
+    };
+    let selectedStep = "실행 계획 수립";
+    let selectedDoc = "사업자등록증명원.pdf";
+    let selectedExtract = null;
+
+    function applyDocStatuses(stepLabel){
+      const map = docStatusByStep[stepLabel] || {};
+      const items = Array.from(document.querySelectorAll(".doc-item"));
+      items.forEach(item => {
+        const doc = item.dataset.doc;
+        const badge = item.querySelector(".state");
+        const statusKey = map[doc] || "na";
+        const meta = stateMeta[statusKey];
+        badge.classList.remove("ok", "warn", "na", "before");
+        badge.classList.add(meta.className);
+        badge.textContent = meta.text;
+      });
+    }
+    function setFlag(el, label, isTarget){
+      el.classList.toggle("target", isTarget);
+      el.textContent = `${label}: ${isTarget ? "대상" : "미대상"}`;
+    }
+    function renderPlanView(){
+      const planDocName = document.getElementById("planDocName");
+      const planDocType = document.getElementById("planDocType");
+      planDocName.textContent = selectedDoc;
+      planDocType.textContent = selectedDoc.replace(/\.pdf$/i, "");
+      setFlag(document.getElementById("flagPreprocess"), "전처리", targetRules.preprocess.has(selectedDoc));
+      setFlag(document.getElementById("flagOcr"), "AI-OCR", targetRules.ocr.has(selectedDoc));
+      setFlag(document.getElementById("flagVerify"), "진위검증", targetRules.verify.has(selectedDoc));
+      setFlag(document.getElementById("flagReconcile"), "대사/검증", targetRules.reconcile.has(selectedDoc));
+    }
+    function setSimpleState(el, key){
+      const meta = stateMeta[key];
+      el.classList.remove("ok", "warn", "na", "before");
+      el.classList.add(meta.className);
+      el.textContent = key === "ok" ? "완료" : meta.text;
+    }
+    function renderPreprocessView(){
+      document.getElementById("preDocName").textContent = selectedDoc;
+      document.getElementById("preDocType").textContent = selectedDoc.replace(/\.pdf$/i, "");
+      setSimpleState(document.getElementById("preOverall"), targetRules.preprocess.has(selectedDoc) ? "ok" : "na");
+      setSimpleState(document.getElementById("preTilt"), preprocessTaskRules.tilt.has(selectedDoc) ? "ok" : "na");
+      setSimpleState(document.getElementById("preNoise"), preprocessTaskRules.noise.has(selectedDoc) ? "ok" : "na");
+      setSimpleState(document.getElementById("preContrast"), preprocessTaskRules.contrast.has(selectedDoc) ? "ok" : "na");
+      setSimpleState(document.getElementById("preAlign"), preprocessTaskRules.align.has(selectedDoc) ? "ok" : "na");
+    }
+    function renderVerifyView(){
+      document.getElementById("verDocName").textContent = selectedDoc;
+      document.getElementById("verDocType").textContent = selectedDoc.replace(/\.pdf$/i, "");
+      document.getElementById("verIssuer").textContent = issuerByDoc[selectedDoc] || "-";
+      const stateKey = targetRules.verify.has(selectedDoc) ? "ok" : "na";
+      setSimpleState(document.getElementById("verApi"), stateKey);
+      setSimpleState(document.getElementById("verParse"), stateKey);
+      setSimpleState(document.getElementById("verMatch"), stateKey);
+    }
+    function renderOcrView(){
+      const m = ocrDocMock[selectedDoc] || ocrDocMock["법인등기부등본.pdf"];
+      const titleEl = document.querySelector(".paper-title");
+      if(titleEl) titleEl.textContent = m.title;
+      const table = document.getElementById("ocrTableBody");
+      if(table){
+        table.innerHTML = "";
+        const issueTr = document.createElement("tr");
+        const issueTh = document.createElement("th");
+        issueTh.textContent = "발급일자";
+        const issueTd = document.createElement("td");
+        issueTd.dataset.fieldKey = "발급일자";
+        issueTd.textContent = m.issueDate || "2026-03-05";
+        issueTr.appendChild(issueTh);
+        issueTr.appendChild(issueTd);
+        table.appendChild(issueTr);
+        (m.essentials || []).forEach(([k, v]) => {
+          const tr = document.createElement("tr");
+          const th = document.createElement("th");
+          th.textContent = k;
+          const td = document.createElement("td");
+          td.dataset.fieldKey = k.replace(/\s+/g, "").replace(/[^\w가-힣]/g, "").toLowerCase();
+          if(v === "__SEAL__"){
+            const seal = document.createElement("div");
+            seal.className = "seal-mark hl-target";
+            seal.textContent = "법인인감";
+            td.appendChild(seal);
+          } else {
+            const text = document.createElement("span");
+            text.className = "hl-target";
+            text.textContent = v;
+            td.appendChild(text);
+          }
+          tr.appendChild(th);
+          tr.appendChild(td);
+          table.appendChild(tr);
+        });
+        const evidenceByKey = {};
+        (m.extracts || []).forEach(([, , , evidenceId], idx) => {
+          const field = (m.extracts[idx] || [])[0];
+          const key = normalizeFieldKey(field);
+          if(key) evidenceByKey[key] = evidenceId;
+        });
+        table.querySelectorAll("td[data-field-key]").forEach(td => {
+          const key = td.dataset.fieldKey;
+          const evidenceId = evidenceByKey[key];
+          const target = td.querySelector(".hl-target");
+          if(target){
+            if(evidenceId){
+              target.classList.add("has-evidence");
+              target.dataset.evidenceId = evidenceId;
+            } else {
+              target.classList.remove("has-evidence");
+              delete target.dataset.evidenceId;
+            }
+          }
+        });
+      }
+      renderOcrExtracts(m.extracts || []);
+    }
+    function confidenceClass(score){
+      if(score >= 0.96) return "high";
+      if(score >= 0.92) return "mid";
+      return "low";
+    }
+    function normalizeFieldKey(text){
+      return String(text || "").replace(/\s+/g, "").replace(/[^\w가-힣]/g, "").toLowerCase();
+    }
+    function clearOcrHighlights(){
+      document.querySelectorAll("#ocrView .paper-table .hl-target.hit").forEach(el => el.classList.remove("hit"));
+      document.querySelectorAll("#ocrExtractBody tr.selected").forEach(el => el.classList.remove("selected"));
+    }
+    function applyOcrBaseHighlights(extracts){
+      document.querySelectorAll("#ocrView .paper-table .hl-target.related").forEach(el => el.classList.remove("related"));
+      (extracts || []).forEach(([field]) => {
+        const key = normalizeFieldKey(field);
+        const cell = document.querySelector(`#ocrView .paper-table td[data-field-key="${key}"]`);
+        const target = cell ? cell.querySelector(".hl-target") : null;
+        if(target) target.classList.add("related");
+      });
+    }
+    function highlightExtractField(fieldName){
+      const key = normalizeFieldKey(fieldName);
+      clearOcrHighlights();
+      const row = document.querySelector(`#ocrExtractBody tr[data-field-key="${key}"]`);
+      if(row) row.classList.add("selected");
+      const targetCell = document.querySelector(`#ocrView .paper-table td[data-field-key="${key}"]`);
+      const target = targetCell ? targetCell.querySelector(".hl-target") : null;
+      if(target){
+        target.classList.add("hit");
+        target.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    }
+    function renderOcrExtracts(extracts){
+      const body = document.getElementById("ocrExtractBody");
+      const editPanel = document.getElementById("extractEditPanel");
+      if(!body) return;
+      body.innerHTML = "";
+      applyOcrBaseHighlights(extracts);
+      selectedExtract = null;
+      if(editPanel) editPanel.classList.add("hidden");
+      if(!extracts.length){
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "추출 항목이 없습니다.";
+        tr.appendChild(td);
+        body.appendChild(tr);
+        return;
+      }
+      extracts.forEach((item, idx) => {
+        const [field, value, confidence, evidenceId] = item;
+        const tr = document.createElement("tr");
+        tr.dataset.fieldKey = normalizeFieldKey(field);
+        tr.dataset.index = String(idx);
+        const tdField = document.createElement("td");
+        tdField.textContent = field;
+        const tdValue = document.createElement("td");
+        tdValue.textContent = value;
+        if(confidence === "입력"){
+          tdValue.classList.add("edited-value");
+        }
+        const tdConfidence = document.createElement("td");
+        if(typeof confidence === "number"){
+          const conf = document.createElement("span");
+          conf.className = `conf ${confidenceClass(confidence)}`;
+          conf.textContent = `${Math.round(confidence * 100)}%`;
+          tdConfidence.appendChild(conf);
+        } else {
+          tdConfidence.textContent = String(confidence || "-");
+        }
+        const tdEvidence = document.createElement("td");
+        const evi = document.createElement("span");
+        evi.className = "evidence";
+        evi.textContent = evidenceId;
+        tdEvidence.appendChild(evi);
+
+        tr.appendChild(tdField);
+        tr.appendChild(tdValue);
+        tr.appendChild(tdConfidence);
+        tr.appendChild(tdEvidence);
+        tr.addEventListener("click", () => selectExtractItem(idx, extracts, tr));
+        body.appendChild(tr);
+      });
+      setTimeout(() => selectExtractItem(0, extracts), 0);
+    }
+    function selectExtractItem(index, extracts){
+      const item = extracts[index];
+      if(!item) return;
+      selectedExtract = { index, item, extracts };
+      const [field, value, confidence] = item;
+      highlightExtractField(field);
+      showExtractEditor(field, value, confidence);
+    }
+    function showExtractEditor(field, value, confidence){
+      const panel = document.getElementById("extractEditPanel");
+      const fieldNameText = document.getElementById("editFieldNameText");
+      const valueInput = document.getElementById("editValueInput");
+      const reasonInput = document.getElementById("editReasonInput");
+      const applyBtn = document.getElementById("applyEditBtn");
+      if(!panel || !fieldNameText || !valueInput || !reasonInput || !applyBtn) return;
+      panel.classList.remove("hidden");
+      fieldNameText.textContent = field;
+      valueInput.value = value;
+      reasonInput.value = field === "자본금" ? "OCR 오인식(스캔 품질)" : "";
+      const editable = true;
+      valueInput.disabled = !editable;
+      reasonInput.disabled = !editable;
+      applyBtn.disabled = !editable;
+    }
+
+    document.getElementById("applyEditBtn")?.addEventListener("click", () => {
+      if(!selectedExtract){
+        const selectedRow = document.querySelector("#ocrExtractBody tr.selected");
+        if(selectedRow){
+          const idx = Number(selectedRow.getAttribute("data-index"));
+          const m = ocrDocMock[selectedDoc] || ocrDocMock["법인등기부등본.pdf"];
+          const extracts = m.extracts || [];
+          if(Number.isFinite(idx) && extracts[idx]){
+            selectedExtract = { index: idx, item: extracts[idx], extracts };
+          }
+        }
+      }
+      if(!selectedExtract) return;
+      const valueInput = document.getElementById("editValueInput");
+      const reasonInput = document.getElementById("editReasonInput");
+      const nextValue = valueInput ? valueInput.value.trim() : "";
+      if(!nextValue) return;
+      selectedExtract.item[1] = nextValue;
+      selectedExtract.item[2] = "입력";
+      const fieldKey = normalizeFieldKey(selectedExtract.item[0]);
+      const row = document.querySelector(`#ocrExtractBody tr[data-field-key="${fieldKey}"]`);
+      if(row){
+        const valueCell = row.children[1];
+        if(valueCell){
+          valueCell.textContent = nextValue;
+          valueCell.classList.add("edited-value");
+        }
+        const confidenceCell = row.children[2];
+        if(confidenceCell){
+          confidenceCell.textContent = "입력";
+        }
+      }
+      showExtractEditor(selectedExtract.item[0], nextValue, "입력");
+    });
+    function renderRightPane(){
+      const planView = document.getElementById("planView");
+      const preprocessView = document.getElementById("preprocessView");
+      const verifyView = document.getElementById("verifyView");
+      const ocrView = document.getElementById("ocrView");
+      const placeholderView = document.getElementById("placeholderView");
+      const placeholderText = document.getElementById("placeholderText");
+      if(selectedStep === "실행 계획 수립"){
+        planView.classList.remove("hidden");
+        preprocessView.classList.add("hidden");
+        verifyView.classList.add("hidden");
+        ocrView.classList.add("hidden");
+        placeholderView.classList.add("hidden");
+        renderPlanView();
+      } else if(selectedStep === "문서 전처리"){
+        planView.classList.add("hidden");
+        preprocessView.classList.remove("hidden");
+        verifyView.classList.add("hidden");
+        ocrView.classList.add("hidden");
+        placeholderView.classList.add("hidden");
+        renderPreprocessView();
+      } else if(selectedStep === "진위검증"){
+        planView.classList.add("hidden");
+        preprocessView.classList.add("hidden");
+        verifyView.classList.remove("hidden");
+        ocrView.classList.add("hidden");
+        placeholderView.classList.add("hidden");
+        renderVerifyView();
+      } else if(selectedStep === "AI-OCR 및 필드 추출"){
+        planView.classList.add("hidden");
+        preprocessView.classList.add("hidden");
+        verifyView.classList.add("hidden");
+        ocrView.classList.remove("hidden");
+        placeholderView.classList.add("hidden");
+        renderOcrView();
+      } else {
+        planView.classList.add("hidden");
+        preprocessView.classList.add("hidden");
+        verifyView.classList.add("hidden");
+        ocrView.classList.add("hidden");
+        placeholderView.classList.remove("hidden");
+        placeholderText.textContent = `${selectedStep} 화면은 다음으로 구성 예정입니다.`;
+      }
+    }
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function clickPulse(target){
+      if(!target) return;
+      target.classList.add("demo-click");
+      setTimeout(() => target.classList.remove("demo-click"), 220);
+    }
+
+    function findStep(stepName){
+      return flowSteps.find(step => step.textContent.trim() === stepName);
+    }
+
+    async function clickStep(stepName){
+      const step = findStep(stepName);
+      if(!step) return;
+      clickPulse(step);
+      step.click();
+      await sleep(700);
+    }
+
+    async function runP11DemoSequence(){
+      await sleep(700);
+      await clickStep("문서 전처리");
+      await clickStep("진위검증");
+      await clickStep("AI-OCR 및 필드 추출");
+      await clickStep("대사/검증");
+      await sleep(3000);
+
+      const resumeBtn = document.querySelector(".resume-btn");
+      if(resumeBtn){
+        clickPulse(resumeBtn);
+        resumeBtn.click();
+      }
+
+      if(window.IS_AUTO_PAGING === true){
+        await sleep(350);
+        window.WBAutoPaging?.moveToNextIfEnabled?.(0);
+      }
+    }
+
+    flowSteps.forEach(step => {
+      step.addEventListener("click", () => {
+        flowSteps.forEach(x => x.classList.remove("selected"));
+        step.classList.add("selected");
+        selectedStep = step.textContent.trim();
+        applyDocStatuses(selectedStep);
+        renderRightPane();
+      });
+    });
+
+    const docItems = Array.from(document.querySelectorAll(".doc-item"));
+    docItems.forEach(item => {
+      item.addEventListener("click", () => {
+        docItems.forEach(x => x.classList.remove("selected"));
+        item.classList.add("selected");
+        selectedDoc = item.dataset.doc;
+        renderRightPane();
+      });
+    });
+
+    applyDocStatuses(selectedStep);
+    renderRightPane();
+    window.addEventListener("load", () => {
+      runP11DemoSequence();
+    });
+  </script>
+</body>
+</html>

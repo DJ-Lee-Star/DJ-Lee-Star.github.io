@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="./images/favicon.png" />
+  <title>P12 심사정보 자동입력 및 심사 요청</title>
+  <link href="./fonts/fonts.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg: #EDE9E2;
+      --bg-warm: #F5F3EF;
+      --card: #FFFFFF;
+      --card-alt: #FAFAF8;
+      --line: #D4CFC6;
+      --line-soft: #E4E0D8;
+      --line-focus: #3a8dfd;
+      --text: #1A1816;
+      --text-sub: #52504B;
+      --text-muted: #98938A;
+      --wb-deep: #0a1f4a;
+      --wb-dark: #1a3c7a;
+      --wb-mid: #2b6ad0;
+      --wb-blue: #3a8dfd;
+      --wb-light: #5ea3fd;
+      --wb-soft: #e8f1ff;
+      --wb-glow: rgba(58,141,253,0.14);
+      --gold: #B8975A;
+      --gold-light: #D4B978;
+      --gold-soft: #F2EBDC;
+      --ok: #17663C;
+      --shadow-s: 0 1px 3px rgba(26,24,22,0.05), 0 0 0 1px rgba(26,24,22,0.03);
+      --shadow-m: 0 4px 14px rgba(26,24,22,0.08), 0 1px 3px rgba(26,24,22,0.05);
+      --shadow-l: 0 12px 36px rgba(0,20,40,0.13), 0 2px 8px rgba(0,20,40,0.06);
+      --shadow-xl: 0 24px 48px rgba(0,20,40,0.20), 0 4px 12px rgba(0,20,40,0.07);
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --ease: 0.2s ease;
+      --ease-out: 0.32s cubic-bezier(0.16,1,0.3,1);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#ffffff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg-warm);
+      border-radius:var(--r-lg);
+      box-shadow:var(--shadow-l), 0 0 0 1px rgba(0,0,0,0.03);
+      overflow:hidden;
+      position:relative;
+    }
+    .header{
+      height:64px;
+      background:#3a8dfd;
+      padding:0 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:relative;
+      overflow:hidden;
+    }
+    .header::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 1px,
+        transparent 1px,
+        transparent 40px
+      );
+      pointer-events:none;
+    }
+    .header::after{display:none;}
+    .header-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .header-logo{
+      height:28px;
+      width:auto;
+      object-fit:contain;
+      margin-right:4px;
+    }
+    .header-divider{
+      width:1px;
+      height:20px;
+      background:rgba(255,255,255,0.35);
+      margin:0 4px;
+    }
+    .title{
+      font-size:20px;
+      font-weight:800;
+      color:#FFFFFF;
+      text-shadow:0 1px 4px rgba(0,0,0,0.3);
+      letter-spacing:-0.2px;
+      position:relative;
+      z-index:1;
+    }
+    .terminal-badge{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,0.10);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.22);
+      border-radius:var(--r-sm);
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:700;
+      color:rgba(255,255,255,0.95);
+      letter-spacing:0.15px;
+      user-select:none;
+      cursor:default;
+      position:relative;
+      z-index:1;
+    }
+    .terminal-badge::before{
+      content:"";
+      display:inline-block;
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#6EE7B7;
+      box-shadow:0 0 6px rgba(110,231,183,0.8);
+      flex-shrink:0;
+    }
+    /* ─── Top Menu ─── */
+    .top-menu{
+      height:42px;
+      background:var(--card);
+      border-bottom:1px solid var(--line-soft);
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      gap:2px;
+    }
+    .top-menu-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 16px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-sub);
+      text-decoration:none;
+      border-radius:var(--r-sm);
+      cursor:pointer;
+      transition:all var(--ease);
+    }
+    .top-menu-item:hover{
+      background:var(--card-alt);
+      color:var(--text);
+    }
+    .top-menu-item.active{
+      color:var(--wb-blue);
+      background:var(--wb-soft);
+    }
+    .tm-icon{width:18px;height:18px;flex-shrink:0}
+
+    .content{
+      height:614px;
+      padding:16px 20px;
+      display:grid;
+      grid-template-columns:210px 1fr;
+      gap:12px;
+    }
+
+    /* ─── Tree Sidebar ─── */
+    .tree-sidebar{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      box-shadow:var(--shadow-s);
+      padding:0;
+      overflow-y:auto;
+      font-size:13px;
+      user-select:none;
+    }
+    .tree-sidebar::-webkit-scrollbar{width:5px}
+    .tree-sidebar::-webkit-scrollbar-track{background:transparent}
+    .tree-sidebar::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+    .tree-header{
+      padding:12px 14px 10px;
+      font-size:11px;
+      font-weight:800;
+      color:var(--text-muted);
+      letter-spacing:1px;
+      border-bottom:1px solid var(--line-soft);
+    }
+    [class^="tree-lv"]{
+      display:block;
+      padding:7px 14px;
+      color:var(--text-sub);
+      cursor:pointer;
+      transition:background var(--ease), color var(--ease);
+      text-decoration:none;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tree-lv0{padding-left:14px;font-weight:700;color:var(--text);font-size:13px}
+    .tree-lv1{padding-left:30px;font-weight:600;font-size:13px}
+    .tree-lv2{padding-left:44px;font-weight:600;font-size:12px}
+    .tree-lv3{padding-left:56px;font-weight:500;font-size:12px}
+    [class^="tree-lv"]:hover{background:var(--card-alt)}
+    .tree-ic{
+      display:inline-block;
+      width:14px;
+      font-size:10px;
+      color:var(--text-muted);
+      text-align:center;
+      margin-right:4px;
+    }
+    a[class^="tree-lv"].active{
+      background:var(--wb-soft);
+      color:var(--wb-blue);
+      font-weight:700;
+      border-right:3px solid var(--wb-blue);
+    }
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line-soft);
+      border-radius:var(--r-md);
+      box-shadow:var(--shadow-s);
+      overflow:hidden;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .panel-b{
+      padding:16px 20px;
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .section-bar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--line-soft);
+    }
+    .section-title{
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      letter-spacing:-0.1px;
+    }
+    .section-sub{
+      margin-left:auto;
+      font-size:12px;
+      font-weight:500;
+      color:var(--text-muted);
+    }
+    .form{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px 14px;
+    }
+    .field label{
+      display:block;
+      margin-bottom:2px;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-sub);
+      letter-spacing:0.15px;
+    }
+
+    /* ─── Form Groups ─── */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px}
+    .form-group{margin-bottom:10px}
+    .form-row .form-group{margin-bottom:0}
+    .form-row+.form-group{margin-top:20px}
+    .group-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-0.2px}
+    .form-row .form{grid-template-columns:1fr}
+    .form-scroll{flex:1;overflow-y:auto;padding-right:2px;min-height:0}
+    .form-scroll::-webkit-scrollbar{width:5px}
+    .form-scroll::-webkit-scrollbar-track{background:transparent}
+    .form-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+    .field input,.field select{
+      width:100%;
+      height:36px;
+      border:1px solid var(--line);
+      border-radius:var(--r-sm);
+      padding:0 12px;
+      font-size:15px;
+      font-weight:500;
+      background:var(--card-alt);
+      color:var(--text);
+      font-family:inherit;
+      transition:color .28s ease;
+    }
+    .inputs-text-hidden .field input,
+    .inputs-text-hidden .field select{
+      color:transparent;
+      text-shadow:0 0 0 transparent;
+      caret-color:transparent;
+    }
+    .field.full{grid-column:auto}
+    .readonly{
+      background:#F4F2EE !important;
+      color:var(--text-sub) !important;
+      cursor:default;
+    }
+    .actions{
+      margin-top:auto;
+      padding-top:10px;
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:var(--r-sm);
+      padding:10px 18px;
+      font-size:14px;
+      font-family:inherit;
+      font-weight:700;
+      cursor:pointer;
+      transition:all var(--ease);
+      color:var(--text-sub);
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      box-shadow:var(--shadow-m);
+    }
+    .btn.primary{
+      color:#FFFFFF;
+      border:none;
+      background:#3a8dfd;
+      box-shadow:0 2px 8px rgba(58,141,253,0.28);
+      padding:11px 24px;
+      letter-spacing:0.2px;
+    }
+    .btn.primary:hover{
+      background:#2b7ce8;
+      transform:translateY(-1px);
+      box-shadow:0 4px 14px rgba(58,141,253,0.38);
+    }
+    .overlay{
+      position:absolute;
+      inset:0;
+      background:rgba(0,20,40,0.38);
+      backdrop-filter:blur(6px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:20;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:420px;
+      border-radius:var(--r-lg);
+      background:var(--card);
+      box-shadow:var(--shadow-xl);
+      overflow:hidden;
+      animation:modalIn .3s var(--ease-out);
+    }
+    .modal-h{
+      padding:14px 18px;
+      border-bottom:1px solid var(--line-soft);
+      background:var(--card-alt);
+      font-size:15px;
+      font-weight:800;
+      color:var(--text);
+    }
+    .modal-b{
+      padding:24px 18px;
+      font-size:15px;
+      font-weight:700;
+      color:var(--text);
+      text-align:center;
+      line-height:1.5;
+    }
+    .status-ok{color:var(--ok)}
+    .spinner{
+      margin:0 auto 10px;
+      width:26px;height:26px;
+      border:3px solid var(--line-soft);
+      border-top-color:var(--wb-blue);
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes modalIn{
+      from{opacity:0;transform:translateY(12px) scale(0.97)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="header-left">
+        <img class="header-logo" src="./images/logo.png" alt="logo">
+        <div class="header-divider"></div>
+        <div class="title">심사정보 자동입력 및 심사 요청</div>
+      </div>
+      <div class="terminal-badge">영업점 단말</div>
+    </div>
+
+    <nav class="top-menu">
+      <a class="top-menu-item active"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="1" width="12" height="16" rx="2"/><path d="M7 5h4M7 8h4M7 11h2"/></svg>여신</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16h14M3 7h12L9 2 3 7zM5 7v7M9 7v7M13 7v7"/></svg>수신</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><path d="M2 9h14M9 2c2 2 3 4.5 3 7s-1 5-3 7M9 2c-2 2-3 4.5-3 7s1 5 3 7"/></svg>외환</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>고객</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14l4-5 3 3 5-7M2 16h14"/></svg>자금</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="14" height="10" rx="2"/><path d="M6 16h6M9 12v4"/></svg>전자금융</a>
+      <a class="top-menu-item"><svg class="tm-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.3 3.3l1.4 1.4M13.3 13.3l1.4 1.4M3.3 14.7l1.4-1.4M13.3 4.7l1.4-1.4"/></svg>관리</a>
+    </nav>
+
+    <div class="content">
+      <nav class="tree-sidebar">
+        <div class="tree-header">업무 메뉴</div>
+        <div class="tree-lv0"><span class="tree-ic">▾</span>여신업무</div>
+        <div class="tree-lv1"><span class="tree-ic">▾</span>기업여신</div>
+        <div class="tree-lv2"><span class="tree-ic">▾</span>신규대출</div>
+        <a class="tree-lv3">신청정보 입력</a>
+        <a class="tree-lv3">첨부문서 등록</a>
+        <a class="tree-lv3 active">심사정보 입력</a>
+        <a class="tree-lv3">심사요청</a>
+        <a class="tree-lv2">대출실행</a>
+        <a class="tree-lv2">대출관리</a>
+        <a class="tree-lv2">기한연장</a>
+        <a class="tree-lv1">개인여신</a>
+        <a class="tree-lv1">담보관리</a>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>수신업무</div>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>외환업무</div>
+        <div class="tree-lv0"><span class="tree-ic">▸</span>고객관리</div>
+      </nav>
+
+      <section class="panel">
+        <div class="panel-b inputs-text-hidden">
+          <div class="section-bar">
+            <span class="section-title">심사 요청 정보</span>
+            <span class="section-sub">자동입력된 정보를 확인해 주세요</span>
+          </div>
+          <div class="form-scroll">
+            <div class="form-row">
+              <!-- ── 접수 정보 (좌) ── -->
+              <div class="form-group">
+                <div class="group-title">접수 정보</div>
+                <div class="form">
+                  <div class="field">
+                    <label>신청번호</label>
+                    <input class="readonly" value="CC411-2026-000123" readonly />
+                  </div>
+                  <div class="field">
+                    <label>담당자</label>
+                    <input class="readonly" value="김담당" readonly />
+                  </div>
+                  <div class="field">
+                    <label>신청채널</label>
+                    <input class="readonly" value="영업점" readonly />
+                  </div>
+                  <div class="field">
+                    <label>영업점 코드</label>
+                    <input class="readonly" value="411" readonly />
+                  </div>
+                  <div class="field">
+                    <label>취급구분</label>
+                    <input class="readonly" value="신규" readonly />
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── 차주 정보 (우) ── -->
+              <div class="form-group">
+                <div class="group-title">차주 정보</div>
+                <div class="form">
+                  <div class="field">
+                    <label>사업자등록번호</label>
+                    <input class="readonly" value="120-86-12345" readonly />
+                  </div>
+                  <div class="field">
+                    <label>차주명(법인)</label>
+                    <input class="readonly" value="(주)000바이오" readonly />
+                  </div>
+                  <div class="field">
+                    <label>대표자명</label>
+                    <input class="readonly" value="홍길동" readonly />
+                  </div>
+                  <div class="field">
+                    <label>법인구분</label>
+                    <input class="readonly" value="주식회사" readonly />
+                  </div>
+                  <div class="field">
+                    <label>업종</label>
+                    <input class="readonly" value="의약품 제조업" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── 대출 신청 정보 ── -->
+            <div class="form-group">
+              <div class="group-title">대출 신청 정보</div>
+              <div class="form">
+                <div class="field">
+                  <label>대출상품</label>
+                  <input class="readonly" value="기업운전일반자금대출" readonly />
+                </div>
+                <div class="field">
+                  <label>신청일자</label>
+                  <input class="readonly" value="2026-03-05" readonly />
+                </div>
+                <div class="field">
+                  <label>신청금액</label>
+                  <input class="readonly" value="1,500,000,000원" readonly />
+                </div>
+                <div class="field">
+                  <label>대출기간</label>
+                  <input class="readonly" value="24개월" readonly />
+                </div>
+                <div class="field">
+                  <label>상환방식</label>
+                  <input class="readonly" value="원리금균등" readonly />
+                </div>
+                <div class="field">
+                  <label>금리유형</label>
+                  <input class="readonly" value="고정금리" readonly />
+                </div>
+                <div class="field">
+                  <label>납입주기</label>
+                  <input class="readonly" value="매월" readonly />
+                </div>
+                <div class="field">
+                  <label>자금용도</label>
+                  <input class="readonly" value="운전자금" readonly />
+                </div>
+                <div class="field">
+                  <label>담보유형</label>
+                  <input class="readonly" value="부동산담보" readonly />
+                </div>
+                <div class="field">
+                  <label>담보 상세정보</label>
+                  <input class="readonly" value="서울 강남구 역삼동 123-45" readonly />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn">이전</button>
+            <button class="btn primary" id="requestBtn">심사요청</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="requestOverlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-h">심사요청</div>
+        <div class="modal-b" id="requestMessage">
+          <div class="spinner" id="requestSpinner"></div>
+          심사요청 전송 중입니다...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const requestBtn = document.getElementById("requestBtn");
+    const requestOverlay = document.getElementById("requestOverlay");
+    const requestMessage = document.getElementById("requestMessage");
+    const requestSpinner = document.getElementById("requestSpinner");
+
+    function openOverlay(){
+      requestOverlay.classList.add("show");
+      requestOverlay.setAttribute("aria-hidden", "false");
+    }
+    function closeOverlay(){
+      requestOverlay.classList.remove("show");
+      requestOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    requestBtn.addEventListener("click", () => {
+      openOverlay();
+      requestMessage.innerHTML = '<div class="spinner" id="requestSpinner"></div>심사요청 전송 중입니다...';
+      setTimeout(() => {
+        requestMessage.innerHTML = '<span class="status-ok">심사요청이 완료되었습니다.</span><br/>본부 심사 단계로 이관되었습니다.';
+      }, 1200);
+      setTimeout(() => {
+        closeOverlay();
+      }, 2200);
+    });
+
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.querySelector(".panel-b")?.classList.remove("inputs-text-hidden");
+      }, 500);
+
+      const formScroll = document.querySelector(".form-scroll");
+      if(formScroll){
+        setTimeout(() => {
+          const target = formScroll.scrollHeight - formScroll.clientHeight;
+          const duration = 1200;
+          const start = formScroll.scrollTop;
+          const distance = target - start;
+          if(distance <= 0) return;
+          let startTime = null;
+          function step(ts){
+            if(!startTime) startTime = ts;
+            const elapsed = ts - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = progress < 0.5
+              ? 2 * progress * progress
+              : -1 + (4 - 2 * progress) * progress;
+            formScroll.scrollTop = start + distance * ease;
+            if(progress < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }, 1200);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="./images/favicon.png" />
+  <title>P4 문서 전처리</title>
+  <link href="./fonts/fonts.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:         #0D0D0F;
+      --bg-panel:   #131315;
+      --card:       #1A1A1E;
+      --card-alt:   #222226;
+      --card-head:  #28282D;
+      --line:       #333338;
+      --line-soft:  #2A2A2F;
+      --line-focus: #E8A838;
+      --text:       #F0EDE8;
+      --text-sub:   #A09A90;
+      --text-muted: #6B665E;
+      --amber:      #E8A838;
+      --amber-dim:  #C48820;
+      --amber-soft: rgba(232,168,56,0.10);
+      --amber-glow: rgba(232,168,56,0.18);
+      --ok:         #4ADE80;
+      --ok-soft:    rgba(74,222,128,0.10);
+      --ok-border:  rgba(74,222,128,0.30);
+      --run:        #E8A838;
+      --run-soft:   rgba(232,168,56,0.10);
+      --run-border: rgba(232,168,56,0.30);
+      --warn:       #FB923C;
+      --warn-soft:  rgba(251,146,60,0.10);
+      --shadow-s:   0 1px 4px rgba(0,0,0,0.50);
+      --shadow-m:   0 4px 16px rgba(0,0,0,0.60);
+      --shadow-l:   0 12px 40px rgba(0,0,0,0.65);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+      --ease: 0.22s ease;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#080808;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:"Pretendard","Malgun Gothic","Segoe UI",sans-serif;
+      color:var(--text);
+    }
+    .app-shell{
+      width:1280px;
+      height:720px;
+      background:var(--bg);
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:var(--shadow-l), 0 0 60px rgba(232,168,56,0.03);
+      overflow:hidden;
+    }
+
+    /* HEADER */
+    .header{
+      height:64px;
+      background:linear-gradient(135deg, #0F0F11 0%, #161618 50%, #1C1C1F 100%);
+      border-bottom:1px solid var(--line);
+      padding:12px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:relative;
+      overflow:hidden;
+    }
+    .header::after{
+      content:"";
+      position:absolute;
+      bottom:0; left:0; right:0;
+      height:2px;
+      background:linear-gradient(90deg, transparent, var(--amber), var(--amber-dim), transparent);
+      opacity:0.7;
+    }
+    .lottie-icon{width:32px;height:32px;flex-shrink:0}
+    .lottie-icon svg path{stroke:var(--amber) !important}
+    .title-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1;
+      color:var(--text);
+      text-shadow:0 0 20px rgba(232,168,56,0.12);
+    }
+    .meta{
+      font-size:12px;
+      color:var(--amber);
+      font-weight:500;
+      font-family:inherit;
+      border:1px solid rgba(232,168,56,0.25);
+      background:var(--amber-soft);
+      border-radius:999px;
+      padding:5px 10px;
+    }
+    .run-badge{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--amber);
+      background:rgba(232,168,56,0.06);
+      border:1px solid rgba(232,168,56,0.20);
+      border-radius:var(--r-sm);
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:700;
+      font-family:inherit;
+      letter-spacing:.15px;
+      user-select:none;
+      cursor:default;
+      position:relative;
+      z-index:1;
+    }
+    .run-badge::before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--amber);
+      box-shadow:0 0 6px var(--amber);
+      animation:blinkDot 1.1s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    @keyframes blinkDot{
+      0%,100%{opacity:1}
+      50%{opacity:0.25}
+    }
+
+    /* CONTENT */
+    .content{
+      height:656px;
+      padding:10px;
+      display:grid;
+      grid-template-rows:105px 1fr;
+      gap:6px;
+      background:var(--bg-panel);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      overflow:hidden;
+    }
+
+    /* FLOW */
+    .flow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      height:100%;
+      padding:6px 8px;
+      background:var(--bg);
+    }
+    .step{
+      min-width:142px;
+      border:1px solid var(--line);
+      border-radius:var(--r-sm);
+      padding:20px 16px;
+      background:var(--card);
+      text-align:center;
+      font-size:17px;
+      color:var(--text-muted);
+      font-weight:800;
+      transition:all var(--ease);
+    }
+    .step.active{
+      color:var(--amber);
+      border-color:rgba(232,168,56,0.35);
+      background:var(--amber-soft);
+    }
+    .step.done{
+      color:var(--amber);
+      border-color:rgba(232,168,56,0.35);
+      background:var(--amber-soft);
+    }
+    .step.active.prep{
+      color:var(--ok);
+      border-color:var(--ok-border);
+      background:var(--ok-soft);
+      animation:activePrepBlink 1s ease-in-out infinite;
+    }
+    @keyframes activePrepBlink{
+      0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}
+      50%{box-shadow:0 0 0 6px rgba(74,222,128,0.16)}
+    }
+    .arrow{color:var(--text-muted);font-size:16px;line-height:1}
+
+    /* MAIN GRID */
+    .main{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:8px;
+      min-height:0;
+    }
+    .main>.card{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+    }
+    .box-h{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      font-size:15px;
+      font-weight:800;
+      color:var(--text);
+      background:var(--card-head);
+    }
+    .box-b{
+      padding:8px;
+      flex:1;
+      min-height:0;
+      background:var(--card);
+    }
+
+    /* DOC LIST */
+    .doc-list{background:var(--card-alt)}
+    .doc-list .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:6px 0;
+      border-bottom:1px solid var(--line-soft);
+      font-size:13px;
+      color:var(--text-sub);
+    }
+    .doc-list .row:last-child{border-bottom:0}
+
+    /* BADGES */
+    .badge{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-muted);
+      background:var(--card);
+    }
+    .badge.run{
+      color:var(--run);
+      border-color:var(--run-border);
+      background:var(--run-soft);
+    }
+    .badge.ok{
+      border-color:var(--ok-border);
+      color:var(--ok);
+      background:var(--ok-soft);
+    }
+    .blink{animation:blinkPulse .8s ease-in-out 2}
+    @keyframes blinkPulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(232,168,56,0)}
+      50%{box-shadow:0 0 0 6px rgba(232,168,56,0.18)}
+    }
+
+    /* PLAN GRID */
+    .plan-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .plan-card{
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      background:var(--card-alt);
+    }
+    .plan-card .h{
+      padding:9px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      background:var(--card-head);
+    }
+    .plan-card .b{
+      padding:8px 10px;
+      background:var(--card-alt);
+      font-size:13px;
+      font-family:inherit;
+      color:var(--text-sub);
+      min-height:70px;
+      line-height:1.5;
+    }
+    .plan-card .b.pending{
+      color:var(--text-muted);
+      font-weight:700;
+    }
+
+    /* ORDER / TIMELINE */
+    .order{
+      margin-top:6px;
+      border:1px solid var(--line);
+      border-radius:var(--r-md);
+      overflow:hidden;
+      background:var(--card-alt);
+    }
+    .order .h{
+      padding:9px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:14px;
+      font-weight:800;
+      color:var(--text);
+      background:var(--card-head);
+    }
+    .timeline{
+      padding:6px 10px;
+      background:var(--card-alt);
+    }
+    .timeline .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:4px 0;
+      border-bottom:1px solid var(--line-soft);
+      font-size:13px;
+      font-family:inherit;
+      color:var(--text-sub);
+    }
+    .timeline .row:last-child{border-bottom:0}
+    .state{
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      color:var(--text-muted);
+      background:var(--card);
+    }
+    .state.run{
+      color:var(--run);
+      border-color:var(--run-border);
+      background:var(--run-soft);
+    }
+    .state.done{
+      color:var(--ok);
+      border-color:var(--ok-border);
+      background:var(--ok-soft);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="title-group">
+        <div class="lottie-icon" id="gearAnim"></div>
+        <div class="title">문서 전처리</div>
+        <div class="meta">Agent</div>
+      </div>
+      <div class="run-badge">백그라운드 실행</div>
+    </div>
+
+    <div class="content">
+      <section class="card">
+        <div class="flow">
+          <div class="step done">실행 계획 수립</div>
+          <div class="arrow">→</div>
+          <div class="step active prep" id="activeFlowStep">문서 전처리</div>
+          <div class="arrow">→</div>
+          <div class="step">진위검증</div>
+          <div class="arrow">→</div>
+          <div class="step">AI-OCR 및 필드 추출</div>
+          <div class="arrow">→</div>
+          <div class="step">대사/검증</div>
+        </div>
+      </section>
+
+      <section class="main">
+        <article class="card">
+          <div class="box-h">전처리 대상 문서</div>
+          <div class="box-b doc-list">
+            <div class="row"><span>사업자등록증명원.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>법인등기부등본.pdf</span><span class="badge run doc-badge">진행중</span></div>
+            <div class="row"><span>표준재무제표증명.pdf</span><span class="badge run doc-badge">진행중</span></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="box-h">전처리 실행</div>
+          <div class="box-b">
+            <div class="plan-grid">
+              <div class="plan-card">
+                <div class="h">기울기 보정</div>
+                <div class="b pending task-info">대상 문서 로딩 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">노이즈 제거</div>
+                <div class="b pending task-info">대상 문서 로딩 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">명암/대비 보정</div>
+                <div class="b pending task-info">대상 문서 로딩 대기</div>
+              </div>
+              <div class="plan-card">
+                <div class="h">페이지 정렬</div>
+                <div class="b pending task-info">대상 문서 로딩 대기</div>
+              </div>
+            </div>
+
+            <div class="order">
+              <div class="h">실행 순서 및 상태</div>
+              <div class="timeline">
+                <div class="row"><span>1) 기울기 보정</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>2) 노이즈 제거</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>3) 명암/대비 보정</span><span class="state plan-state">대기</span></div>
+                <div class="row"><span>4) 페이지 정렬</span><span class="state plan-state">대기</span></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script>
+    const TOTAL_RUN_MS = 10000;
+    const DEMO_SCALE = TOTAL_RUN_MS / 10000;
+    const docBadges = Array.from(document.querySelectorAll(".doc-badge"));
+    const taskInfos = Array.from(document.querySelectorAll(".task-info"));
+    const planStates = Array.from(document.querySelectorAll(".plan-state"));
+    const activeFlowStep = document.getElementById("activeFlowStep");
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms * DEMO_SCALE));
+    }
+
+    function setDocDone(idx){
+      const badge = docBadges[idx];
+      if(!badge) return;
+      badge.textContent = "전처리 완료";
+      badge.classList.remove("run");
+      badge.classList.add("ok", "blink");
+      setTimeout(() => badge.classList.remove("blink"), 1200);
+    }
+
+    function fillTaskTargets(){
+      const contents = [
+        "사업자등록증명원, 법인등기부등본",
+        "사업자등록증명원, 표준재무제표증명",
+        "표준재무제표증명, 법인등기부등본",
+        "사업자등록증명원, 법인등기부등본, 표준재무제표증명"
+      ];
+      taskInfos.forEach((el, idx) => {
+        el.textContent = contents[idx] || "-";
+        el.classList.remove("pending");
+        el.classList.add("blink");
+        setTimeout(() => el.classList.remove("blink"), 1200);
+      });
+    }
+
+    function setPlanState(idx, state){
+      const item = planStates[idx];
+      if(!item) return;
+      item.classList.remove("run", "done", "blink");
+      if(state === "run"){
+        item.classList.add("run");
+        item.textContent = "진행중";
+      } else if(state === "done"){
+        item.classList.add("done");
+        item.textContent = "완료";
+      } else {
+        item.textContent = "대기";
+      }
+      item.classList.add("blink");
+      setTimeout(() => item.classList.remove("blink"), 1200);
+    }
+
+    async function runP4Animation(){
+      await sleep(900);
+      fillTaskTargets();
+
+      await sleep(800);
+      setPlanState(0, "run");
+      await sleep(900);
+      setPlanState(0, "done");
+      setDocDone(0);
+
+      setPlanState(1, "run");
+      await sleep(900);
+      setPlanState(1, "done");
+      setDocDone(1);
+      setDocDone(2);
+
+      setPlanState(2, "run");
+      await sleep(900);
+      setPlanState(2, "done");
+
+      setPlanState(3, "run");
+      await sleep(900);
+      setPlanState(3, "done");
+      await sleep(650);
+
+      activeFlowStep.classList.remove("prep");
+    }
+
+    window.addEventListener("load", () => {
+      runP4Animation().then(() => {
+        window.WBAutoPaging?.moveToNextIfEnabled?.(700);
+      });
+    });
+  </script>
+  <script src="./js/lottie.min.js"></script>
+  <script>
+    lottie.loadAnimation({
+      container: document.getElementById("gearAnim"),
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+      animationData: {"v":"5.7.5","fr":60,"ip":0,"op":180,"w":500,"h":500,"nm":"Composition","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":3,"nm":"Main Stroke width - Color Ctrl","parent":3,"sr":1,"ks":{"o":{"a":0,"k":0,"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[0,0,0],"ix":2,"l":2},"a":{"a":0,"k":[50,50,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"ef":[{"ty":5,"nm":"Stroke width","np":3,"mn":"ADBE Slider Control","ix":1,"en":1,"ef":[{"ty":0,"nm":"Deslizador","mn":"ADBE Slider Control-0001","ix":1,"v":{"a":0,"k":16,"ix":1}}]},{"ty":5,"nm":"Base Color","np":3,"mn":"ADBE Color Control","ix":2,"en":1,"ef":[{"ty":2,"nm":"Color","mn":"ADBE Color Control-0001","ix":1,"v":{"a":0,"k":[0,0,0,1],"ix":1}}]},{"ty":5,"nm":"Highlight","np":3,"mn":"ADBE Color Control","ix":3,"en":1,"ef":[{"ty":2,"nm":"Color","mn":"ADBE Color Control-0001","ix":1,"v":{"a":0,"k":[0.20000000298,0.800000011921,0.800000011921,1],"ix":1}}]}],"ip":0,"op":195,"st":0,"bm":0},{"ddd":0,"ind":2,"ty":4,"nm":"Base","parent":1,"sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0]},{"t":179,"s":[180]}],"ix":10},"p":{"a":0,"k":[50,50,0],"ix":2,"l":2},"a":{"a":0,"k":[0,0,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[19.867,-3.472],[0,0],[-11.992,-1.728],[0,0]],"o":[[0,0],[12.442,-1.802],[0,0],[-18.998,-3.311]],"v":[[-29.327,-168.941],[-18.402,-128.167],[18.408,-128.19],[29.335,-168.972]],"c":true},"ix":2},"nm":"Trazado 8","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":10,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":80,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":90,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":120,"s":[100]},{"t":130,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[0.004,0.891],"ix":2},"a":{"a":0,"k":[0.004,0.891],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"0","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[-9.696,-7.609],[0,0],[18.475,6.798]],"o":[[11.438,4.592],[0,0],[-15.125,-12.601],[0,0]],"v":[[48.148,-120.199],[80.021,-101.796],[109.876,-131.651],[59.075,-160.981]],"c":true},"ix":2},"nm":"Trazado 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":10,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":20,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":90,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":100,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":130,"s":[100]},{"t":140,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[0.751,0.495],"ix":2},"a":{"a":0,"k":[0.751,0.495],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"1","np":2,"cix":2,"bm":0,"ix":2,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[-4.661,-11.677],[0,0],[12.366,14.797]],"o":[[7.492,9.521],[0,0],[-6.926,-18.941],[0,0]],"v":[[101.812,-80.037],[120.197,-48.147],[160.97,-59.072],[131.666,-109.891]],"c":true},"ix":2},"nm":"2","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":20,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":30,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":100,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":110,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":140,"s":[100]},{"t":150,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.493,0.691],"ix":2},"a":{"a":0,"k":[-0.493,0.691],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"2","np":2,"cix":2,"bm":0,"ix":3,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[3.472,19.867],[0,0],[1.728,-11.992],[0,0]],"o":[[0,0],[1.802,12.442],[0,0],[3.311,-18.998]],"v":[[168.941,-29.327],[128.167,-18.402],[128.19,18.408],[168.972,29.335]],"c":true},"ix":2},"nm":"Trazado 3","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":30,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":40,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":110,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":120,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":150,"s":[100]},{"t":160,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.891,0.004],"ix":2},"a":{"a":0,"k":[-0.891,0.004],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"3","np":2,"cix":2,"bm":0,"ix":4,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[7.609,-9.695],[0,0],[-6.798,18.475]],"o":[[-4.592,11.438],[0,0],[12.601,-15.125],[0,0]],"v":[[120.199,48.148],[101.796,80.021],[131.651,109.876],[160.981,59.075]],"c":true},"ix":2},"nm":"Trazado 5","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":0,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":10,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":40,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":50,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":120,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":130,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":160,"s":[100]},{"t":170,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[0.954,0.751],"ix":2},"a":{"a":0,"k":[0.954,0.751],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"4","np":2,"cix":2,"bm":0,"ix":5,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[11.677,-4.661],[0,0],[-14.797,12.366]],"o":[[9.521,-7.492],[0,0],[-18.941,6.926],[0,0]],"v":[[80.037,101.812],[48.147,120.197],[59.072,160.97],[109.891,131.666]],"c":true},"ix":2},"nm":"Trazado 10","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":10,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":20,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":50,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":60,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":130,"s":[0]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":140,"s":[100]},{"i":{"x":[0.833],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":170,"s":[100]},{"t":180,"s":[0]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.691,0.956],"ix":2},"a":{"a":0,"k":[-0.691,0.956],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"5","np":2,"cix":2,"bm":0,"ix":6,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-19.867,3.472],[0,0],[11.992,1.728],[0,0]],"o":[[0,0],[-12.442,1.802],[0,0],[18.998,3.311]],"v":[[29.327,168.941],[18.402,128.167],[-18.408,128.19],[-29.335,168.972]],"c":true},"ix":2},"nm":"Trazado 7","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":20,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":30,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":60,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":70,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":140,"s":[0]},{"t":150,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.004,0.558],"ix":2},"a":{"a":0,"k":[-0.004,0.558],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"6","np":2,"cix":2,"bm":0,"ix":7,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[9.696,7.609],[0,0],[-18.475,-6.798]],"o":[[-11.438,-4.592],[0,0],[15.125,12.601],[0,0]],"v":[[-48.148,120.199],[-80.021,101.796],[-109.876,131.651],[-59.075,160.981]],"c":true},"ix":2},"nm":"Trazado 6","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":30,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":40,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":70,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":80,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":150,"s":[0]},{"t":160,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[0.698,0.954],"ix":2},"a":{"a":0,"k":[0.698,0.954],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"7","np":2,"cix":2,"bm":0,"ix":8,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[4.661,11.677],[0,0],[-12.366,-14.797]],"o":[[-7.492,-9.521],[0,0],[6.926,18.941],[0,0]],"v":[[-101.812,80.037],[-120.197,48.147],[-160.971,59.072],[-131.666,109.891]],"c":true},"ix":2},"nm":"Trazado 12","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":40,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":50,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":80,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":90,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":160,"s":[0]},{"t":170,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.956,0.758],"ix":2},"a":{"a":0,"k":[-0.956,0.758],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"8","np":2,"cix":2,"bm":0,"ix":9,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-3.472,-19.867],[0,0],[-1.728,11.992],[0,0]],"o":[[0,0],[-1.802,-12.442],[0,0],[-3.311,18.998]],"v":[[-168.941,29.327],[-128.167,18.402],[-128.19,-18.408],[-168.972,-29.335]],"c":true},"ix":2},"nm":"Trazado 11","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":50,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":60,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":90,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":100,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":170,"s":[0]},{"t":180,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[0.891,-0.004],"ix":2},"a":{"a":0,"k":[0.891,-0.004],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"9","np":2,"cix":2,"bm":0,"ix":10,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[-7.609,9.695],[0,0],[6.798,-18.475]],"o":[[4.592,-11.438],[0,0],[-12.601,15.125],[0,0]],"v":[[-120.199,-48.148],[-101.796,-80.021],[-131.651,-109.876],[-160.981,-59.075]],"c":true},"ix":2},"nm":"Trazado 4","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":60,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":70,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":100,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":110,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":180,"s":[0]},{"t":190,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.954,0.698],"ix":2},"a":{"a":0,"k":[-0.954,0.698],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"10","np":2,"cix":2,"bm":0,"ix":11,"mn":"ADBE Vector Group","hd":false},{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[-11.677,4.661],[0,0],[14.797,-12.366]],"o":[[9.521,-7.492],[0,0],[-18.941,6.926],[0,0]],"v":[[-80.037,-101.812],[-48.147,-120.197],[-59.072,-160.97],[-109.891,-131.666]],"c":true},"ix":2},"nm":"Trazado 9","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Highlight')('ADBE Color Control-0001');"},"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":70,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":80,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":110,"s":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.167],"y":[0]},"t":120,"s":[0]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"t":190,"s":[0]},{"t":200,"s":[100]}],"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = $bm_sum(thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001'), 2);"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Highlight","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[-0.758,0.493],"ix":2},"a":{"a":0,"k":[-0.758,0.493],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transformar"}],"nm":"11","np":2,"cix":2,"bm":0,"ix":12,"mn":"ADBE Vector Group","hd":false},{"ty":"st","c":{"a":0,"k":[0,0,0,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Base Color')('ADBE Color Control-0001');"},"o":{"a":0,"k":100,"ix":4},"w":{"a":0,"k":16,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Main Stroke width - Color Ctrl').effect('Stroke width')('ADBE Slider Control-0001');"},"lc":2,"lj":2,"bm":0,"nm":"Stroke Base","mn":"ADBE Vector Graphic - Stroke","hd":false}],"ip":0,"op":186,"st":0,"bm":0},{"ddd":0,"ind":3,"ty":3,"nm":"Zero | troke width - Color Ctrl","sr":1,"ks":{"o":{"a":0,"k":0,"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[250,250,0],"ix":2,"l":2},"a":{"a":0,"k":[0,0,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"ip":0,"op":195,"st":0,"bm":0}],"markers":[]}
+    });
+  </script>
+</body>
+</html>
